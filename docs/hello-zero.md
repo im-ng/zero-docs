@@ -148,19 +148,20 @@ pub fn main() !void {
 
     // create zero App
     // internally zero loads container with configured services attached
-    const app = try App.New(allocator);
+    const app: *App = try App.new(allocator);
 
     // register our first route on app
-    try app.GET("/json", jsonResponse);
+    try app.get("/json", jsonResponse);
 
     // start the server by invoking run
-    try app.Run();
+    try app.run();
 }
 
 // Context comes handy with all zero dependencies
 fn jsonResponse(ctx: *Context) !void {
-    ctx.response.setStatus(.ok);
-    try ctx.response.json(.{ .msg = "hello zero!" }, .{});
+    ctx.info("inside the json handler");
+
+    try ctx.json(.{ .msg = "hello zero!" });
 }
 ```
 
