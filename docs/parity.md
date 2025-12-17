@@ -48,6 +48,9 @@ Instead of developing and integrating with these boilerplates, an app developer 
         - ✅ OAuth Key
           - ✅ Register OAuth Provider
           - ✅ Refresh Public Keys
+            - ⬜ Client became unresponsive if the external service down
+            - ⬜ Health check
+            - ⬜ Surge and Circuit breaker
           - ✅ Validate claims
 -  ✅ Panic recovery
 -  ✅ Handle Error response
@@ -79,3 +82,6 @@ Instead of developing and integrating with these boilerplates, an app developer 
 - ⬜ TLS 
 - ⬜ CLI Application
 - ⬜ Memory leaks
+    - ✅ Cronz
+    - ✅ Context
+    - ✅ Container

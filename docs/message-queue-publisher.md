@@ -10,36 +10,9 @@
 import { ImgComparisonSlider } from '@img-comparison-slider/vue';
 </script>
 
-
-# PubSub
-
-In the world of microservice architecture, the event driven approach is indistinguishable and `zero` framework has built-in support for the accessing the message queue systems.
-
-At times the app we develop has to rely on external service signal through API call and through events and let us decide the state of the data/action.
-
-Alike, other built-in solutions, the `MQ` client will be automatically added to `container` once the needed service configurations available.
-
-`zero` app tries to connect, captures the `ping` status and attaches to the app life-time, otherwise app explicitly calls the `message queue` is disabled.
-
-```bash
-ctx.MQ.publish("topic"); #publishes message to a topic on the subscribed client
-
-app.addSubscription("topic", subscriber-handler); #listens for upcoming event and injects into subscriber handler for further actions.
-```
-
-### Support
-
-`zero` framework supports following brokers to publish and subscriber to.
-
-| Message Broker                  | Support |
-| ----------------------- | ---------------------------------------------- | 
-| MQTT | ✅ |
-| Kafka | In progress |
-
-### Example
+# MQTT Publisher
 
 This document demonstrates the publishing to a topic using `zero` built-in solution `MQ` client.
-
 
 1. Refer following `zero-mqtt-publisher` example further to know more on getting started of this.
 
@@ -65,6 +38,7 @@ Pull and run podman or docker container.
 ```
 
 ::: code-group
+
 ```zig [main.zig]
 const std = @import("std");
 const zero = @import("zero");
@@ -124,13 +98,13 @@ fn publishTask2(ctx: *Context) !void {
 }
 
 ```
-:::
 
+:::
 
 2. Boom! lets build and run our app.
 
 ```bash
-zero/examples/zero-mqtt-publisher on  main [✘!?] via ↯ v0.15.1 
+zero/examples/zero-mqtt-publisher on  main [✘!?] via ↯ v0.15.1
 ❯ zig build pubsub
  INFO [03:11:11] Loaded config from file: ./configs/.env
  INFO [03:11:11] config overriden ./configs/.dev.env file not found.
@@ -152,7 +126,6 @@ DEBUG [03:11:11] redis is disabled, as redis host is not provided.
  INFO [03:12:00] completed cron job: publisher-1 in 0ms
  INFO [03:12:00] completed cron job: publisher-2 in 0ms
 ```
-
 
 3. Preview server status and publish status.
 

@@ -10,27 +10,17 @@
 import { ImgComparisonSlider } from '@img-comparison-slider/vue';
 </script>
 
-
-# PubSub
+# MQTT Subscriber
 
 This document is continuation of the [Publisher](./message-queue-publisher) to preview the subscriber demo. Prefer to read that first.
 
 The `MQ` client will be automatically added to `container` once the needed service configurations available.
 
-```bash
-ctx.MQ.publish("topic"); #publishes message to a topic on the subscribed client
+```zig
+ctx.MQ.publish("topic"); //publishes message to a topic on the subscribed client
 
-app.addSubscription("topic", subscriber-handler); #listens for upcoming event and injects into subscriber handler for further actions.
+app.addSubscription("topic", subscriber-handler); //listens for upcoming event and injects into subscriber handler for further actions.
 ```
-
-### Support
-
-`zero` framework supports following brokers to publish and subscriber to.
-
-| Message Broker                  | Support |
-| ----------------------- | ---------------------------------------------- | 
-| MQTT | ✅ |
-| Kafka | In progress |
 
 ### Limitations
 
@@ -41,10 +31,10 @@ app.addSubscription("topic", subscriber-handler); #listens for upcoming event an
 
 This document demonstrates the subscribing to a topic using `zero` built-in solution `MQ` client.
 
-
 1. Refer following `zero-mqtt-subscriber` example further to know more on getting started of this.
 
 ::: code-group
+
 ```zig [main.zig]
 const std = @import("std");
 const zero = @import("zero");
@@ -102,13 +92,13 @@ fn subscribeTask(ctx: *Context) !void {
     }
 }
 ```
-:::
 
+:::
 
 2. Boom! lets build and run our app.
 
 ```bash [pubsub]
-zero/examples/zero-mqtt-subscriber on  main [✘!?] via ↯ v0.15.1 
+zero/examples/zero-mqtt-subscriber on  main [✘!?] via ↯ v0.15.1
 ❯ zig build pubsub
  INFO [04:15:48] Loaded config from file: ./configs/.env
  INFO [04:15:48] config overriden ./configs/.dev.env file not found.

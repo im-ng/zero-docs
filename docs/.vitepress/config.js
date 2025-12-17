@@ -37,6 +37,7 @@ export default withMermaid(
             { text: "Configs", link: "/configuration" },
             { text: "Logging", link: "/logging" },
             { text: "Observability", link: "/observability" },
+            { text: "PubSub", link: "/pubsub" },
           ],
         },
         {
@@ -46,6 +47,8 @@ export default withMermaid(
             { text: "Using Redis", link: "/caching" },
             { text: "Migrations", link: "/migrations" },
             { text: "Schedule Tasks", link: "/cronz" },
+            { text: "Kafka Publisher", link: "/kafka-publisher" },
+            { text: "Kafka Suscriber", link: "/kafka-subscriber" },
             { text: "MQ Publisher", link: "/message-queue-publisher" },
             { text: "MQ Suscriber", link: "/message-queue-subscriber" },
             { text: "Websockets", link: "/websocket" },
