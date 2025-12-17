@@ -10,14 +10,16 @@
 import { ImgComparisonSlider } from '@img-comparison-slider/vue';
 </script>
 
-# Kafka Publisher
+# Kafka Subscriber
 
-This document demonstrates the publishing to a topic using `zero` built-in solution 
+This document demonstrates the kafka subscriber capability to a topic using `zero` built-in solution 
 `KF` client.
+
+It is continuation of the [Publisher](./kafka-publisher) to preview the subscriber demo. Prefer to read that first.
 
 
 ```zig [kafka]
-ctx.KF.publish(ctx, "topic", "message-key", "payload"); #publishes message to a topic on the subscribed client
+app.addKafkaSubscription("topic", subscriberHandler); #listens for upcoming event and injects into subscriber handler for further actions.
 ```
 
 ## Interim solution
@@ -45,9 +47,9 @@ brew install librdkafka
 
 ## Example
 
-1. Refer following `zero-kafka-publisher` example further to know more on getting started of this.
+1. Refer following `zero-kafka-subscriber` example further to know more on getting started of this.
 
-2. Spin up kafka container locally to publish the messages
+2. Spin up kafka container locally to subscriber to published topic messages
 
 ```bash
 podman pull docker.io/apache/kafka:4.1.1
@@ -111,14 +113,15 @@ KafkaServer {
 ::: code-group
 ```bash [config/.env]
 #PLAIN mechanism
-APP_NAME=zero-kafka-publisher
+APP_NAME=zero-mqtt-subscriber
 APP_VERSION=1.0.0
 APP_ENV=dev
 LOG_LEVEL=debug
-HTTP_PORT=8080
+HTTP_PORT=8081
 
 PUBSUB_BACKEND=KAFKA
 PUBSUB_BROKER="localhost:9092"
+CONSUMER_ID="zero-consumer"
 KAFKA_BATCH_SIZE=1000
 KAFKA_BATCH_BYTES=1048576
 KAFKA_BATCH_TIMEOUT=300
@@ -127,14 +130,15 @@ KAFKA_SASL_MECHANISM=PLAINTEXT
 
 ```bash [config/.env]
 #SASL mechanism
-APP_NAME=zero-kafka-publisher
+APP_NAME=zero-mqtt-subscriber
 APP_VERSION=1.0.0
 APP_ENV=dev
 LOG_LEVEL=debug
-HTTP_PORT=8080
+HTTP_PORT=8081
 
 PUBSUB_BACKEND=KAFKA
 PUBSUB_BROKER="localhost:9092"
+CONSUMER_ID="zero-consumer"
 KAFKA_BATCH_SIZE=1000
 KAFKA_BATCH_BYTES=1048576
 KAFKA_BATCH_TIMEOUT=300
@@ -145,7 +149,7 @@ KAFKA_SASL_PASSWORD=secret
 ```
 :::
 
-4. Add basic publisher to send message to `zero-topic`
+4. Add basic subscriber to receive messages from `zero-topic`
 
 ::: code-group
 
@@ -153,7 +157,6 @@ KAFKA_SASL_PASSWORD=secret
 const std = @import("std");
 const zero = @import("zero");
 
-const Allocator = std.mem.Allocator;
 const App = zero.App;
 const Context = zero.Context;
 const utils = zero.utils;
@@ -164,11 +167,6 @@ pub const std_options: std.Options = .{
 
 const topicName = "zero-topic";
 
-const Payload = struct {
-    timestamp: []const u8,
-    message: []const u8,
-};
-
 pub fn main() !void {
     var gpa: std.heap.GeneralPurposeAllocator(.{}) = .init;
     const allocator = gpa.allocator();
@@ -176,38 +174,28 @@ pub fn main() !void {
 
     const app: *App = try App.new(allocator);
 
-    try app.addCronJob("* * * * * *", "publisher-1", publishTask1);
+    try app.addKafkaSubscription(topicName, subscribeTask);
 
     try app.run();
 }
 
-fn publishTask1(ctx: *Context) !void {
+const customMessage = struct {
+    msg: []const u8 = undefined,
+    topic: []const u8 = undefined,
+};
+
+fn subscribeTask(ctx: *Context) !void {
+    ctx.info("msg");
     const timestamp = try utils.sqlTimestampz(ctx.allocator);
-
-    const messageKey = "publisher-1";
-
-    const pl: Payload = .{
-        .timestamp = timestamp,
-        .message = "publisher message!",
-    };
-
-    const jp = try transform(ctx, &pl);
-    ctx.info(jp);
-
-    const topic = try ctx.KF.getTopicHandler(ctx, topicName);
-
-    ctx.KF.publish(ctx, topic, messageKey, jp) catch |err| {
+    //transform ctx.message to custom type in packet read itself
+    if (ctx.message2) |message| {
         var buffer: []u8 = undefined;
-        buffer = try ctx.allocator.alloc(u8, 100);
-        buffer = try std.fmt.bufPrint(buffer, "Message published failed {}", .{err});
-        return;
-    };
-}
+        buffer = try ctx.allocator.alloc(u8, 1024);
+        buffer = try std.fmt.bufPrint(buffer, "Received on [{s}] {s}", .{ message.topic, message.payload.? });
 
-fn transform(ctx: *Context, p: *const Payload) ![]const u8 {
-    var out = std.Io.Writer.Allocating.init(ctx.allocator);
-    try std.json.Stringify.value(p, .{}, &out.writer);
-    return out.written();
+        ctx.info(timestamp);
+        ctx.info(buffer);
+    }
 }
 ```
 :::
@@ -217,22 +205,34 @@ fn transform(ctx: *Context, p: *const Payload) ![]const u8 {
 ::: code-group
 ```bash
 ❯ zig build pubsub
- INFO [04:09:27] Loaded config from file: ./configs/.env
- INFO [04:09:27] config overriden ./configs/.dev.env file not found.
-DEBUG [04:09:27] database is disabled, as dialect is not provided.
-DEBUG [04:09:27] redis is disabled, as redis host is not provided.
- INFO [04:09:27] connecting to kafka at 'localhost:9092'
- INFO [04:09:27] kafka pubsub connected
- INFO [04:09:27] connected to kafka at 'localhost:9092'
- INFO [04:09:27] kafka publisher mode enabled
- INFO [04:09:27] container is created
- INFO [04:09:27] no authentication mode found and disabled.
- INFO [04:09:27] zero-kafka-publisher app pid 33770
- INFO [04:09:27] publisher-1 * * * * * * cron job added for execution
- INFO [04:09:27] registered static files from directory ./static
- INFO [04:09:27] Starting server on port: 8080
- INFO [04:09:28] {"timestamp":"2025-12-16T04:09:28","message":"publisher message!"}
- INFO [04:09:28] Message produced successfully!
+ INFO [04:31:37] Loaded config from file: ./configs/.env
+ INFO [04:31:37] config overriden ./configs/.dev.env file not found.
+DEBUG [04:31:37] database is disabled, as dialect is not provided.
+DEBUG [04:31:37] redis is disabled, as redis host is not provided.
+ INFO [04:31:37] connecting to kafka at 'localhost:9092'
+ INFO [04:31:37] kafka pubsub connected
+ INFO [04:31:37] connected to kafka at 'localhost:9092'
+ INFO [04:31:37] kafka subscriber mode enabled
+ INFO [04:31:37] container is created
+ INFO [04:31:37] no authentication mode found and disabled.
+ INFO [04:31:37] zero-mqtt-subscriber app pid 50511
+ INFO [04:31:37] topic:zero-topic pubsub subscriber added
+ INFO [04:31:37] registered static files from directory ./static
+ INFO [04:31:37] starting kafka subscriptions
+ INFO [04:31:37] Starting server on port: 8081
+ INFO [04:31:38] kafka consumer subscribed
+ INFO [04:31:45] 2025-12-16T04:31:45
+ INFO [04:31:45] Received on [zero-topic] {"timestamp":"2025-12-16T04:31:45","message":"publisher message!"}
+ INFO [04:31:45] Offset 123 commited
+ INFO [04:31:46] 2025-12-16T04:31:46
+ INFO [04:31:46] Received on [zero-topic] {"timestamp":"2025-12-16T04:31:46","message":"publisher message!"}
+ INFO [04:31:46] Offset 124 commited
+ INFO [04:31:47] 2025-12-16T04:31:47
+ INFO [04:31:47] Received on [zero-topic] {"timestamp":"2025-12-16T04:31:47","message":"publisher message!"}
+ INFO [04:31:47] Offset 125 commited
+ INFO [04:31:48] 2025-12-16T04:31:48
+ INFO [04:31:48] Received on [zero-topic] {"timestamp":"2025-12-16T04:31:48","message":"publisher message!"}
+ INFO [04:31:48] Offset 126 commited
 ```
 :::
 
@@ -242,12 +242,12 @@ DEBUG [04:09:27] redis is disabled, as redis host is not provided.
 <img
     slot="first"
     style="width: 100%;"
-    src="./public/zero-kafka-publisher.webp"
+    src="./public/zero-kafka-subscriber.webp"
 />
 <img
     slot="second"
     style="width: 100%"
-    src="./public/zero-kafka-publisher-0.webp"
+    src="./public/zero-kafka-publisher.webp"
 />
 </ImgComparisonSlider>
 
