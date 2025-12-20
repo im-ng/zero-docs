@@ -251,9 +251,9 @@ DEBUG [04:31:37] redis is disabled, as redis host is not provided.
 />
 </ImgComparisonSlider>
 
-4. `zero` comes with publisher metrics handy to preview success/failed counts.
+4. `zero` comes with subscriber metrics handy to preview success/failed counts.
 
-![metrics](./public/zero-kafka-publisher-3.webp)
+![metrics](./public/zero-kafka-subscriber-3.webp)
 
 ## Issues
 
