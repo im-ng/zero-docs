@@ -11,9 +11,9 @@ export default withMermaid(
     title: " ",
     description:
       "A simple and opinionated microservice web framework written in Zig",
-    head: [["link", { rel: "icon", href: "/zero-docs/favicon.ico" }]],
+    head: [["link", { rel: "icon", href: "/favicon.ico" }]],
     ignoreDeadLinks: true,
-    base: "/zero-docs/",
+    base: "/",
     themeConfig: {
       appearance: "force-light",
       logo: {
