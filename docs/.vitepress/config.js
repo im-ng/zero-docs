@@ -8,7 +8,7 @@ export default withMermaid(
         noExternal: ["zeroTheme"],
       },
     },
-    title: " ",
+    title: "   ",
     description:
       "A simple and opinionated microservice web framework written in Zig",
     head: [["link", { rel: "icon", href: "/favicon.ico" }]],

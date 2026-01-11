@@ -19,7 +19,9 @@ It is continuation of the [Publisher](./kafka-publisher) to preview the subscrib
 
 
 ```zig [kafka]
-app.addKafkaSubscription("topic", subscriberHandler); #listens for upcoming event and injects into subscriber handler for further actions.
+// listens for upcoming event and injects into subscriber
+// handler for further actions.
+app.addKafkaSubscription("topic", subscriberHandler); 
 ```
 
 ## Interim solution
@@ -42,6 +44,18 @@ apt install librdkafka-dev
 
 ```bash [macOS]
 brew install librdkafka
+```
+:::
+
+If you are using the macOS (intel or M chips), prefer to checkout these build lines to adjust the header and library relative path to build the `kafka` dependencies properly.
+
+::: code-group
+```zig [build.zig]
+//intel chips dependencies location
+if (builtin.os.tag == .macos) {
+    module.addIncludePath(.{ .cwd_relative = "/usr/local/Cellar/librdkafka/2.13.0/include" });
+    module.addLibraryPath(.{ .cwd_relative = "/usr/local/Cellar/librdkafka/2.13.0/lib" });
+}
 ```
 :::
 
