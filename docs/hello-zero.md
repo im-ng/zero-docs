@@ -1,11 +1,3 @@
-<style type="text/css">
-  img-comparison-slider {
-    --divider-width: 5px;
-    --divider-color: #131212ff;
-    --default-handle-opacity: 0.9;
-  }
-</style>
-
 <script setup>
 import { ImgComparisonSlider } from '@img-comparison-slider/vue';
 </script>
@@ -28,7 +20,7 @@ info: created src/main.zig
 info: created src/root.zig
 info: see `zig build --help` for a menu of options
 ❯ 
-❯ zig fetch --save https://github.com/im-ng/zero/archive/refs/heads/main.zip
+❯ zig fetch --save https://github.com/im-ng/zero/archive/refs/heads/experimental.zip
 ❯ 
 ```
 :::
@@ -75,10 +67,10 @@ pub fn build(b: *std.Build) void {
     .name = .hello_zero,
     .version = "0.0.0",
     .fingerprint = 0x3567b067feb9ecb1,
-    .minimum_zig_version = "0.15.1",
+    .minimum_zig_version = "0.16.0",
     .dependencies = .{
         .asciigraph = .{
-            .url = "https://github.com/im-ng/zero/archive/refs/heads/main.zip",
+            .url = "https://github.com/im-ng/zero/archive/refs/heads/experimental.zip",
             .hash = "zero-0.0.1-W787cAhaAABPJQ30gkLvzn_hlUDZtR-7qAtq8jDqmoyH", // once released the hash will change.
         },
     },
@@ -133,6 +125,7 @@ const zero = @import("zero");
 
 const App = zero.App;
 const Context = zero.Context;
+const utils = zero.utils;
 
 // we may need to add this `std_options` 
 // on the main fn file for tidy logs.
@@ -140,7 +133,8 @@ pub const std_options: std.Options = .{
     .logFn = zero.logger.custom,
 };
 
-pub fn main() !void {
+pub fn main(init: std.process.Init) !void {
+    utils.setIo(init.io);
     var arena_instance = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena_instance.deinit();
 
@@ -148,7 +142,7 @@ pub fn main() !void {
 
     // create zero App
     // internally zero loads container with configured services attached
-    const app: *App = try App.new(allocator);
+    const app: *App = try App.new(allocator, init.environ_map);
 
     // register our first route on app
     try app.get("/json", jsonResponse);

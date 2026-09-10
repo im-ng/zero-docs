@@ -39,7 +39,7 @@ Instead of developing and integrating with these boilerplates, an app developer 
     -  ✅ TraceID
     -  ✅ Logging
     -  ✅ Auth
-        -  ✅ Basic crdentials
+        -  ✅ Basic credentials
             - ✅ Config Mode
             - ⬜ KV mode
         -  ✅ API Key
@@ -52,19 +52,37 @@ Instead of developing and integrating with these boilerplates, an app developer 
             - ⬜ Health check
             - ⬜ Surge and Circuit breaker
           - ✅ Validate claims
+    - ✅ Rate Limiter
+        - ✅ IP / header / custom key modes
+        - ✅ Token-bucket window (`RATE_LIMIT_*`)
 -  ✅ Panic recovery
 -  ✅ Handle Error response
     -  ✅ Custom Errors
 -  ✅ Database support
     -  ✅ `postgres`
         - ⬜ TLS Support
+    - ✅ `sqlite`
     -  ✅ `redis`
         - ✅ Authentication enabled
     - ✅ `mqtt`
-    - ⬜ `kafka`
-        - In progress
+    - ✅ `kafka`
+        - ✅ `rdkafka` driver integrated
+        - ⬜ Support for multiple topics subscription
+        - ⬜ Support for metrics
+-  ✅ KV Store
+    - ✅ `redis`
+    - ✅ `nats_kv`
+    - ✅ `memory`
+    - ✅ `sqlite`
+-  ✅ File Store
+    - ✅ `local`
+    - ✅ `ftp`
+    - ✅ `sftp`
 -  ✅ Database Migrations
 -  ✅ Seed data on App startup
+-  ✅ Auto CRUD
+    - ✅ Register resource handlers (`addRestHandlers`)
+    - ✅ ID / UUID / custom key modes
 -  ✅ HTTP Client
     -  ✅ Register one or more external http/https client
     -  ✅ Handle redirection
@@ -79,9 +97,35 @@ Instead of developing and integrating with these boilerplates, an app developer 
     - ✅ `1-31` ranges support (day/hour/minute)
     - ✅ Support for multiple task executions
 - ✅ Websocket
+- ✅ GraphQL-over-HTTP
+    - ✅ POST with JSON body (`query`, `variables`, `operationName`)
+    - ✅ GET with URL query params (`?query=...&variables=...&operationName=...`)
+    - ✅ Schema-less resolver graph execution
+    - ✅ Constant field values
+    - ✅ Function resolvers (`fn (*Context, Args) anyerror!T`)
+    - ✅ Argument coercion (Int, Float, String, Boolean, Enum, Object)
+    - ✅ Nested objects & lists
+    - ✅ Fragments & inline fragments
+    - ✅ Per-field error collection (`data` + `errors`)
+    - ⬜ SDL schema definition & validation
+    - ⬜ Introspection (`__schema` / `__type`)
+    - ⬜ Subscriptions (WebSocket)
+- ✅ NATS
+    - ✅ Publisher
+    - ✅ Subscriber
+- ✅ Protobuf support
+    - ✅ Decode request bodies (`ctx.bindProto(T)` for `application/x-protobuf`)
+    - ✅ Encode responses (`ctx.protobuf(data)`)
+    - ✅ Codegen from `.proto` via `zig build gen-proto` (protoc)
+    - ✅ Hand-written messages via the `protobuf` `encode`/`decode` primitives
+- ✅ Protocol Buffers over HTTP
 - ⬜ TLS 
 - ⬜ CLI Application
-- ⬜ Memory leaks
+- ✅ Memory leaks
     - ✅ Cronz
     - ✅ Context
     - ✅ Container
+- ⬜ Interface 
+    - ✅ Pubsub
+    - ✅ SQL
+    - ⬜ Cache

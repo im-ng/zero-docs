@@ -1,15 +1,3 @@
-<style type="text/css">
-  img-comparison-slider {
-    --divider-width: 5px;
-    --divider-color: #131212ff;
-    --default-handle-opacity: 0.9;
-  }
-</style>
-
-<script setup>
-import { ImgComparisonSlider } from '@img-comparison-slider/vue';
-</script>
-
 # Architecture
 
 `zero` follows the dependency injection pattern and allows the abstractions to be centered around with main three components.
@@ -59,6 +47,11 @@ stateDiagram-v2
       app.addCronjob()
       app.addHttpService()
       app.addSubscription()
+      app.graphql()
+      app.addRestHandlers()
+      app.addKVStore()
+      app.addFileStore()
+      app.addPubSubSubscription()
     }
     appLifeCycle --> app.shutdown()
 ```
@@ -90,7 +83,8 @@ stateDiagram-v2
 
 
 ```zig
-const app = try App.new(allocator);
+// `init.environ_map` is the `*std.process.EnvMap` from `pub fn main(init: std.process.Init)`
+const app = try App.new(allocator, init.environ_map);
 ```
 
 `new()` launches the zero app instance, and coordinates and creates all underlying sub-systems if the valid configurations are available.
@@ -142,3 +136,33 @@ try app.addWebsocket(socketHandler);
 ```
 
 `addWebsocket` enables the app to upgrade and stream the bi-directional communications to the client over websockets.
+
+```zig
+try app.graphql("/graphql", Query, Mutation, &query_root, &mutation_root);
+```
+
+`graphql()` mounts a schema-less GraphQL-over-HTTP endpoint. `Query`/`Mutation` are resolver structs; pass `null` for either root if unused.
+
+```zig
+try app.addRestHandlers(User, .{ .resource = "users" });
+```
+
+`addRestHandlers()` scaffolds list/get/create/update/delete REST handlers for a struct in one line (see [Auto CRUD](/auto-crud)).
+
+```zig
+try app.addKVStore("cache", .memory, .{});
+```
+
+`addKVStore()` registers a named [KV store](/kv-store) backend (`.redis` / `.nats_kv` / `.memory` / `.sqlite`). The first store registered (or the Redis client auto-registered on connect) becomes the default `ctx.KV`.
+
+```zig
+try app.addFileStore("uploads", .local, .{ .root = "./data/uploads" });
+```
+
+`addFileStore()` registers a named [File store](/file-store) backend (`.local` / `.ftp` / `.sftp`). The `local` backend auto-registers as the default `ctx.FileStore` when `FILE_STORE_ROOT` is set.
+
+```zig
+try app.addPubSubSubscription("subject", handler);
+```
+
+`addPubSubSubscription()` (and the broker-specific `addKafkaSubscription()` / `addNatsSubscription()`) subscribe a handler to a pub/sub topic across Kafka, MQTT and NATS (see [Using Pubsub](/pubsub)).

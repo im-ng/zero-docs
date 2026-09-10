@@ -1,11 +1,3 @@
-<style type="text/css">
-  img-comparison-slider {
-    --divider-width: 5px;
-    --divider-color: #131212ff;
-    --default-handle-opacity: 0.9;
-  }
-</style>
-
 <script setup>
 import { ImgComparisonSlider } from '@img-comparison-slider/vue';
 </script>
@@ -66,19 +58,22 @@ const zero = @import("zero");
 
 const App = zero.App;
 const Context = zero.Context;
+const utils = zero.utils;
 const redis = zero.rediz;
 
 pub const std_options: std.Options = .{
     .logFn = zero.logger.custom,
 };
 
-pub fn main() !void {
+pub fn main(init: std.process.Init) !void {
+    utils.setIo(init.io);
+    
     var arena_instance = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena_instance.deinit();
 
     const allocator = arena_instance.allocator();
 
-    const app = try App.new(allocator);
+    const app = try App.new(allocator, init.environ_map);
 
     app.onStatup(prepareCache);
 
@@ -155,6 +150,92 @@ DEBUG [04:01:48] pubsub is disabled, as pubsub mode is not provided.
 </ImgComparisonSlider>
 
 _Make use of this image slider to glide between status and response_
+
+## Other cache backends (KV Store)
+
+Beyond Redis (`ctx.Cache`), `zero` exposes a unified **KV store** that can serve as
+your cache, backed by **NATS JetStream KV**, **in-memory**, or **SQLite** — so you
+are not tied to a Redis dependency. Register a store at startup with
+`app.addKVStore(name, backend, opts)`; the first store you register also becomes the
+default, reachable from a handler via `ctx.KV` or `ctx.GetKVStore(name)`.
+
+```zig [main.zig]
+const std = @import("std");
+const zero = @import("zero");
+
+const App = zero.App;
+const Context = zero.Context;
+const utils = zero.utils;
+
+pub fn main(init: std.process.Init) !void {
+    utils.setIo(init.io);
+    var gpa: std.heap.DebugAllocator(.{}) = .init;
+    const allocator = gpa.allocator();
+    const app = try App.new(allocator, init.environ_map);
+
+    // pick a backend: .redis | .nats_kv | .memory | .sqlite
+    try app.addKVStore("cache", .memory, .{});                       // in-memory
+    // try app.addKVStore("cache", .sqlite, .{});                    // SQLite (kv table)
+    // try app.addKVStore("cache", .nats_kv, .{ .bucket = "cache" }); // NATS JetStream KV
+
+    try app.post("/cache/:key", cacheSet);
+    try app.get("/cache/:key", cacheGet);
+    try app.run();
+}
+```
+
+The handler API is identical across backends — `get`/`set`/`delete`/`exists`/`expire`.
+Returned slices from `get` are caller-owned (free with `ctx.allocator.free`); TTLs are
+set with `expire(ctx, key, ms)` (unsupported on `nats_kv`).
+
+```zig [main.zig]
+fn cacheSet(ctx: *Context) !void {
+    const key = ctx.param("key");
+    const kv = ctx.GetKVStore("cache") orelse return error.NoKV;
+    try kv.set(ctx, key, "zero cache value");
+    try ctx.json(.{ .ok = true });
+}
+
+fn cacheGet(ctx: *Context) !void {
+    const key = ctx.param("key");
+    const kv = ctx.GetKVStore("cache") orelse return error.NoKV;
+    const v = (try kv.get(ctx, key)) orelse {
+        ctx.response.setStatus(.not_found);
+        return;
+    };
+    defer ctx.allocator.free(v);
+    try ctx.json(.{ .value = v });
+}
+```
+
+### Memory
+
+The in-memory backend has zero dependencies and is handy for tests or single-instance
+apps. Values live for the lifetime of the process.
+
+```zig [main.zig]
+try app.addKVStore("cache", .memory, .{});
+```
+
+### SQLite
+
+The SQLite backend reuses the SQLite datasource and stores entries in a `kv(k, v, exp)`
+table — no extra service beyond your SQLite database.
+
+```zig [main.zig]
+try app.addKVStore("cache", .sqlite, .{});
+```
+
+### NATS KV
+
+The NATS backend reuses the `nats` dependency and requires a JetStream-enabled
+connection. Set the bucket via the `bucket` option.
+
+```zig [main.zig]
+try app.addKVStore("cache", .nats_kv, .{ .bucket = "cache" });
+```
+
+See [KV Store](/kv-store) for the full reference.
 
 ## Limitations 🚨 
 

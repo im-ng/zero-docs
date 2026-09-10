@@ -1,15 +1,3 @@
-<style type="text/css">
-  img-comparison-slider {
-    --divider-width: 5px;
-    --divider-color: #131212ff;
-    --default-handle-opacity: 0.9;
-  }
-</style>
-
-<script setup>
-import { ImgComparisonSlider } from '@img-comparison-slider/vue';
-</script>
-
 # Container
 
 `container` are the centralized dependency injection that the app creates and holds references to all resources including configurations, authentication keys, data sources, logging, metrics and external http services.
@@ -32,6 +20,8 @@ stateDiagram-v2
             SQL
             Redis
             PubSub
+            KVStore
+            FileStore
             AuthKeys
             Config
         }
@@ -57,4 +47,9 @@ sequenceDiagram
     Data Source-->>Container: Results
     Container-->>Context: Return results/error
     Context-->Request: Success/Failed
+
+`PubSub` covers Kafka, MQTT and NATS. `KVStore` (Redis / NATS KV / memory / SQLite)
+and `FileStore` (local / ftp / sftp) are the unified key-value and blob backends
+registered via `app.addKVStore(...)` / `app.addFileStore(...)` (see
+[KV Store](/kv-store) and [File Store](/file-store)).
 ```

@@ -5,3 +5,49 @@ html.dark .light-only {
 html:not(.dark) .dark-only {
   display: none !important;
 }
+
+/* ImgComparisonSlider styling (moved from per-page <style> blocks) */
+img-comparison-slider {
+  --divider-width: 5px;
+  --divider-color: #131212ff;
+  --default-handle-opacity: 0.9;
+}
+
+/* Consistent paragraph alignment & spacing across all docs pages */
+.vp-doc p {
+  text-align: left;
+  margin: 16px 0;
+}
+
+/* :root {
+  --vp-c-bg: transparent !important;
+  --vp-c-bg-alt: transparent !important;
+}
+
+body {
+  background-image: url('/zero-framework-backdrop.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+} */
+
+/* Custom icon for the Zig version dropdown (replaces the default globe).
+   The version menu button lives in `.VPNavBarTranslations`; its default
+   `.vpi-languages` globe is hidden and a "layers" icon is injected before
+   the chevron. */
+.VPNavBarTranslations .vpi-languages.option-icon {
+  display: none !important;
+}
+
+.VPNavBarTranslations .text::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  vertical-align: -3px;
+  background-color: currentColor;
+  -webkit-mask: url(/version-icon.svg) no-repeat center / contain;
+  mask: url(/version-icon.svg) no-repeat center / contain;
+}

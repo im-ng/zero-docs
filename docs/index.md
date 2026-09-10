@@ -3,12 +3,13 @@ layout: home
 
 hero:
   name: "Zero Framework"
-  text: "Simple, opinionated web framework written in <span style=\"color:#f7a41d;\">Zig</span>"
+  text: 'Simple, opinionated web framework written in <span style="color:#f7a41d;">Zig</span>'
   actions:
     - theme: brand
       text: Getting Started
       link: /started
-
+  image:
+    alt: VitePress
 features:
   - title: Opinionated framework
     details: Manage every possiblity through environment configurations
@@ -17,4 +18,3 @@ features:
   - title: Readiness
     details: Enable developer ready for microservice environment.
 ---
-

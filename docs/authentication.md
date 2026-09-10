@@ -1,11 +1,3 @@
-<style type="text/css">
-  img-comparison-slider {
-    --divider-width: 5px;
-    --divider-color: #131212ff;
-    --default-handle-opacity: 0.9;
-  }
-</style>
-
 <script setup>
 import { ImgComparisonSlider } from '@img-comparison-slider/vue';
 </script>
@@ -38,12 +30,13 @@ HTTP Basic Authentication is a simple, built-in method in the HTTP protocol for 
 
 ::: code-group
 ```zig [main.zig]
-pub fn main() !void {
+pub fn main(init: std.process.Init) !void {
+    utils.setIo(init.io);
     var arean = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arean.deinit();
     const allocator = arean.allocator();
 
-    const app: *App = try App.new(allocator);
+    const app: *App = try App.new(allocator, init.environ_map);
 
     try app.get("/basic", basicResponse);
 
@@ -79,12 +72,13 @@ AUTH_KEYS="bmFtZTpwYXNzd29yZA==,bmFtZTE6cGFzc3dvcmQx"
 ::: code-group
 
 ```zig [main.zig]
-pub fn main() !void {
+pub fn main(init: std.process.Init) !void {
+    utils.setIo(init.io);
     var arean = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arean.deinit();
     const allocator = arean.allocator();
 
-    const app: *App = try App.new(allocator);
+    const app: *App = try App.new(allocator, init.environ_map);
 
     try app.get("/apikey", apiKeyResponse);
 
@@ -179,12 +173,13 @@ To get started on this, we may need to provide few needed details to app to star
 
 ::: code-group
 ```zig [main.zig]
-pub fn main() !void {
+pub fn main(init: std.process.Init) !void {
+    utils.setIo(init.io);
     var arean = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arean.deinit();
     const allocator = arean.allocator();
 
-    const app: *App = try App.new(allocator);
+    const app: *App = try App.new(allocator, init.environ_map);
 
     try app.get("/oauth", oauthResponse);
 

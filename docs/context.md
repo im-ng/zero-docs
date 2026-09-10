@@ -1,15 +1,3 @@
-<style type="text/css">
-  img-comparison-slider {
-    --divider-width: 5px;
-    --divider-color: #131212ff;
-    --default-handle-opacity: 0.9;
-  }
-</style>
-
-<script setup>
-import { ImgComparisonSlider } from '@img-comparison-slider/vue';
-</script>
-
 # Context
 
 `context` are the key feature of the `zero` app and that is the gateway to perform all needed actions for developer. Any action that need to be performed on underlying resources only available through the context.
@@ -39,6 +27,13 @@ stateDiagram-v2
       ctx.param()
       ctx.getAuth()
       ctx.json()
+      ctx.KV()
+      ctx.GetKVStore()
+      ctx.FileStore()
+      ctx.GetFileStore()
+      ctx.bindProto()
+      ctx.protobuf()
+      ctx.redirect()
     }
     zero.Context --> request
 ```
@@ -127,5 +122,35 @@ ctx.json(data);
 ```
 
 `json()` comes handy to return any zig struct as response, default response method for all developer actions.
+
+```zig
+const kv = ctx.KV orelse ctx.GetKVStore("sessions") orelse return error.NoKV;
+try kv.set(ctx, "user:1", "active");
+```
+
+`KV` is the default [KV store](/kv-store) (Redis when configured, or the first store registered with `app.addKVStore`). `GetKVStore(name)` looks up a named store. Both expose `get`/`set`/`delete`/`exists`/`expire`.
+
+```zig
+const data = (try ctx.GetFileFromStore("uploads", name)) orelse return error.NotFound;
+try ctx.SaveFileToStore("uploads", name, bytes);
+```
+
+`FileStore` is the default [File store](/file-store); `GetFileStore(name)` looks up a named store. `GetFile(field)` reads a `multipart/form-data` upload, `SaveFileToStore` persists it, and `GetFileFromStore` / `File(path)` serve it back.
+
+```zig
+const req = (try ctx.bindProto(pb.Echo)) orelse return error.BadRequest;
+try ctx.protobuf(out);
+```
+
+`bindProto(T)` decodes an `application/x-protobuf` request body into `T`; `protobuf(data)` serializes `data` back with `Content-Type: application/x-protobuf` (see [Protobuf](/protobuf)).
+
+```zig
+ctx.redirect("/login");
+ctx.redirectWith(std.http.Status.moved_permanently, "https://example.com/new");
+```
+
+`redirect()` issues a `302` redirect; `redirectWith(status, url)` issues an explicit status (see [Rate Limiter & Request Helpers](/rate-limiter)).
+
+The [PubSub](/pubsub) client is reachable through `ctx.pubsub` (and `ctx.NATS` / `ctx.Kakfa` / `ctx.MQ` for broker-specific access); the inbound message arrives on `ctx.message`.
 
 
