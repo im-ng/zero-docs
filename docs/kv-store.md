@@ -17,9 +17,6 @@ for runnable examples.
 | `.memory`  | in-memory, zero dependencies — handy for tests                         |
 | `.sqlite`  | reuses the SQLite datasource (`kv(k,v,exp)` table)                     |
 
-`Badger` is intentionally not provided — it is a Go library and cannot be used
-from pure Zig without cgo.
-
 ## Register stores
 
 ```zig [src/main.zig]

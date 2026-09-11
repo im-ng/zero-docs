@@ -10,6 +10,12 @@ Alike, other built-in solutions, the `PubSub` clients will be automatically adde
 
 ::: code-group
 
+```zig [pubsub]
+try ctx.pubsub.Publish("zero", "publisher 1 says hello! via NATS");
+
+try app.addPubSubSubscription("zero", onMessage);
+```
+
 ```zig [kafka]
 ctx.KF.publish(ctx, "topic", "message-key", "payload"); #publishes message to a topic on the subscribed client
 
@@ -39,6 +45,7 @@ app.addPubSubSubscription("subject", subscriber-handler); #listens for upcoming 
 | Kafka          | ✅      |
 | MQTT           | ✅      |
 | NATS           | ✅      |
+| Redis          | ✅      |
 
 ### Configurations
 
@@ -80,12 +87,50 @@ This list of configurations help the developer to prefer either Kafka or MQTT pu
 | NATS_MAX_PULL_WAIT   | Max pull wait (ms)                            | 5000\*                  | No       |
 | NATS_CREDS_FILE      | Path to a NATS credentials file               | None                    | No       |
 
+| Redis config         | Remarks                                       | Default\* / Others      | Required |
+| -------------------- | --------------------------------------------- | ----------------------- | -------- |
+| PUBSUB_BACKEND       | Set to `REDIS` to use the Redis broker        | REDIS                   | Yes      |
+| REDIS_HOST           | Redis server host                             | 127.0.0.1               | Yes      |
+| REDIS_PORT           | Redis server port                             | 6379                    | Yes      |
+| REDIS_USER           | Redis username                                | None                    | No       |
+| REDIS_PASSWORD       | Redis password                                | None                    | No       |
+| REDIS_DB             | Redis logical database                        | 0                       | No       |
+
+### Redis
+
+Select Redis with `PUBSUB_BACKEND=REDIS`. Redis Pub/Sub uses the same `REDIS_*` connection
+settings as the cache/KV store.
+
+Publish through the unified `ctx.pubsub` interface (works across Kafka, MQTT, NATS and
+Redis); subscribe with `app.addPubSubSubscription(...)`.
+
+In the handler the message is available on `ctx.message.?.redis`, which exposes `.subject`
+and `.payload` (`[]const u8`).
+
+```zig [publish]
+// from a handler or cron job
+try ctx.pubsub.Publish("zero", "publisher 1 says hello! via Redis");
+```
+
+```zig [subscribe]
+fn onMessage(ctx: *Context) !void {
+    if (ctx.message) |message| {
+        const m = message.redis;
+        ctx.info(m.payload); // m.subject and m.payload are []const u8
+    }
+}
+
+// register at startup
+try app.addPubSubSubscription("zero", onMessage);
+```
+
 ### NATS
 
-Select NATS with `PUBSUB_BACKEND=NATS`. Publish through the unified `ctx.pubsub`
-interface (works across Kafka, MQTT and NATS); subscribe with
-`app.addPubSubSubscription(...)`. In the handler the message is available on
-`ctx.message.?.nats`, which exposes `.subject` and `.payload` (`[]const u8`).
+Select NATS with `PUBSUB_BACKEND=NATS`. 
+
+Publish through the unified `ctx.pubsub` interface (works across Kafka, MQTT, NATS and Redis); subscribe with `app.addPubSubSubscription(...)`. 
+
+In the handler the message is available on `ctx.message.?.nats`, which exposes `.subject` and `.payload` (`[]const u8`).
 
 ```zig [publish]
 // from a handler or cron job

@@ -145,12 +145,19 @@ SQLITE_WRITE=true
 ## File Store
 
 File stores are registered in code via `App.addFileStore(name, backend, opts)`.
-Only the `local` backend is implemented; `ftp` and `sftp` are declared but not
-yet implemented.
+The `local` and `s3` backends are implemented; `ftp` and `sftp` are declared but
+not yet implemented.
 
 ::: code-group
 ```bash [local backend]
 FILE_STORE_ROOT=./data/files   # root directory for the local backend
+```
+```bash [s3 backend]
+S3_BUCKET=my-bucket            # required
+S3_REGION=us-east-1            # default us-east-1
+S3_ACCESS_KEY=AKIA...          # required
+S3_SECRET_KEY=...              # required
+S3_ENDPOINT=                   # optional; defaults to https://s3.<region>.amazonaws.com
 ```
 :::
 
@@ -223,6 +230,26 @@ AUTH_JWKS_URL=http://localhost:8080/.well-known/jwks.json
 AUTH_REFRESH_INTERVAL=10
 ```
 :::
+
+## RBAC
+
+Role-based access control rules are loaded by `app.rbacFromEnv()` (call it in
+`main`). Routes with a rule are protected; routes without one stay public. The
+caller's role is taken from the JWT `role` claim, so RBAC pairs with
+`AUTH_MODE=OAuth`.
+
+::: code-group
+```bash [per-role env keys]
+RBAC_ROLE_ADMIN=GET:/api/admin/*,POST:/api/admin/*
+RBAC_ROLE_USER=GET:/api/resource
+```
+
+```bash [RBAC_CONFIG JSON document]
+RBAC_CONFIG=[{"role":"ADMIN","method":"*","path":"/api/admin/*"},{"role":"USER","method":"GET","path":"/api/resource"}]
+```
+:::
+
+`RBAC_CONFIG` may also be an object mapping role → `["METHOD:/path", ...]`.
 
 ## HTTP Service
 

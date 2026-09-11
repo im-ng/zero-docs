@@ -88,8 +88,9 @@ Instead of developing and integrating with these boilerplates, an app developer 
     -  ✅ Handle redirection
     -  ✅ Handle CRUD operations
     -  ✅ Handle on-fly response transformation
-    -  ⬜ Circuit Breaker
-    -  ⬜ Enable Authorization (Basic, APIKey and OAuth 2.0 modes)
+    -  ✅ Outbound authentication (Basic, API Key, OAuth 2.0 bearer)
+    -  ✅ Circuit Breaker
+    -  ✅ Per-service Rate Limiting
 -  ✅ Cron Jobs
     - ✅ `* * * * *` format support
     - ✅ Enable second-level executions `* * * * * *`

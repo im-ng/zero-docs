@@ -144,7 +144,7 @@ export default withMermaid(
     ...shared,
     locales: {
       root: {
-        label: "zig 0.16",
+        label: "zig 0.16.0",
         lang: "en-US",
         themeConfig: {
           nav: [

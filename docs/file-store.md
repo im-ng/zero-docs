@@ -2,9 +2,10 @@
 
 `zero` exposes a unified `FileStore` interface for blob storage, plus helpers for
 handling `multipart/form-data` uploads and serving downloads. The `local` backend
-(rooted at `FILE_STORE_ROOT`, with `..` traversal protection) is implemented;
-`FTP`/`SFTP` backends are **deferred** (no vendored Zig libs; SFTP needs libssh).
-The `local` store auto-registers as the default when `FILE_STORE_ROOT` is set.
+(rooted at `FILE_STORE_ROOT`, with `..` traversal protection) and the `s3` backend
+(S3-compatible: AWS S3 / MinIO / R2 / Spaces / B2, signed with AWS Signature V4) are
+implemented; `FTP`/`SFTP` backends are **deferred** (no vendored Zig libs; SFTP needs
+libssh). The `local` store auto-registers as the default when `FILE_STORE_ROOT` is set.
 
 See [`examples/zero-filestore`](https://github.com/im-ng/zero/tree/experimental/examples/zero-filestore)
 for a runnable example.
@@ -25,8 +26,10 @@ pub fn main(init: std.process.Init) !void {
     const allocator = gpa.allocator();
     const app = try App.new(allocator, init.environ_map);
 
-    // backend: .local | .ftp | .sftp  (ftp/sftp deferred)
+    // backend: .local | .ftp | .sftp | .s3  (ftp/sftp deferred)
     try app.addFileStore("uploads", .local, .{ .root = "./data/uploads" });
+    // S3-compatible store (configured via S3_* env keys)
+    try app.addFileStore("assets", .s3, .{});
 
     try app.post("/upload", uploadHandler);
     try app.get("/download/:name", downloadHandler);
@@ -80,3 +83,22 @@ You can also serve a file straight from local disk as a download:
 ```zig [src/main.zig]
 try ctx.File("./public/report.pdf");
 ```
+
+## S3 backend
+
+The `s3` backend targets any S3-compatible object store (AWS S3, MinIO, Cloudflare R2,
+DigitalOcean Spaces, Backblaze B2). Requests are signed with AWS Signature Version 4.
+
+::: code-group
+```bash [config/.env]
+S3_BUCKET=my-bucket            # required
+S3_REGION=us-east-1            # default us-east-1
+S3_ACCESS_KEY=AKIA...          # required
+S3_SECRET_KEY=...              # required
+S3_ENDPOINT=                   # optional; defaults to https://s3.<region>.amazonaws.com
+```
+:::
+
+Register it with `app.addFileStore("assets", .s3, .{})` — the bucket, region and
+credentials are read from the `S3_*` env keys above. The same `get` / `create` /
+`delete` / `list` operations work across all backends through the unified `FileStore`.

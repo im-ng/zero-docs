@@ -22,10 +22,10 @@ img-comparison-slider {
 /* :root {
   --vp-c-bg: transparent !important;
   --vp-c-bg-alt: transparent !important;
-}
+} */
 
-body {
-  background-image: url('/zero-framework-backdrop.png');
+/* body {
+  background-image: url('/zero-framework-backdrop-2.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

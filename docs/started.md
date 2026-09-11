@@ -11,22 +11,24 @@
 ### Key Features
 
 - `.env` based configurations for app to start
-- Drop-in support for some well known technologies
-    - `Postgres`
+- Drop-in support for well known technologies
+    - `Postgres` / `SQLite`
         - Seed data on startup
         - Manage migrations with ease
-    - `Redis`
-        - In-memory lookup
-        - Cache warmup
-    - `MQTT`
-        - Publish to multiple topics
-        - Subscribe to multiple topics
+    - KV Store — `Redis`, `NATS KV`, `Memory`, `SQLite`
+    - Cache — `Redis` (with `nats_kv` / `sqlite` / `memory` backends)
+    - Pub/Sub — `MQTT`, `NATS`, `Kafka`
+    - File Store — `Local`, `FTP`, `SFTP`
     - `Authentication`
-        - Yes, All!.
         - OAuth, API Key and Basic credentials mode
-- Build REST Standard out-of-box
-- Well defined logging for better readability
-- Schedule tasks for one or more repetition
+        - Role-Based Access Control (RBAC) on protected routes
+- Build REST Standard out-of-box, including Auto CRUD resource handlers
+- GraphQL-over-HTTP and Protobuf over HTTP
+- Well defined logging, with remote log-level hot reload
+- Schedule tasks (cron) for one or more repetition
+- Rate limiter middleware (IP / header / custom key modes)
+- Websockets & HTMX CRUD
+- Swagger / OpenAPI rendering
 - Track and expose application metrics for observability
 - Trace application performance with ease
 - More on [Feature Parity](../parity)
