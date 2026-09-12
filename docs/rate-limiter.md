@@ -10,9 +10,9 @@ opt-in via config and exempts `/.well-known/*` (so the health endpoint is never
 throttled).
 
 ```bash [configs/.env]
-RATE_LIMIT_ENABLE=true          # default false (middleware is a pass-through)
-RATE_LIMIT_MAX=100              # max requests per window (default 100)
-RATE_LIMIT_WINDOW=60            # window length in seconds (default 60)
+RATE_LIMIT_ENABLE=true          # enabled by default; set false to disable (e.g. for load tests)
+RATE_LIMIT_MAX=100              # max requests per window (0 → default 100)
+RATE_LIMIT_WINDOW=60            # window length in seconds (0 → default 60)
 RATE_LIMIT_KEY=ip               # default: bucket by client Address
 # RATE_LIMIT_KEY=header:X-Forwarded-For   # bucket by an inbound header instead (behind a proxy)
 ```

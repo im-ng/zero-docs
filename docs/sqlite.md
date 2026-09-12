@@ -2,81 +2,72 @@
 import { ImgComparisonSlider } from '@img-comparison-slider/vue';
 </script>
 
-# Postgres
+# SQLite
 
-`zero` has built-in support for the accessing the sqlite database.
+`zero` has built-in support for accessing the **SQLite** database. Unlike Postgres,
+SQLite is a local file — no server or container to run — so it is the fastest way to
+get a real datasource wired into your app.
+
+The same `ctx.SQL` interface used for Postgres drives SQLite; `zero` routes your calls
+to the right backend based on `DB_DIALECT`.
 
 ```bash
-ctx.SQLite.queryRow(); #retrieves one row at a time
+ctx.SQL.queryRow(); #retrieves one row at a time
 
-ctx.SQLite.queryRows(); #retrieve multiple rows at a time
+ctx.SQL.queryRows(); #retrieve multiple rows at a time
 
-ctx.SQLite.exec(); #execute any statements that persist the data
+ctx.SQL.exec(); #execute any statements that persist the data
 
-ctx.SQLite.select(comptime T: type) #retrieve and transform data to any known comptime T
+ctx.SQL.select(comptime T: type) #retrieve and transform data to any known comptime T
 
-ctx.SQLite.selectSlice(comptime T: type) #retrieve and transform one or more data to any known comptime T
+ctx.SQL.selectSlice(comptime T: type) #retrieve and transform one or more data to any known comptime T
 ```
 
-With above mentioned method, the databse calls are abstracted, and leveraged through handler `Context` and achieves the desired results without any boiler-plate.
-
-Typically we use the underlying database to perform the actions based on the app REST handlers, that can be attached and get the CRUD operation done.
+With the methods above, database calls are abstracted through the handler `Context` and
+achieve the desired results without boilerplate.
 
 ## REST Handlers
 
-This example demonstrates the first step to spin up the `zero-basic` web app using the `zero` framework. As we are going to connect to database and retrieve needed database container as follows:
+This example spins up a small app backed by SQLite. There is no container to pull —
+just point `DB_DIALECT=sqlite` at a local file.
 
-1. Pull and run podman or docker container.
-
-::: code-group
-```bash [postgres container]
-❯ podman pull docker.io/library/postgres:17-alpine3.21
-❯ podman run -d --name pg17 -e POSTGRES_USER=user1 -e POSTGRES_PASSWORD=password1 -v podman:/var/lib/postgresql/data -p 5432:5432 postgres:17-alpine3.21
-```
-:::
-
-2. Create new database and tables.
+1. Create the database file and a table.
 
 ::: code-group
 ```sql [SQL Schema]
-CREATE DATABASE demo;
-
-CREATE TABLE users(
- id SERIAL PRIMARY KEY,
- name VARCHAR(100)
+CREATE TABLE IF NOT EXISTS users(
+ id INTEGER PRIMARY KEY AUTOINCREMENT,
+ name TEXT NOT NULL
 );
 
 INSERT INTO users(name) values ('anu');
 ```
 :::
 
-_Please bear with this step to try out things manually in database this one time._
+_You can also automate schema + seed data with [Migrations](./migrations.md) instead of
+running this by hand._
 
-_But `zero` framework provides option to automate and add migrations/data systematically. More on [Migrations](./migrations.md)_
-
-3. Let us update our basic app configurations `configs/.env` with this.
-
+2. Update `configs/.env` for SQLite.
 
 ::: code-group
 ```bash [configs/.env]
 # App configs
-APP_ENV=dev #zero framework tries to override .dev.env if it availables
+APP_ENV=dev
 APP_NAME=basic
 APP_VERSION=1.0.0
-LOG_LEVEL=info #default level of zero framwork
-HTTP_PORT=8080 #default port of zero framwork
+LOG_LEVEL=info
+HTTP_PORT=8080
 
-# Database configs
-DB_HOST=localhost
-DB_USER=user1
-DB_PASSWORD=password1
-DB_NAME=demo
-DB_PORT=5432
-DB_DIALECT=postgres
+# Database configs (SQLite — a local file, no server)
+DB_DIALECT=sqlite
+SQLITE_PATH=./data/app.db
+SQLITE_CREATE=true
+SQLITE_WRITE=true
+SQLITE_THREADING=multi-thread
 ```
 :::
 
-4. Refer following simple `GET` rest handler to retrieve our data from database.
+3. A simple `GET` handler that reads from SQLite.
 
 ::: code-group
 ```zig [main.zig]
@@ -107,7 +98,7 @@ pub fn main(init: std.process.Init) !void {
 
 pub fn dbResponse(ctx: *Context) !void {
     const User = struct {
-        id: i32,
+        id: i64,
         name: []const u8,
     };
 
@@ -121,24 +112,23 @@ pub fn dbResponse(ctx: *Context) !void {
 ```
 :::
 
-4. Boom! Lets build and run our app.
+4. Boom! Build and run.
 
 ```bash
-zero/examples/zero-basic on main via ↯ v0.15.1 
+zero/examples/zero-sqlite on experimental via ↯ v0.16.0
 ❯
-❯ zig build basic
- INFO [03:27:08] Loaded config from file: ./configs/.env
- INFO [03:27:09] generating database connection string for postgres
- INFO [03:27:09] connected to user1 user to demo database at 'localhost:5432'
-DEBUG [03:27:09] redis is disabled, as redis host is not provided.
-DEBUG [03:27:09] pubsub is disabled, as pubsub mode is not provided.
- INFO [03:27:09] container is being created
- INFO [03:27:09] no authentication mode found and disabled.
- INFO [03:27:09] basic-overriden app pid 21205
- INFO [03:27:09] registered static files from directory ./static
- INFO [03:27:09] Starting server on port: 8081
- INFO [03:27:11] 019a429a-ca35-7000-8334-d2df6ff40559	 200 2ms GET /db
-
+❯ zig build sqlite
+ INFO Loaded config from file: ./configs/.env
+ INFO generating database connection string for sqlite
+ INFO connected to sqlite database at './data/app.db'
+ DEBUG redis is disabled, as redis host is not provided.
+ DEBUG pubsub is disabled, as pubsub mode is not provided.
+ INFO container is being created
+ INFO no authentication mode found and disabled.
+ INFO sqlite app pid 21205
+ INFO registered static files from directory ./static
+ INFO Starting server on port: 8080
+ INFO 019a429a-ca35-7000-8334-d2df6ff40559  200 1ms GET /db
 ```
 
 5. Preview server status and handler response.
@@ -160,7 +150,33 @@ DEBUG [03:27:09] pubsub is disabled, as pubsub mode is not provided.
 
 _Make use of this image slider to glide between status and response_
 
-In this demo, we successully created database, added basic information, connected from zero framework app and retrieved the data as intented. This is just a beginning, we can do more and explained in [HTMX](./htmx-crud.md) example.
+This is just a beginning — the full CRUD lifecycle (insert with `?` placeholders,
+`ctx.SQL.lastInsertRowID()`, `ctx.SQL.rowsAffected()`) is shown in the
+[`zero-sqlite`](https://github.com/im-ng/zero/tree/experimental/examples/zero-sqlite)
+example. More on [HTMX](./htmx-crud.md).
+
+## Transactions
+
+`ctx.SQL` exposes `begin()` / `commit()` / `rollback()` so you can group statements on
+a single pinned connection. Begin a transaction, run your statements, then commit — and
+roll back on error:
+
+```zig [src/main.zig]
+pub fn transfer(ctx: *Context) !void {
+    try ctx.SQL.begin();
+    errdefer ctx.SQL.rollback() catch {};
+
+    try ctx.SQL.exec("update accounts set balance = balance - 100 where id = 1", .{});
+    try ctx.SQL.exec("update accounts set balance = balance + 100 where id = 2", .{});
+
+    try ctx.SQL.commit();
+}
+```
+
+Each statement also carries a default **30s per-statement timeout**. The SQLite
+datasource can be wrapped in a circuit breaker with `SQL_CIRCUIT_BREAKER_ENABLE=true`
+(trips open after 5 consecutive failures, returning `error.CircuitOpen`) — see
+[Resilience → Circuit breakers](/resilience#circuit-breakers).
 
 ## Recommendation
 

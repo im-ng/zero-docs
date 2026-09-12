@@ -195,6 +195,33 @@ try app.addHttpService("downstream", "http://downstream.internal", .{
 });
 ```
 
+## Resilience: timeouts & retries
+
+Outbound calls can be hardened with a per-request timeout and automatic retries. Pass
+`opts.timeout_ms` / `opts.max_retries` / `opts.retry_base_ms`:
+
+```zig [main.zig]
+try app.addHttpService("downstream", "http://downstream.internal", .{
+    .timeout_ms = 2000,     // connect/read timeout per request
+    .max_retries = 3,       // retries on transport errors and 5xx
+    .retry_base_ms = 100,   // linear backoff: delay = base * attempt
+});
+```
+
+- Retries apply to **transport errors and `5xx` responses**; `404` is **not** retried
+  (it returns `error.EntityNotFound`).
+- Backoff is linear: the delay before attempt `n` is `retry_base_ms * n`.
+- For OAuth services, a `401` triggers a single token-refresh + replay before the call
+  is considered failed.
+
+### OAuth token-endpoint circuit breaker
+
+The OAuth token endpoint is guarded by its own circuit breaker. If it is open (or a
+refresh fails), `zero` falls back to the last cached token — possibly stale — instead
+of hard-failing every call. This keeps downstream calls working (degraded) while the
+token provider is unhealthy. When a service breaker (or the token breaker) trips,
+`zero` increments the `app_circuit_open_total` metric (label = service name).
+
 ## Configuration via environment
 
 Instead of code, resolve a service's auth / circuit-breaker / rate-limit settings
@@ -217,6 +244,12 @@ SERVICE_AUTH_SERVICE_OAUTH_AUDIENCE=zero-app
 # circuit breaker
 SERVICE_AUTH_SERVICE_CB_FAILURE_THRESHOLD=5
 SERVICE_AUTH_SERVICE_CB_COOLDOWN_MS=30000
+SERVICE_AUTH_SERVICE_CB_HALF_OPEN_TRIALS=1
+
+# outbound timeouts & retries
+SERVICE_AUTH_SERVICE_TIMEOUT_MS=        # per-request connect/read timeout (ms); unset = framework default
+SERVICE_AUTH_SERVICE_MAX_RETRIES=3      # retries on transport errors + 5xx (not 404)
+SERVICE_AUTH_SERVICE_RETRY_BASE_MS=100  # linear backoff: delay = base * attempt
 
 # rate limiting
 SERVICE_AUTH_SERVICE_RATE_LIMIT=100

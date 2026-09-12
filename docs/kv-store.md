@@ -56,3 +56,12 @@ pub fn handler(ctx: *Context) !void {
     try kv.expire(ctx, "user:1", 60_000);     // ms; unsupported on nats_kv
 }
 ```
+
+## Circuit breaker
+
+The cache store (including the default `cache` store) can be wrapped in a circuit
+breaker. Enable it with `CACHE_CIRCUIT_BREAKER_ENABLE=true`. The breaker opens after
+`5` consecutive failures and stays open for `30s` (cooldown); while open, cache calls
+return `error.CircuitOpen` instead of piling up against an unhealthy backend. See
+[Resilience → Circuit breakers](/resilience#circuit-breakers) for the shared behavior
+and the `app_circuit_open_total` metric.

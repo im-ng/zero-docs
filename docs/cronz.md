@@ -120,6 +120,13 @@ DEBUG [10:11:16] pubsub is disabled, as pubsub mode is not provided.
 
 ![cronz](./public/preview-cronz.webp)
 
+## Reliability
+
+Each job run is **serialized** with a per-job mutex, so an overrunning tick will not
+stack on top of the previous one. If a run returns an error it is retried up to **3×
+with a 500 ms backoff** before being marked failed. Because `job.run` runs inside this
+guarded scope, a failing handler cannot leak a half-finished tick into the next one.
+
 ## Recommendation
 
 🚩 It is highly recommended to use the `ctx` allocator whenever possible, since it is tied up with request life-cycle, the de-allocation will be managed automatically and making sure the memory leak is not happening.

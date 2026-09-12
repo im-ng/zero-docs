@@ -18,6 +18,13 @@ To use `migrations` we need to follow three steps to get it achieved properly.
 
 Thats all!
 
+::: tip
+Each migration runs inside a **database transaction**. If it fails, `zero` rolls it
+back and leaves it **unrecorded**, so it is retried on the next run (it is not silently
+masked as applied). Only migrations that commit successfully are tracked in
+`zero_migrations` and skipped thereafter.
+:::
+
 _`zero` 0.0.1 version only supports the manual addition of above steps, but there is a work happening to make this as automated process. Please bear with us to add them manually for sometime. Refer Feature parity for more_
 
 Now, let us explore more on how to build a migrations for these statements and get them added to your app and skip them on consecutive executions.

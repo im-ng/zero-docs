@@ -36,6 +36,24 @@ app.addPubSubSubscription("subject", subscriber-handler); #listens for upcoming 
 
 :::
 
+### Resilience
+
+All brokers degrade gracefully when the broker is unhealthy:
+
+- **Reconnect & re-subscribe** — on a broker drop the client reconnects and
+  re-subscribes automatically; no restart required.
+- **Retry** — a failing message handler is retried up to **3× with a 500 ms backoff**
+  before the message is given up.
+- **Dead-letter** — poison messages that keep failing are dead-lettered to a side
+  topic so they don't block the stream:
+  - Kafka: `<topic>__dlq`
+  - MQTT / NATS / Redis: `<topic>/dlq`
+
+Each dead-lettered message increments the `app_pubsub_dlq_total` counter (labels
+`topic`, `consumer`) — see [Observability](/observability). The `X-Correlation-ID` set
+by the inbound request is propagated into Kafka/NATS record headers and the outbound
+HTTP client, so a single id flows across services and brokers.
+
 ### Support
 
 `zero` framework supports following brokers to publish and subscriber to.

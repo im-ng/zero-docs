@@ -6,6 +6,18 @@ html:not(.dark) .dark-only {
   display: none !important;
 }
 
+:root {
+  --vp-font-family-mono: "Fira Code", ui-monospace, SFMono-Regular, Menlo,
+    Consolas, "Liberation Mono", monospace;
+}
+
+code,
+pre,
+.vp-code,
+.vp-doc code {
+  font-family: var(--vp-font-family-mono) !important;
+}
+
 /* ImgComparisonSlider styling (moved from per-page <style> blocks) */
 img-comparison-slider {
   --divider-width: 5px;
@@ -19,18 +31,68 @@ img-comparison-slider {
   margin: 16px 0;
 }
 
-/* :root {
-  --vp-c-bg: transparent !important;
-  --vp-c-bg-alt: transparent !important;
-} */
+/* Intuitive technical-doc background.
+   Light mode: calm cool gradient + visible "graph-paper" dot grid + faint brand
+   watermark. Dark mode: dark base + subtle light dots (brand hidden for contrast).
+   Both are applied only to the matching theme so toggling stays correct. */
+html:not(.dark) body {
+  background-color: #eaf0f7;
+  background-image:
+    radial-gradient(rgba(15, 23, 42, 0.10) 1.2px, transparent 1.3px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.80), rgba(238, 242, 248, 0.88));
+  background-size: 24px 24px, cover, cover;
+  background-position: 0 0, center, center;
+  background-repeat: repeat, no-repeat, no-repeat;
+  background-attachment: fixed, fixed, fixed;
+}
 
-/* body {
-  background-image: url('/zero-framework-backdrop-2.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+html.dark body {
+  background-color: #0d1117;
+  background-image:
+    radial-gradient(rgba(255, 255, 255, 0.25) 1.3px, transparent 1.4px);
+  background-size: 24px 24px;
+  background-position: 0 0;
+  background-repeat: repeat;
   background-attachment: fixed;
-} */
+}
+
+/* Let the sidebar and local nav reveal the dotted background instead of
+   painting their own opaque surface over it. */
+:root {
+  --vp-sidebar-bg-color: transparent;
+  --vp-local-nav-bg-color: transparent;
+}
+
+/* Nav bar: transparent while at the very top (dotted background shows through),
+   frosted + blurred once the page is scrolled for readability. */
+html:not(.dark) {
+  --vp-nav-bg-color: rgba(255, 255, 255, 0.72);
+}
+html.dark {
+  --vp-nav-bg-color: rgba(13, 17, 23, 0.40);
+}
+
+.VPNavBar.top {
+  background-color: transparent !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.VPNavBar:not(.top) {
+  background-color: var(--vp-nav-bg-color) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+.VPSidebar,
+.VPLocalNav {
+  background-color: transparent !important;
+}
+
+/* Home hero stays transparent so the dotted background shows through. */
+.VPHero {
+  background: transparent !important;
+}
 
 /* Custom icon for the Zig version dropdown (replaces the default globe).
    The version menu button lives in `.VPNavBarTranslations`; its default

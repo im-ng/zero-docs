@@ -162,6 +162,29 @@ _Make use of this image slider to glide between status and response_
 
 In this demo, we successully created database, added basic information, connected from zero framework app and retrieved the data as intented. This is just a beginning, we can do more and explained in [HTMX](./htmx-crud.md) example.
 
+## Transactions
+
+`ctx.SQL` exposes `begin()` / `commit()` / `rollback()` so you can group statements on a
+single pinned connection. Begin a transaction, run your statements, then commit — and
+roll back on error:
+
+```zig [src/main.zig]
+pub fn transfer(ctx: *Context) !void {
+    try ctx.SQL.begin();
+    errdefer ctx.SQL.rollback() catch {};
+
+    try ctx.SQL.exec("update accounts set balance = balance - 100 where id = 1", .{});
+    try ctx.SQL.exec("update accounts set balance = balance + 100 where id = 2", .{});
+
+    try ctx.SQL.commit();
+}
+```
+
+Each statement also carries a default **30s per-statement timeout**. The SQL datasource
+can be wrapped in a circuit breaker with `SQL_CIRCUIT_BREAKER_ENABLE=true` (trips open
+after 5 consecutive failures, returning `error.CircuitOpen`) — see
+[Resilience → Circuit breakers](/resilience#circuit-breakers).
+
 ## Recommendation
 
 🚩 It is highly recommended to use the `ctx` allocator whenever possible, since it is tied up with request life-cycle, the de-allocation will be managed automatically and making sure the memory leak is not happening.

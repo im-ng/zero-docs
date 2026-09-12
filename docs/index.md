@@ -1,5 +1,7 @@
 ---
 layout: home
+title: Home
+description: "zero is a simple, opinionated microservice web framework written in Zig — REST, SQL, pub/sub, auth, observability and more out of the box."
 
 hero:
   name: "Zero Framework"

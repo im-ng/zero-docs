@@ -6,6 +6,8 @@
   "devDependencies": {
     "@types/bun": "latest",
     "mermaid": "^11.12.1",
+    "sharp": "^0.35.4",
+    "sitemap": "^9.0.1",
     "vitepress": "^2.0.0-alpha.12",
     "vitepress-plugin-mermaid": "^2.0.17"
   },
@@ -13,8 +15,8 @@
     "typescript": "^5"
   },
   "scripts": {
-    "docs:dev": "vitepress dev docs",
-    "docs:build": "vitepress build docs",
+    "docs:dev": "vitepress dev docs --host",
+    "docs:build": "vitepress build docs && bun run scripts/gen-sitemap.ts",
     "docs:preview": "vitepress preview docs"
   },
   "dependencies": {

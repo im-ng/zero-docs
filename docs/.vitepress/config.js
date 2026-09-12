@@ -7,14 +7,26 @@ const shared = {
       noExternal: ["zeroTheme"],
     },
   },
-  title: "   ",
+  title: "zero framework",
   description:
     "A simple and opinionated microservice web framework written in Zig",
-  head: [["link", { rel: "icon", href: "/favicon.ico" }]],
+  head: [
+    ["link", { rel: "icon", href: "/favicon.ico" }],
+    ["link", { rel: "preconnect", href: "https://fonts.googleapis.com" }],
+    ["link", { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" }],
+    [
+      "link",
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap",
+      },
+    ],
+  ],
   ignoreDeadLinks: true,
   base: "/",
   themeConfig: {
     appearance: "force-light",
+    title: "   ",
     logo: {
       light: "/zero-fmk-light.webp",
       dark: "/zero-fmk-dark.webp",
@@ -46,6 +58,15 @@ const zig016Sidebar = [
         items: [
           { text: "Using Postgres", link: "/rest-handler" },
           { text: "SQLite", link: "/sqlite" },
+          { text: "DuckDB", link: "/duckdb" },
+        ],
+      },
+      {
+        text: "NoSQL & Analytics",
+        items: [
+          { text: "Cassandra", link: "/cassandra" },
+          { text: "InfluxDB", link: "/influxdb" },
+          { text: "Solr", link: "/solr" },
         ],
       },
       { text: "Using Redis", link: "/caching" },
@@ -85,6 +106,8 @@ const zig016Sidebar = [
           { text: "Context", link: "/context" },
           { text: "Interface", link: "/interface" },
           { text: "Testing", link: "/testing" },
+          { text: "Benchmark", link: "/benchmark" },
+          { text: "Resilience", link: "/resilience" },
           { text: "Roadmap", link: "/timeline" },
           { text: "X-Ray", link: "/x-ray" },
           { text: "Migrating to 0.16", link: "/migrating-0-16" },
@@ -139,9 +162,104 @@ const zig0152Sidebar = [
   },
 ];
 
+const SITE = "https://zerofmk.in";
+
+function deriveFromHtml(html) {
+  if (!html) return "";
+  const pMatch = html.match(/<main[^>]*>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/);
+  const src = pMatch ? pMatch[1] : html;
+  const noScripts = src.replace(/<script[\s\S]*?<\/script>/gi, " ");
+  const noStyle = noScripts.replace(/<style[\s\S]*?<\/style>/gi, " ");
+  const text = noStyle.replace(/<[^>]+>/g, " ");
+  const decoded = text.replace(/&[a-zA-Z]+;/g, " ").replace(/&#\d+;/g, " ");
+  const clean = decoded.replace(/\s+/g, " ").trim();
+  if (clean.startsWith("Skip to content") || clean.includes("Main Navigation"))
+    return "";
+  if (clean.length > 155) return clean.slice(0, 152).trimEnd() + "...";
+  return clean;
+}
+
 export default withMermaid(
   defineConfig({
     ...shared,
+    transformHead: async ({ pageData, head, content }) => {
+      const relRaw = (pageData.filePath || pageData.relativePath || "")
+        .replace(/\.md$/, ".html");
+      let rel = "/" + relRaw;
+      if (rel.endsWith("/index.html")) rel = rel.slice(0, -"index.html".length);
+
+      const canonical =
+        SITE + (rel.startsWith("/0.15.2/") ? rel.slice("/0.15.2".length) : rel);
+
+      const setMeta = (name, content) => {
+        const i = head.findIndex(
+          (h) => h[0] === "meta" && h[1] && h[1].name === name
+        );
+        if (i >= 0) head[i][1].content = content;
+        else head.push(["meta", { name, content }]);
+      };
+      const setProp = (property, content) => {
+        const i = head.findIndex(
+          (h) => h[0] === "meta" && h[1] && h[1].property === property
+        );
+        if (i >= 0) head[i][1].content = content;
+        else head.push(["meta", { property, content }]);
+      };
+
+      const fmDesc = pageData.frontmatter?.description || pageData.description;
+      const desc =
+        fmDesc ||
+        deriveFromHtml(content) ||
+        "A simple and opinionated microservice web framework written in Zig";
+      const title = pageData.title || "zero framework";
+
+      setMeta("description", desc);
+      setProp("og:title", title);
+      setProp("og:description", desc);
+      setProp("og:type", "website");
+      setProp("og:site_name", "zero framework");
+      setProp("og:url", canonical);
+      setProp("og:image", SITE + "/og-image.jpg");
+      setProp("twitter:card", "summary_large_image");
+      setProp("twitter:title", title);
+      setProp("twitter:description", desc);
+      setProp("twitter:image", SITE + "/og-image.jpg");
+
+      const ci = head.findIndex(
+        (h) => h[0] === "link" && h[1] && h[1].rel === "canonical"
+      );
+      if (ci >= 0) head[ci][1].href = canonical;
+      else head.push(["link", { rel: "canonical", href: canonical }]);
+
+      const jsonLd = {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            name: "zero framework",
+            url: SITE,
+            potentialAction: {
+              "@type": "SearchAction",
+              target: SITE + "/?q={search_term_string}",
+              "query-input": "required name=search_term_string",
+            },
+          },
+          {
+            "@type": "SoftwareApplication",
+            name: "zero",
+            url: SITE,
+            applicationCategory: "DeveloperApplication",
+            operatingSystem: "Linux, macOS, Windows",
+            sameAs: "https://github.com/im-ng/zero",
+          },
+        ],
+      };
+      head.push([
+        "script",
+        { type: "application/ld+json" },
+        JSON.stringify(jsonLd),
+      ]);
+    },
     locales: {
       root: {
         label: "zig 0.16.0",

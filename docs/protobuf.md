@@ -65,3 +65,7 @@ pub fn echo(ctx: *Context) !void {
 
 Messages may also be described by hand using the `protobuf` `encode`/`decode`
 primitives plus a `_desc_table`.
+
+The runtime primitives are re-exported from the framework root, so generated and
+hand-written messages can reach them via `@import("zero").protobuf` (the benchmark and
+other built-in tools rely on this).

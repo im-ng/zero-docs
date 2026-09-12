@@ -25,15 +25,19 @@ Instead of developing and integrating with these boilerplates, an app developer 
         -  ✅ Http Status
         -  ✅ SQL Status
         -  ✅ KV Status
-    - ⬜ Register custom metrics
+        -  ✅ Pub/Sub Status (publish / subscribe / DLQ)
+    - ✅ Register custom metrics (Counter / Gauge / Histogram)
     - ✅ Process stats
     - ✅ Memory stats
 -  ✅ Traceability
-    - ✅ Basic
+    - ✅ Basic (X-Correlation-ID)
+    - ✅ Downstream propagation (outbound HTTP + Kafka/NATS headers)
     - ⬜ Open Telemetry
 -  ✅ Well structured logging mechanism
     - ✅ UTC Timezone
-    - ⬜ Custom Timezone
+    - ✅ Custom Timezone (`ZERO_LOG_TIMEZONE`: local / utc / IANA)
+    - ✅ JSON structured logging (`LOG_FORMAT=json`)
+    - ✅ Remote log-level pull (`REMOTE_LOG_URL`)
 -  ✅ Middleware
     -  ✅ CORS
     -  ✅ TraceID
@@ -52,23 +56,33 @@ Instead of developing and integrating with these boilerplates, an app developer 
             - ⬜ Health check
             - ⬜ Surge and Circuit breaker
           - ✅ Validate claims
+    - ✅ RBAC (config-driven roles/permissions from JWT claims)
     - ✅ Rate Limiter
         - ✅ IP / header / custom key modes
-        - ✅ Token-bucket window (`RATE_LIMIT_*`)
+        - ✅ Fixed-window (`RATE_LIMIT_*`) (GoFr uses token-bucket)
 -  ✅ Panic recovery
 -  ✅ Handle Error response
     -  ✅ Custom Errors
 -  ✅ Database support
     -  ✅ `postgres`
-        - ⬜ TLS Support
+        - ✅ TLS Support (`DB_SSL_MODE`)
     - ✅ `sqlite`
-    -  ✅ `redis`
+    - ✅ `duckdb` (in-process OLAP, unified `ctx.SQL`)
+    - ✅ `redis`
         - ✅ Authentication enabled
     - ✅ `mqtt`
     - ✅ `kafka`
         - ✅ `rdkafka` driver integrated
         - ⬜ Support for multiple topics subscription
-        - ⬜ Support for metrics
+        - ✅ Support for metrics (publish / subscribe / DLQ)
+        - ✅ Reconnect + resubscribe, retry, dead-letter (DLQ)
+    - ✅ `redis` (Pub/Sub)
+-  ✅ NoSQL (wide-column / document)
+    - ✅ `cassandra` (`ctx.NoSQL`)
+-  ✅ Time-series
+    - ✅ `influxdb` (`ctx.Timeseries`, Flux + line protocol)
+-  ✅ Search
+    - ✅ `solr` (`ctx.Search`, index / query / get / delete)
 -  ✅ KV Store
     - ✅ `redis`
     - ✅ `nats_kv`
@@ -76,8 +90,9 @@ Instead of developing and integrating with these boilerplates, an app developer 
     - ✅ `sqlite`
 -  ✅ File Store
     - ✅ `local`
-    - ✅ `ftp`
-    - ✅ `sftp`
+    - ✅ `s3` (S3-compatible: MinIO / R2 / Spaces / B2)
+    - ⬜ `ftp` (deferred — no vendored Zig lib)
+    - ⬜ `sftp` (deferred — needs libssh)
 -  ✅ Database Migrations
 -  ✅ Seed data on App startup
 -  ✅ Auto CRUD
@@ -89,8 +104,9 @@ Instead of developing and integrating with these boilerplates, an app developer 
     -  ✅ Handle CRUD operations
     -  ✅ Handle on-fly response transformation
     -  ✅ Outbound authentication (Basic, API Key, OAuth 2.0 bearer)
-    -  ✅ Circuit Breaker
+    -  ✅ Circuit Breaker (closed → open → half-open)
     -  ✅ Per-service Rate Limiting
+    -  ✅ Retry (transport + 5xx; OAuth 401 token-refresh replay)
 -  ✅ Cron Jobs
     - ✅ `* * * * *` format support
     - ✅ Enable second-level executions `* * * * * *`
@@ -102,6 +118,7 @@ Instead of developing and integrating with these boilerplates, an app developer 
     - ✅ POST with JSON body (`query`, `variables`, `operationName`)
     - ✅ GET with URL query params (`?query=...&variables=...&operationName=...`)
     - ✅ Schema-less resolver graph execution
+    - ✅ Mutations / CRUD operations
     - ✅ Constant field values
     - ✅ Function resolvers (`fn (*Context, Args) anyerror!T`)
     - ✅ Argument coercion (Int, Float, String, Boolean, Enum, Object)
@@ -126,7 +143,7 @@ Instead of developing and integrating with these boilerplates, an app developer 
     - ✅ Cronz
     - ✅ Context
     - ✅ Container
-- ⬜ Interface 
+- ✅ Interface (type-erased)
     - ✅ Pubsub
     - ✅ SQL
-    - ⬜ Cache
+    - ✅ Cache (redis / nats-kv / memory / sqlite)

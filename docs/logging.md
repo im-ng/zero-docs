@@ -19,6 +19,39 @@ cron job that fetches the level (JSON `{ "level": "info" }`) every
 feature is opt-in — leave `REMOTE_LOG_URL` empty to disable it. See
 [Configuration → Remote Log](./configuration.md#remote-log) for the keys.
 
+## JSON structured logging
+
+Set `LOG_FORMAT=json` (env or `.env`) to emit one JSON object per log line instead of
+the colorized text format:
+
+```json
+{ "ts": "14:22:05", "level": "info", "msg": "connected to database" }
+```
+
+Fields are `ts` (timestamp, see [Log timezone](#log-timezone)), `level`
+(`debug`|`info`|`warn`|`error`|`fatal`), and `msg`. Non-string arguments are still
+serialized (via `{any}`).
+
+You can also flip the format in code through the logger:
+
+```zig [src/main.zig]
+zero.logger.setJsonFormat(true);   // or false for text
+```
+
+## Log timezone
+
+Log timestamps use the system local zone by default. Override with `ZERO_LOG_TIMEZONE`:
+
+| Value | Behavior |
+| --- | --- |
+| `local` (default) / empty | System zone from `/etc/localtime` |
+| `utc` | Force UTC |
+| IANA name (e.g. `America/New_York`) | Pin a specific zone, resolved from the embedded tz database |
+
+Resolution failure on an IANA name falls back to the system local zone, and ultimately
+to UTC. The timezone is resolved before the first log line (e.g. *"Loaded config from
+file"*), so it applies to startup logs too.
+
 When `zero` app runs, it starts reading log level, allow us to know more 
 * log level of statement
 * database/kv/mq connection status

@@ -65,7 +65,30 @@ APP_ENV=dev
 LOG_LEVEL=info
 
 HTTP_PORT=8080
-METRICS_PORT=9090
+METRICS_PORT=2121               # separate listener for /metrics (not the app port)
+
+LOG_FORMAT=text                 # text | json — emit one JSON object per log line
+ZERO_LOG_TIMEZONE=local        # local | utc | IANA name (e.g. America/New_York)
+REQUIRED_CONFIG_KEYS=          # comma-separated; app exits at startup if any are unset/empty
+```
+:::
+
+::: tip
+Metrics are exposed on a **separate** listener (`METRICS_PORT`, default `2121`), not on
+the app's `HTTP_PORT`. See [Observability](./observability.md#metrics-endpoint).
+:::
+
+## HTTP Server
+
+Inbound request protections, read from `configs/.env` and applied before handlers run.
+See [Resilience](./resilience.md) for behavior.
+
+::: code-group
+```bash [HTTP server]
+ZERO_REQUEST_TIMEOUT_MS=30000     # per-request timeout (ms); stalled clients can't pin a worker
+INBOUND_MAX_CONCURRENT=0          # bulkhead; 0 = unlimited. Excess returns 503
+ZERO_HTTP_LARGE_BUFFER_SIZE=1048576   # pooled HTTP body-buffer size (bytes)
+ZERO_HTTP_LARGE_BUFFER_COUNT=16       # pooled HTTP body-buffer count (≈ resident pool)
 ```
 :::
 
@@ -80,6 +103,7 @@ DB_NAME=demo
 DB_PORT=5432
 DB_DIALECT=postgres
 DB_SSL_MODE=disable
+SQL_CIRCUIT_BREAKER_ENABLE=false  # trip open after 5 consecutive failures (error.CircuitOpen)
 ```
 ```bash [sqlite]
 DB_DIALECT=sqlite
@@ -111,6 +135,8 @@ REDIS_TLS_ENABLED=false
 REDIS_TLS_CA_CERT=
 REDIS_TLS_KEY=
 REDIS_TLS_CERT=
+
+CACHE_CIRCUIT_BREAKER_ENABLE=false  # trip open after 5 consecutive failures (error.CircuitOpen)
 ```
 :::
 
@@ -263,15 +289,17 @@ SERVICE_URL="http://localhost:8080" #custom key
 
 ## Rate Limiter
 
-The rate limiter is a middleware enabled globally via `RATE_LIMIT_ENABLE`. The
-key used to bucket requests is selected with `RATE_LIMIT_KEY`.
+The rate limiter is a middleware enabled globally via `RATE_LIMIT_ENABLE` and is
+**on by default** (set `RATE_LIMIT_ENABLE=false` to disable it, e.g. for load tests).
+The key used to bucket requests is selected with `RATE_LIMIT_KEY`. `/.well-known/*`
+is exempt so health checks are never throttled. See [Rate Limiter](./rate-limiter.md).
 
 ::: code-group
 ```bash [rate limiter]
-RATE_LIMIT_ENABLE=false
+RATE_LIMIT_ENABLE=true     # enabled by default; set false to disable
 RATE_LIMIT_KEY=ip          # ip | header | custom
-RATE_LIMIT_MAX=100         # max requests allowed per window
-RATE_LIMIT_WINDOW=60       # window length in seconds
+RATE_LIMIT_MAX=100         # max requests per window (0 → default 100)
+RATE_LIMIT_WINDOW=60       # window length in seconds (0 → default 60)
 ```
 :::
 

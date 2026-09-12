@@ -84,6 +84,9 @@ It boots the real `zero.App`, drives it with the `zul` HTTP client across a
 concurrency ramp, and reports throughput plus latency percentiles — no
 third-party load tool required.
 
+Full reference (flags, JSON report, leak heuristic, CI regression job, and external
+`wrk`/`k6` recipes) is on the [Benchmark](./benchmark.md) page.
+
 ```bash
 zig build bench                                  # builds ./zig-out/bin/bench
 ./zig-out/bin/bench                              # default: /.well-known/health, 3s/level, ramp 1..1000
@@ -91,13 +94,6 @@ zig build bench                                  # builds ./zig-out/bin/bench
 ./zig-out/bin/bench --path=/your/route --duration=5 --levels=10,100,500
 ./zig-out/bin/bench --log                         # leave framework logging on
 ```
-
-| flag | default | meaning |
-| --- | --- | --- |
-| `--duration=N` | `3` | seconds to hammer each concurrency level |
-| `--levels=csv` | `1,10,50,100,200,500,1000` | concurrency levels (worker counts) |
-| `--path=` | `/.well-known/health` | target path on `http://127.0.0.1:<HTTP_PORT>` |
-| `--log` | off | keep framework logs on (off silences them) |
 
 Run the binary directly (`./zig-out/bin/bench`), **not** `zig build run bench` —
 the bench harness uses `pub fn main(init: std.process.Init)` and the `--listen=-`
