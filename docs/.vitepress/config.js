@@ -41,15 +41,17 @@ const zig016Sidebar = [
   { text: "Getting Started", link: "/started" },
   { text: "Attribution", link: "/attribution" },
   { text: "Feature Parity", link: "/parity" },
-  {
-    text: "Begin from zero",
-    items: [
-      { text: "Hello world", link: "/hello-zero" },
-      { text: "Configs", link: "/configuration" },
-      { text: "Logging", link: "/logging" },
-      { text: "Observability", link: "/observability" },
-    ],
-  },
+    {
+      text: "Begin from zero",
+      items: [
+        { text: "Hello world", link: "/hello-zero" },
+        { text: "Configs", link: "/configuration" },
+        { text: "Logging", link: "/logging" },
+        { text: "Observability", link: "/observability" },
+        { text: "CLI Apps", link: "/cli" },
+        { text: "Kubernetes", link: "/kubernetes" },
+      ],
+    },
   {
     text: "Built-in solutions",
     items: [

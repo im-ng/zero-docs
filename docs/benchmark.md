@@ -13,14 +13,19 @@ app (see [External recipes](#external-recipes-optional)).
 
 ```bash
 zig build bench                              # builds ./zig-out/bin/bench
-./zig-out/bin/bench                          # default: /.well-known/health, 3s/level, ramp 1..1000
+./zig-out/bin/bench                          # single --path run: /.well-known/health, 3s/level, ramp 1..1000
 ./zig-out/bin/bench --duration=3 --levels=1,50,200,500,1000
 ./zig-out/bin/bench --path=/your/route --duration=5 --levels=10,100,500
+./zig-out/bin/bench --target=all --duration=2 --levels=1,25,100   # full category suite
+./zig-out/bin/bench --target=sql,graphql     # only the sql + graphql categories
+./zig-out/bin/bench --host=127.0.0.1 --port=8080 --target=all    # drive an external server
+./zig-out/bin/bench --vusers=500             # ramp 1,125,250,500
 ./zig-out/bin/bench --log                     # leave framework logging on
 ```
 
 The bench step is **not** part of the default `zig build` — run `zig build bench`
-explicitly.
+explicitly. `report.json` is written on every run (see
+[JSON report](#json-report--leak-heuristic)); `--json` is still accepted for CI parity.
 
 ::: tip
 Run the binary directly (`./zig-out/bin/bench`). Do **not** use `zig build run bench`
@@ -34,22 +39,40 @@ protocol would interfere.
 | --- | --- | --- |
 | `--duration=N` | `3` | seconds to hammer each concurrency level |
 | `--levels=csv` | `1,10,50,100,200,500,1000` | concurrency levels (worker counts) |
-| `--path=` | `/.well-known/health` | target path on `http://127.0.0.1:<HTTP_PORT>` |
+| `--path=` | `/.well-known/health` | target path; used for the default single-scenario run |
+| `--target=csv` | single `--path` run | select scenario **categories**: `health`, `http`, `sql`, `nosql`, `timeseries`, `search`, `proto`, `graphql`, `filestore`. `all` runs every category (alias for `--suite`). Datasource categories are skipped unless their backend env is set |
+| `--host=host` | — | external-server mode: drive an already-running zero server at `http://<host>:<port>` instead of booting the embedded app |
+| `--port=port` | `8080` | port used together with `--host` |
+| `--vusers=N` | — | expand the ramp to `1, N/4, N/2, N` (rounded, unique) so the RSS plateau/leak heuristic stays meaningful |
 | `--log` | off | keep framework logs on (off silences them via `logLevel=99`) |
-| `--suite` | off | run a built-in 14-scenario suite instead of a single path |
-| `--json` | off | write `zig-out/bench/report.json` with per-scenario `peak_rss_mib`, `drss_kib`, `leak` |
+| `--suite` | off | alias for `--target=all`; runs every category |
+| `--json` | always on | `report.json` is always written; this flag is accepted for CI parity |
 | `--debug-alloc` | off | run under `DebugAllocator` and flag a leak when RSS growth exceeds 8 MiB |
 | `--server` | off | keep the app up after the ramp so an external generator (e.g. k6) can drive it |
 
-### Built-in suite
+### Scenario categories (`--target`)
 
-`--suite` runs a fixed set of scenarios covering the framework's hot paths:
-`health`, `health-json`, `health-html`, `index`, `text`, `json`, `keys`, `db`,
-`proto-get`, `proto`, `graphql-get`, `graphql`, `filestore-get`, `filestore`.
-Use it together with `--json` to produce a comparable report:
+`--target` selects which scenario **categories** to run. With no flag, the harness runs a
+single `--path` scenario; `--target=all` (or `--suite`) runs the full set:
+
+| category | scenarios |
+| --- | --- |
+| `health` | `health`, `health-json`, `health-html` |
+| `http` | `index`, `text`, `json`, `keys`, `db` |
+| `sql` | `duckdb-query` *(gated on `DUCKDB_PATH`)* |
+| `proto` | `proto-get`, `proto` |
+| `graphql` | `graphql-get`, `graphql` |
+| `filestore` | `filestore-get`, `filestore` |
+| `timeseries` | `ts-write`, `ts-query` *(gated on `INFLUXDB_URL`)* |
+| `search` | `solr-index`, `solr-query` *(gated on `SOLR_URL`)* |
+| `nosql` | `nosql-put`, `nosql-get` *(gated on `CASSANDRA_CONTACT_POINTS`)* |
+
+`gated` scenarios are skipped unless the named backend env var is present, so the
+datasource routes only count toward the report when you actually wire the backend:
 
 ```bash
-./zig-out/bin/bench --suite --json --duration=2 --levels=1,25,100
+DUCKDB_PATH=./data/bench.db INFLUXDB_URL=http://localhost:8086 \
+  ./zig-out/bin/bench --target=all --json --duration=2 --levels=1,25,100
 ```
 
 ## Output
@@ -87,8 +110,7 @@ The framework's liveness endpoint is `/.well-known/health` (and `/.well-known/li
 
 ## JSON report & leak heuristic
 
-With `--json`, the harness writes `zig-out/bench/report.json` containing one entry per
-scenario:
+The harness writes `zig-out/bench/report.json` on **every** run (one entry per scenario):
 
 ```json
 { "name": "health", "peak_rss_mib": 38.1, "drss_kib": 0.0, "leak": false }
@@ -97,19 +119,45 @@ scenario:
 `--debug-alloc` additionally runs under `DebugAllocator` and treats a run-wide RSS
 growth above **8 MiB** as a leak (`"leak": true`). This is the gate used by CI.
 
+A baseline snapshot is committed at `bench/baseline.json` (peak RSS per scenario); the
+regression gate compares fresh runs against it.
+
+## Local regression check (`check_regression.sh`)
+
+`bench/check_regression.sh` replicates the CI gate locally: it builds the harness, runs
+the suite, and diffs the report against `bench/baseline.json`.
+
+```bash
+DURATION=2 LEVELS=1,25,100 TARGET=all bench/check_regression.sh
+```
+
+| env override | default | meaning |
+| --- | --- | --- |
+| `DURATION` | `2` | per-level seconds |
+| `LEVELS` | `1,25,100` | comma list of concurrency levels |
+| `TARGET` | `all` | `--target` value (`all` or a category csv) |
+| `ZIG` | `zig` on `PATH` | zig binary (also accepts a zig install **directory**) |
+
+It exits `0` when there is no leak and no regression, and `1` on regression/leak or
+failure. A scenario is flagged as a **regression** when its `peak_rss_mib` grew by **both**
+>15% (relative) **and** >8 MiB (absolute) versus the baseline; a `"leak": true` entry
+fails outright. If no baseline file exists yet, the script initializes `bench/baseline.json`
+from the current run and exits `0` (skipping the comparison).
+
 ## CI regression job
 
-The `.github/workflows/ci.yml` `bench_regression` job runs the suite against a committed
-baseline (`bench/baseline.json`) and fails when any scenario reports
-`"leak": true` **or** RSS growth exceeds both 15% and 8 MiB. The baseline is refreshed
-on merge, so a legitimate performance/footprint change must update `bench/baseline.json`
-alongside the code.
+The `.github/workflows/ci.yml` `bench_regression` job runs the same gate (via
+`check_regression.sh`) against the committed baseline (`bench/baseline.json`) and fails on
+any `"leak": true` **or** RSS growth exceeding both 15% and 8 MiB. The baseline is
+refreshed on merge, so a legitimate performance/footprint change must update
+`bench/baseline.json` alongside the code.
 
 ## External recipes (optional)
 
 The in-repo harness is sufficient for most capacity checks. For higher-fidelity
 distributed load, start the app separately (e.g. `zig build && ./zig-out/bin/zero`) and
-point an external generator at it. The repo also ships `bench/k6/baseline.js` for k6.
+point an external generator at it. The repo ships k6 helpers under `bench/k6/`
+(`baseline.js`, plus `report.html` / `report.json` captured from a sample run).
 
 ### wrk
 

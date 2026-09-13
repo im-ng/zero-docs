@@ -41,7 +41,7 @@ PUT    /users/:id    # update (re-selects and returns the row)
 DELETE /users/:id    # delete (204-style {deleted: n})
 ```
 
-The generated SQL is emitted for **both** Postgres (`$N` placeholders) and SQLite (`?`) and dispatched at runtime on `ctx.SQL.dialect`, so the same struct works against either backend.
+The generated SQL is emitted for **Postgres** (`$N` placeholders), **SQLite** (`?`), and **DuckDB** and dispatched at runtime on `ctx.SQL.dialect`, so the same struct works against any of those backends (selected via `DB_DIALECT` / `DUCKDB_PATH`).
 
 ## Rules
 
