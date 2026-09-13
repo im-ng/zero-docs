@@ -113,3 +113,13 @@ html.dark {
   -webkit-mask: url(/version-icon.svg) no-repeat center / contain;
   mask: url(/version-icon.svg) no-repeat center / contain;
 }
+
+/* Benefit sub-line inside the home hero (smaller, muted) */
+.hero-tagline {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 1.4rem;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--vp-c-text-2);
+}

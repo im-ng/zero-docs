@@ -103,7 +103,7 @@ LOG_LEVEL=debug
 
 :::
 
-3. Copy your app favorite icon to serve from first request.
+3. (Optional) Copy a favicon so the first request has an icon to serve.
 
 ::: code-group
 
@@ -206,11 +206,11 @@ DEBUG [07:22:46] redis is disabled, as redis host is not provided.
 INFO [07:49:45] 019a1f7e-a71f-7000-a0d5-1ce39e5e5b0c    200 0ms GET /json
 ^C
 
-~/hello-zero via ↯ v0.15.1 took 34m22s
+~/hello-zero via ↯ v0.16.0 took 34m22s
 ❯  INFO [07:57:06] server shutting down
 received shutdown signal
 
-~/hello-zero via ↯ v0.15.1
+~/hello-zero via ↯ v0.16.0
 ❯
 ```
 :::
@@ -219,7 +219,7 @@ received shutdown signal
 
 ::: code-group
 ```bash [directory structure]
-~/hello-zero via ↯ v0.15.1
+~/hello-zero via ↯ v0.16.0
 ❯ tree -a
 .
 ├── build.zig

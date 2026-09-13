@@ -58,7 +58,7 @@ const zig016Sidebar = [
       {
         text: "Using SQL",
         items: [
-          { text: "Using Postgres", link: "/rest-handler" },
+           { text: "REST handler (Postgres)", link: "/rest-handler" },
           { text: "SQLite", link: "/sqlite" },
           { text: "DuckDB", link: "/duckdb" },
         ],
@@ -270,6 +270,9 @@ export default withMermaid(
           nav: [
             { text: "Home", link: "/" },
             { text: "Getting Started", link: "/started" },
+            { text: "Benchmarks", link: "/benchmark" },
+            { text: "Examples", link: "/examples" },
+            { text: "Community", link: "/community" },
           ],
           sidebar: zig016Sidebar,
         },
