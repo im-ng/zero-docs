@@ -1,11 +1,3 @@
-<style type="text/css">
-  img-comparison-slider {
-    --divider-width: 5px;
-    --divider-color: #131212ff;
-    --default-handle-opacity: 0.9;
-  }
-</style>
-
 <script setup>
 import { ImgComparisonSlider } from '@img-comparison-slider/vue';
 </script>
@@ -49,13 +41,13 @@ pub const std_options: std.Options = .{
 
 const pubSubTopic = "zero";
 
-pub fn main() !void {
+pub fn main(init: std.process.Init) !void {
     var arena_instance = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena_instance.deinit();
 
     const allocator = arena_instance.allocator();
 
-    const app = try App.new(allocator);
+    const app = try App.new(allocator, init.io, init.environ_map);
 
     try app.addSubscription(pubSubTopic, subscribeTask);
 

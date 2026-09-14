@@ -57,13 +57,13 @@ pub const std_options: std.Options = .{
     .logFn = zero.logger.custom,
 };
 
-pub fn main() !void {
+pub fn main(init: std.process.Init) !void {
     var arena_instance = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena_instance.deinit();
 
     const allocator = arena_instance.allocator();
 
-    const app = try App.new(allocator);
+    const app = try App.new(allocator, init.io, init.environ_map);
 
     try app.addCronJob("*/5 * * * * *", "task-1", task1);
     app.container.log.info("task 1 occurs every 5 seconds of minutes");
@@ -118,6 +118,13 @@ DEBUG [10:11:16] pubsub is disabled, as pubsub mode is not provided.
 3. Preview server status and job repetitions.
 
 ![cronz](./public/preview-cronz.webp)
+
+## Reliability
+
+Each job run is **serialized** with a per-job mutex, so an overrunning tick will not
+stack on top of the previous one. If a run returns an error it is retried up to **3×
+with a 500 ms backoff** before being marked failed. Because `job.run` runs inside this
+guarded scope, a failing handler cannot leak a half-finished tick into the next one.
 
 ## Recommendation
 

@@ -1,16 +1,9 @@
-<style type="text/css">
-  img-comparison-slider {
-    --divider-width: 5px;
-    --divider-color: #131212ff;
-    --default-handle-opacity: 0.9;
-  }
-</style>
-
 <script setup>
 import { ImgComparisonSlider } from '@img-comparison-slider/vue';
 </script>
 
 # Hello Zero!
+
 This document outlines the step to get started with `hello world` using the `zero` framework.
 
 Lets begin...
@@ -27,10 +20,11 @@ info: created build.zig.zon
 info: created src/main.zig
 info: created src/root.zig
 info: see `zig build --help` for a menu of options
-❯ 
-❯ zig fetch --save https://github.com/im-ng/zero/archive/refs/heads/main.zip
-❯ 
+❯
+❯ zig fetch --save https://github.com/im-ng/zero/archive/refs/heads/experimental.zip
+❯
 ```
+
 :::
 
 1. Update app dependency to load `zero` fmk as module
@@ -75,10 +69,10 @@ pub fn build(b: *std.Build) void {
     .name = .hello_zero,
     .version = "0.0.0",
     .fingerprint = 0x3567b067feb9ecb1,
-    .minimum_zig_version = "0.15.1",
+    .minimum_zig_version = "0.16.0",
     .dependencies = .{
-        .asciigraph = .{
-            .url = "https://github.com/im-ng/zero/archive/refs/heads/main.zip",
+        .zero = .{
+            .url = "https://github.com/im-ng/zero/archive/refs/heads/experimental.zip",
             .hash = "zero-0.0.1-W787cAhaAABPJQ30gkLvzn_hlUDZtR-7qAtq8jDqmoyH", // once released the hash will change.
         },
     },
@@ -111,7 +105,7 @@ LOG_LEVEL=debug
 
 :::
 
-3. Copy your app favorite icon to serve from first request.
+3. (Optional) Copy a favicon so the first request has an icon to serve.
 
 ::: code-group
 
@@ -133,14 +127,15 @@ const zero = @import("zero");
 
 const App = zero.App;
 const Context = zero.Context;
+const utils = zero.utils;
 
-// we may need to add this `std_options` 
+// we may need to add this `std_options`
 // on the main fn file for tidy logs.
 pub const std_options: std.Options = .{
     .logFn = zero.logger.custom,
 };
 
-pub fn main() !void {
+pub fn main(init: std.process.Init) !void {
     var arena_instance = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena_instance.deinit();
 
@@ -148,7 +143,7 @@ pub fn main() !void {
 
     // create zero App
     // internally zero loads container with configured services attached
-    const app: *App = try App.new(allocator);
+    const app: *App = try App.new(allocator, init.io, init.environ_map);
 
     // register our first route on app
     try app.get("/json", jsonResponse);
@@ -187,6 +182,7 @@ fn jsonResponse(ctx: *Context) !void {
 6. Start and graceful shutdown of server
 
 ::: code-group
+
 ```bash [Start server]
 ❯ zig build hello
  INFO [07:22:46] Loaded config from file: ./configs/.env
@@ -206,26 +202,29 @@ DEBUG [07:22:46] redis is disabled, as redis host is not provided.
  INFO [07:23:34] 019a1f66-add5-7000-8e14-a90452316736    200 0ms GET /favicon.ico
  INFO [07:40:16] 019a1f75-fa36-7000-8e7b-2512ab2e9596    200 0ms GET /json
 ```
-```bash [Shutdown server] 
+
+```bash [Shutdown server]
 # Interrupt signal (Ctrl+C) will exit the server gracefully without any leaks
 
 INFO [07:49:45] 019a1f7e-a71f-7000-a0d5-1ce39e5e5b0c    200 0ms GET /json
 ^C
 
-~/hello-zero via ↯ v0.15.1 took 34m22s
+~/hello-zero via ↯ v0.16.0 took 34m22s
 ❯  INFO [07:57:06] server shutting down
 received shutdown signal
 
-~/hello-zero via ↯ v0.15.1
+~/hello-zero via ↯ v0.16.0
 ❯
 ```
+
 :::
 
 7. `hello-zero` directory structure for reference
 
 ::: code-group
+
 ```bash [directory structure]
-~/hello-zero via ↯ v0.15.1
+~/hello-zero via ↯ v0.16.0
 ❯ tree -a
 .
 ├── build.zig
@@ -240,6 +239,7 @@ received shutdown signal
 
 4 directories, 6 files
 ```
+
 :::
 
 ## Recommendation

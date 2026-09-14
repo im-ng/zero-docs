@@ -1,15 +1,3 @@
-<style type="text/css">
-  img-comparison-slider {
-    --divider-width: 5px;
-    --divider-color: #131212ff;
-    --default-handle-opacity: 0.9;
-  }
-</style>
-
-<script setup>
-import { ImgComparisonSlider } from '@img-comparison-slider/vue';
-</script>
-
 # PubSub
 
 In the world of microservice architecture, the event driven approach is indistinguishable and `zero` framework has built-in support for the accessing the message queue systems.
@@ -22,6 +10,12 @@ Alike, other built-in solutions, the `PubSub` clients will be automatically adde
 
 ::: code-group
 
+```zig [pubsub]
+try ctx.pubsub.Publish("zero", "publisher 1 says hello! via NATS");
+
+try app.addPubSubSubscription("zero", onMessage);
+```
+
 ```zig [kafka]
 ctx.KF.publish(ctx, "topic", "message-key", "payload"); #publishes message to a topic on the subscribed client
 
@@ -29,12 +23,36 @@ app.addKafkaSubscription("topic", subscriberHandler); #listens for upcoming even
 ```
 
 ```zig [MQTT]
-ctx.MQ.publish("topic"); #publishes message to a topic on the subscribed client
+ctx.MQ.Publish("topic", "payload"); #publishes message to a topic on the subscribed client
 
-app.addSubscription("topic", subscriber-handler); #listens for upcoming event and injects into subscriber handler for further actions.
+app.addSubscription("topic", subscriber-handler); #listens for upcoming event and injects into subscriber handler.
+```
+
+```zig [NATS]
+ctx.pubsub.Publish("subject", "payload"); #publishes message to a NATS subject
+
+app.addPubSubSubscription("subject", subscriber-handler); #listens for upcoming event and injects into subscriber handler.
 ```
 
 :::
+
+### Resilience
+
+All brokers degrade gracefully when the broker is unhealthy:
+
+- **Reconnect & re-subscribe** — on a broker drop the client reconnects and
+  re-subscribes automatically; no restart required.
+- **Retry** — a failing message handler is retried up to **3× with a 500 ms backoff**
+  before the message is given up.
+- **Dead-letter** — poison messages that keep failing are dead-lettered to a side
+  topic so they don't block the stream:
+  - Kafka: `<topic>__dlq`
+  - MQTT / NATS / Redis: `<topic>/dlq`
+
+Each dead-lettered message increments the `app_pubsub_dlq_total` counter (labels
+`topic`, `consumer`) — see [Observability](/observability). The `X-Correlation-ID` set
+by the inbound request is propagated into Kafka/NATS record headers and the outbound
+HTTP client, so a single id flows across services and brokers.
 
 ### Support
 
@@ -44,6 +62,8 @@ app.addSubscription("topic", subscriber-handler); #listens for upcoming event an
 | -------------- | ------- |
 | Kafka          | ✅      |
 | MQTT           | ✅      |
+| NATS           | ✅      |
+| Redis          | ✅      |
 
 ### Configurations
 
@@ -51,7 +71,7 @@ This list of configurations help the developer to prefer either Kafka or MQTT pu
 
 | kafka config                   | Remarks                                                              | Default\* / Others                            | Required |
 | ------------------------------ | -------------------------------------------------------------------- | --------------------------------------------- | -------- |
-| PUBSUB_BACKEND                 | Choose kafka or mqtt as pubsub mq                                    | None (KAFKA / MQTT)                           | Yes      |
+| PUBSUB_BACKEND                 | Choose kafka, mqtt or nats as pubsub mq                              | None (KAFKA / MQTT / NATS)                    | Yes      |
 | PUBSUB_BROKER                  | Set the addresses of the Kafka cluster                               | localhost:9092 [one or multiple host address] | Yes      |
 | PUBSUB_OFFSET                  | Allow the subscription to begin from                                 | None                                          | No       |
 | CONSUMER_ID                    | Unique identifier of the subscribing group                           | None                                          | No       |
@@ -73,3 +93,132 @@ This list of configurations help the developer to prefer either Kafka or MQTT pu
 | MQTT_HOST             | IP Address of the MQTT Server                 | None               | Yes      |
 | MQTT_PORT             | Port of the MQTT Server                       | None               | Yes      |
 | MQTT_CLIENT_ID_SUFFIX | Client ID name for the debug messages         | None               | No       |
+
+| NATS config          | Remarks                                       | Default\* / Others      | Required |
+| -------------------- | --------------------------------------------- | ----------------------- | -------- |
+| PUBSUB_BACKEND       | Set to `NATS` to use the NATS broker          | NATS                    | Yes      |
+| PUBSUB_BROKER        | NATS server URL                               | nats://localhost:4222   | Yes      |
+| NATS_STREAM          | JetStream stream name                         | None                    | No       |
+| NATS_SUBJECTS        | Comma-separated subjects to subscribe to      | None                    | No       |
+| NATS_CONSUMER        | Durable consumer name                         | None                    | No       |
+| NATS_MAX_WAIT        | Max wait (ms) for a pull subscription         | None                    | No       |
+| NATS_MAX_PULL_WAIT   | Max pull wait (ms)                            | 5000\*                  | No       |
+| NATS_CREDS_FILE      | Path to a NATS credentials file               | None                    | No       |
+
+| Redis config         | Remarks                                       | Default\* / Others      | Required |
+| -------------------- | --------------------------------------------- | ----------------------- | -------- |
+| PUBSUB_BACKEND       | Set to `REDIS` to use the Redis broker        | REDIS                   | Yes      |
+| REDIS_HOST           | Redis server host                             | 127.0.0.1               | Yes      |
+| REDIS_PORT           | Redis server port                             | 6379                    | Yes      |
+| REDIS_USER           | Redis username                                | None                    | No       |
+| REDIS_PASSWORD       | Redis password                                | None                    | No       |
+| REDIS_DB             | Redis logical database                        | 0                       | No       |
+
+### Redis
+
+Select Redis with `PUBSUB_BACKEND=REDIS`. Redis Pub/Sub uses the same `REDIS_*` connection
+settings as the cache/KV store.
+
+Publish through the unified `ctx.pubsub` interface (works across Kafka, MQTT, NATS and
+Redis); subscribe with `app.addPubSubSubscription(...)`.
+
+In the handler the message is available on `ctx.message.?.redis`, which exposes `.subject`
+and `.payload` (`[]const u8`).
+
+```zig [publish]
+// from a handler or cron job
+try ctx.pubsub.Publish("zero", "publisher 1 says hello! via Redis");
+```
+
+```zig [subscribe]
+fn onMessage(ctx: *Context) !void {
+    if (ctx.message) |message| {
+        const m = message.redis;
+        ctx.info(m.payload); // m.subject and m.payload are []const u8
+    }
+}
+
+// register at startup
+try app.addPubSubSubscription("zero", onMessage);
+```
+
+### NATS
+
+Select NATS with `PUBSUB_BACKEND=NATS`. 
+
+Publish through the unified `ctx.pubsub` interface (works across Kafka, MQTT, NATS and Redis); subscribe with `app.addPubSubSubscription(...)`. 
+
+In the handler the message is available on `ctx.message.?.nats`, which exposes `.subject` and `.payload` (`[]const u8`).
+
+```zig [publish]
+// from a handler or cron job
+try ctx.pubsub.Publish("zero", "publisher 1 says hello! via NATS");
+```
+
+```zig [subscribe]
+fn onMessage(ctx: *Context) !void {
+    if (ctx.message) |message| {
+        const m = message.nats;
+        ctx.info(m.payload); // m.subject and m.payload are []const u8
+    }
+}
+
+// register at startup
+try app.addPubSubSubscription("zero", onMessage);
+```
+
+### Kafka
+
+Select Kafka with `PUBSUB_BACKEND=KAFKA`.
+
+Publish through the `ctx.KF` interface — resolve the topic handler once with
+`ctx.KF.getTopicHandler(ctx, topic)`, then `ctx.KF.publish(ctx, topic, key, payload)`;
+subscribe with `app.addKafkaSubscription(...)`.
+
+In the handler the message is available on `ctx.message.?.kafka`, which exposes `.topic`
+and `.payload` (`?[]const u8`).
+
+```zig [publish]
+// from a handler or cron job
+const topic = try ctx.KF.getTopicHandler(ctx, "zero-topic");
+try ctx.KF.publish(ctx, topic, "publisher-1", "publisher message!");
+```
+
+```zig [subscribe]
+fn subscribeTask(ctx: *Context) !void {
+    if (ctx.message) |message| {
+        const k = message.kafka;
+        ctx.info(k.payload); // k.topic and k.payload are []const u8 (?[]const u8)
+    }
+}
+
+// register at startup
+try app.addKafkaSubscription("zero-topic", subscribeTask);
+```
+
+### MQTT
+
+Select MQTT with `PUBSUB_BACKEND=MQTT`.
+
+Publish through the `ctx.MQ` interface (`ctx.MQ.Publish(topic, payload)`); subscribe
+with `app.addSubscription(...)`.
+
+In the handler the message is available on `ctx.message.?.mqtt`, which exposes `.topic`
+and `.payload` (`?[]const u8`).
+
+```zig [publish]
+// from a handler or cron job
+const id = try ctx.MQ.Publish("zero", "publisher 1 says hello!");
+```
+
+```zig [subscribe]
+fn subscribeTask(ctx: *Context) !void {
+    if (ctx.message) |message| {
+        const mq = message.mqtt;
+        ctx.info(mq.payload); // mq.topic and mq.payload are []const u8 (?[]const u8)
+    }
+}
+
+// register at startup
+try app.addSubscription("zero", subscribeTask);
+```

@@ -1,11 +1,3 @@
-<style type="text/css">
-  img-comparison-slider {
-    --divider-width: 5px;
-    --divider-color: #131212ff;
-    --default-handle-opacity: 0.9;
-  }
-</style>
-
 <script setup>
 import { ImgComparisonSlider } from '@img-comparison-slider/vue';
 </script>
@@ -25,6 +17,13 @@ To use `migrations` we need to follow three steps to get it achieved properly.
 3. Run migrations through `app.runMigrations()`. 
 
 Thats all!
+
+::: tip
+Each migration runs inside a **database transaction**. If it fails, `zero` rolls it
+back and leaves it **unrecorded**, so it is retried on the next run (it is not silently
+masked as applied). Only migrations that commit successfully are tracked in
+`zero_migrations` and skipped thereafter.
+:::
 
 _`zero` 0.0.1 version only supports the manual addition of above steps, but there is a work happening to make this as automated process. Please bear with us to add them manually for sometime. Refer Feature parity for more_
 
@@ -102,13 +101,13 @@ pub const std_options: std.Options = .{
     .logFn = zero.logger.custom,
 };
 
-pub fn main() !void {
+pub fn main(init: std.process.Init) !void {
     var arean: ArenaAllocator = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arean.deinit();
 
     const allocator: Allocator = arean.allocator();
 
-    const app: *App = try App.new(allocator);
+    const app: *App = try App.new(allocator, init.io, init.environ_map);
 
     try prepareMigrations(app);
 

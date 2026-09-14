@@ -1,11 +1,3 @@
-<style type="text/css">
-  img-comparison-slider {
-    --divider-width: 5px;
-    --divider-color: #131212ff;
-    --default-handle-opacity: 0.9;
-  }
-</style>
-
 <script setup>
 import { ImgComparisonSlider } from '@img-comparison-slider/vue';
 </script>
@@ -38,12 +30,12 @@ HTTP Basic Authentication is a simple, built-in method in the HTTP protocol for 
 
 ::: code-group
 ```zig [main.zig]
-pub fn main() !void {
+pub fn main(init: std.process.Init) !void {
     var arean = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arean.deinit();
     const allocator = arean.allocator();
 
-    const app: *App = try App.new(allocator);
+    const app: *App = try App.new(allocator, init.io, init.environ_map);
 
     try app.get("/basic", basicResponse);
 
@@ -79,12 +71,12 @@ AUTH_KEYS="bmFtZTpwYXNzd29yZA==,bmFtZTE6cGFzc3dvcmQx"
 ::: code-group
 
 ```zig [main.zig]
-pub fn main() !void {
+pub fn main(init: std.process.Init) !void {
     var arean = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arean.deinit();
     const allocator = arean.allocator();
 
-    const app: *App = try App.new(allocator);
+    const app: *App = try App.new(allocator, init.io, init.environ_map);
 
     try app.get("/apikey", apiKeyResponse);
 
@@ -179,12 +171,12 @@ To get started on this, we may need to provide few needed details to app to star
 
 ::: code-group
 ```zig [main.zig]
-pub fn main() !void {
+pub fn main(init: std.process.Init) !void {
     var arean = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arean.deinit();
     const allocator = arean.allocator();
 
-    const app: *App = try App.new(allocator);
+    const app: *App = try App.new(allocator, init.io, init.environ_map);
 
     try app.get("/oauth", oauthResponse);
 
@@ -289,6 +281,67 @@ Invalid token
 ```
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Inplcm8tZnJhbWV3b3JrLWFwcC0xIn0.eyJpc3MiOiJpc3MiLCJpYXQiOjE3NjI1OTY4MDcsImV4cCI6MjA1MTI1OTEzNywiYXVkIjoiemVyby1hcHAiLCJzdWIiOiJ0ZXN0LWtleSIsImp0aSI6Imp0aSIsIm5iZiI6MTc2MjU5NjgwN30.o5mmBhlLr6zu-OcLNesNNrNH58mBFceyyDeKYRArOhU
 ```
+
+## RBAC
+
+Role-Based Access Control (RBAC) restricts routes to specific roles after authentication. It is enforced by the `rbac` middleware, which runs after auth and reads the caller's role from the verified JWT `role` claim.
+
+Behavior (per `src/mw/rbac.zig`):
+
+- A route with at least one rule is **protected**; a route with no rule stays **public**.
+- Well-known paths (`/health`, `/live`, `/.well-known/*`, `/metrics`) always bypass RBAC.
+- If the request has no `role` claim (e.g. Basic / API Key auth, or no token) or the role is not allowed, the middleware returns `403 Forbidden`.
+- Method matching: `*` matches any verb and comparison is case-insensitive.
+- Path matching: a trailing `*` is a prefix wildcard (e.g. `/api/*` matches `/api/users/1`).
+
+### Registering rules in code
+
+```zig [main.zig]
+pub fn main(init: std.process.Init) !void {
+    var arean = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arean.deinit();
+    const allocator = arean.allocator();
+
+    const app: *App = try App.new(allocator, init.io, init.environ_map);
+
+    // protect routes (enforced after auth)
+    try app.rbac("ADMIN", "*", "/api/admin/*");
+    try app.rbac("USER", "GET", "/api/resource");
+
+    try app.get("/", handler);
+    try app.run();
+}
+```
+
+### Config-driven rules
+
+Load rules from the environment by calling `app.rbacFromEnv()` in `main`, or from a
+JSON file via `app.rbacFromJsonFile(path)`. `rbacFromEnv()` reads:
+
+- `RBAC_ROLE_<NAME>=METHOD:/path,METHOD:/path` — one env var per role.
+- `RBAC_CONFIG` — a JSON document (array of `{"role","method","path"}` objects, or an object mapping role → `["METHOD:/path", ...]`).
+
+::: code-group
+```bash [config/.env — per-role keys]
+RBAC_ROLE_ADMIN=GET:/api/admin/*,POST:/api/admin/*
+RBAC_ROLE_USER=GET:/api/resource
+```
+
+```bash [config/.env — JSON document]
+RBAC_CONFIG=[{"role":"ADMIN","method":"*","path":"/api/admin/*"},{"role":"USER","method":"GET","path":"/api/resource"}]
+```
+
+```json [RBAC_CONFIG — object form]
+{
+  "ADMIN": ["GET:/api/admin/*", "POST:/api/admin/*"],
+  "USER": ["GET:/api/resource"]
+}
+```
+:::
+
+RBAC depends on a `role` claim in the verified JWT, so it is designed to work with
+`AUTH_MODE=OAuth`. Requests authenticated via Basic or API Key carry no role and
+receive `403` on any protected route.
 
 ## Limitations 🚨 
 

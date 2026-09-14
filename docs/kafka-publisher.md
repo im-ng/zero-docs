@@ -1,11 +1,3 @@
-<style type="text/css">
-  img-comparison-slider {
-    --divider-width: 5px;
-    --divider-color: #131212ff;
-    --default-handle-opacity: 0.9;
-  }
-</style>
-
 <script setup>
 import { ImgComparisonSlider } from '@img-comparison-slider/vue';
 </script>
@@ -182,12 +174,12 @@ const Payload = struct {
     message: []const u8,
 };
 
-pub fn main() !void {
+pub fn main(init: std.process.Init) !void {
     var gpa: std.heap.GeneralPurposeAllocator(.{}) = .init;
     const allocator = gpa.allocator();
     _ = gpa.detectLeaks();
 
-    const app: *App = try App.new(allocator);
+    const app: *App = try App.new(allocator, init.io, init.environ_map);
 
     try app.addCronJob("* * * * * *", "publisher-1", publishTask1);
 
