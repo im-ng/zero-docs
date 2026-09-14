@@ -46,6 +46,7 @@ const zig016Sidebar = [
         { text: "Observability", link: "/observability" },
         { text: "CLI Apps", link: "/cli" },
         { text: "Kubernetes", link: "/kubernetes" },
+        { text: "Build and debug", link: "/build-and-debug" },
       ],
     },
   {
