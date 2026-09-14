@@ -31,12 +31,11 @@ HTTP Basic Authentication is a simple, built-in method in the HTTP protocol for 
 ::: code-group
 ```zig [main.zig]
 pub fn main(init: std.process.Init) !void {
-    utils.setIo(init.io);
     var arean = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arean.deinit();
     const allocator = arean.allocator();
 
-    const app: *App = try App.new(allocator, init.environ_map);
+    const app: *App = try App.new(allocator, init.io, init.environ_map);
 
     try app.get("/basic", basicResponse);
 
@@ -73,12 +72,11 @@ AUTH_KEYS="bmFtZTpwYXNzd29yZA==,bmFtZTE6cGFzc3dvcmQx"
 
 ```zig [main.zig]
 pub fn main(init: std.process.Init) !void {
-    utils.setIo(init.io);
     var arean = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arean.deinit();
     const allocator = arean.allocator();
 
-    const app: *App = try App.new(allocator, init.environ_map);
+    const app: *App = try App.new(allocator, init.io, init.environ_map);
 
     try app.get("/apikey", apiKeyResponse);
 
@@ -174,12 +172,11 @@ To get started on this, we may need to provide few needed details to app to star
 ::: code-group
 ```zig [main.zig]
 pub fn main(init: std.process.Init) !void {
-    utils.setIo(init.io);
     var arean = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arean.deinit();
     const allocator = arean.allocator();
 
-    const app: *App = try App.new(allocator, init.environ_map);
+    const app: *App = try App.new(allocator, init.io, init.environ_map);
 
     try app.get("/oauth", oauthResponse);
 
@@ -301,12 +298,11 @@ Behavior (per `src/mw/rbac.zig`):
 
 ```zig [main.zig]
 pub fn main(init: std.process.Init) !void {
-    utils.setIo(init.io);
     var arean = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arean.deinit();
     const allocator = arean.allocator();
 
-    const app: *App = try App.new(allocator, init.environ_map);
+    const app: *App = try App.new(allocator, init.io, init.environ_map);
 
     // protect routes (enforced after auth)
     try app.rbac("ADMIN", "*", "/api/admin/*");

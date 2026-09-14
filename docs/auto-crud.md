@@ -17,12 +17,10 @@ const utils = zero.utils;
 const User = struct { id: i64, name: []const u8, email: []const u8 };
 
 pub fn main(init: std.process.Init) !void {
-
-    utils.setIo(init.io);
-  
     var gpa: std.heap.DebugAllocator(.{}) = .init;
     const allocator = gpa.allocator();
-    const app = try App.new(allocator, init.environ_map);
+
+    const app = try App.new(allocator, init.io, init.environ_map);
 
     // One line wires up list / get / create / update / delete for `User`.
     try app.addRestHandlers(User, .{ .resource = "users" });
@@ -46,8 +44,11 @@ The generated SQL is emitted for **Postgres** (`$N` placeholders), **SQLite** (`
 ## Rules
 
 - `resource` is the URL segment. `table` defaults to `resource` (override via `opts.table`).
+
 - The primary key is auto-detected as the field named `id`; override with `opts.id_field`. The struct must have that field or it fails to compile.
+
 - Struct **field names map to column names exactly** (the `pgz` mapper is reused), so name your columns to match. `POST`/`PUT` bind the request JSON into the struct.
+
 - The primary key is taken from the request body on create (supply it) and from the `:id` path param on get/update/delete.
 
 Auto CRUD does not create the table — run your migration (or `ctx.SQL.exec`) first, as the `examples/zero-autocrud` demo does with a `/init` handler.

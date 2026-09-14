@@ -7,15 +7,11 @@ import { ImgComparisonSlider } from '@img-comparison-slider/vue';
 `zero` has built-in support for the accessing the postgres database.
 
 ```bash
-ctx.SQL.queryRow(); #retrieves one row at a time
-
-ctx.SQL.queryRows(); #retrieve multiple rows at a time
-
-ctx.SQL.exec(); #execute any statements that persist the data
-
-ctx.SQL.select(comptime T: type) #retrieve and transform data to any known comptime T
-
-ctx.SQL.selectSlice(comptime T: type) #retrieve and transform one or more data to any known comptime T
+ctx.SQL.queryRow(ctx, comptime T: type, query, args);        # retrieves one row, returns ?T
+ctx.SQL.queryRows(ctx, comptime T: type, query, args);       # retrieve multiple rows, returns []T
+ctx.SQL.exec(ctx, query, args);                              # execute any statements that persist the data
+ctx.SQL.select(ctx, comptime T: type, query, args);          # retrieve and transform one row to comptime T
+ctx.SQL.selectSlice(ctx, comptime T: type, list, query, args); # retrieve and transform rows into a slice of T
 ```
 
 With above mentioned method, the databse calls are abstracted, and leveraged through handler `Context` and achieves the desired results without any boiler-plate.
@@ -24,20 +20,25 @@ Typically we use the underlying database to perform the actions based on the app
 
 ## REST Handlers
 
-This example demonstrates the first step to spin up the `zero-basic` web app using the `zero` framework. As we are going to connect to database and retrieve needed database container as follows:
+This example demonstrates the first step to spin up the `zero-basic` web app using the `zero` framework.
+
+As we are going to connect to database and retrieve needed database container as follows:
 
 1. Pull and run podman or docker container.
 
 ::: code-group
+
 ```bash [postgres container]
 ❯ podman pull docker.io/library/postgres:17-alpine3.21
 ❯ podman run -d --name pg17 -e POSTGRES_USER=user1 -e POSTGRES_PASSWORD=password1 -v podman:/var/lib/postgresql/data -p 5432:5432 postgres:17-alpine3.21
 ```
+
 :::
 
 2. Create new database and tables.
 
 ::: code-group
+
 ```sql [SQL Schema]
 CREATE DATABASE demo;
 
@@ -48,6 +49,7 @@ CREATE TABLE users(
 
 INSERT INTO users(name) values ('anu');
 ```
+
 :::
 
 _Please bear with this step to try out things manually in database this one time._
@@ -56,8 +58,8 @@ _But `zero` framework provides option to automate and add migrations/data system
 
 3. Let us update our basic app configurations `configs/.env` with this.
 
-
 ::: code-group
+
 ```bash [configs/.env]
 # App configs
 APP_ENV=dev #zero framework tries to override .dev.env if it availables
@@ -74,11 +76,13 @@ DB_NAME=demo
 DB_PORT=5432
 DB_DIALECT=postgres
 ```
+
 :::
 
 4. Refer following simple `GET` rest handler to retrieve our data from database.
 
 ::: code-group
+
 ```zig [main.zig]
 const std = @import("std");
 const zero = @import("zero");
@@ -92,13 +96,12 @@ pub const std_options: std.Options = .{
 };
 
 pub fn main(init: std.process.Init) !void {
-    utils.setIo(init.io);
     var arean = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arean.deinit();
 
     const allocator = arean.allocator();
 
-    const app = try App.new(allocator, init.environ_map);
+    const app = try App.new(allocator, init.io, init.environ_map);
 
     try app.get("/db", dbResponse);
 
@@ -111,20 +114,18 @@ pub fn dbResponse(ctx: *Context) !void {
         name: []const u8,
     };
 
-    var row = try ctx.SQL.queryRow("select id, name from users limit 1", .{}) orelse unreachable;
-    defer row.deinit() catch {};
-
-    const user = try row.to(User, .{});
+    const user = try ctx.SQL.queryRow(ctx, User, "select id, name from users limit 1", .{}) orelse unreachable;
 
     try ctx.json(user);
 }
 ```
+
 :::
 
 4. Boom! Lets build and run our app.
 
 ```bash
-zero/examples/zero-basic on main via ↯ v0.15.1 
+zero/examples/zero-basic on main via ↯ v0.15.1
 ❯
 ❯ zig build basic
  INFO [03:27:08] Loaded config from file: ./configs/.env
@@ -173,8 +174,8 @@ pub fn transfer(ctx: *Context) !void {
     try ctx.SQL.begin();
     errdefer ctx.SQL.rollback() catch {};
 
-    try ctx.SQL.exec("update accounts set balance = balance - 100 where id = 1", .{});
-    try ctx.SQL.exec("update accounts set balance = balance + 100 where id = 2", .{});
+    try ctx.SQL.exec(ctx, "update accounts set balance = balance - 100 where id = 1", .{});
+    try ctx.SQL.exec(ctx, "update accounts set balance = balance + 100 where id = 2", .{});
 
     try ctx.SQL.commit();
 }

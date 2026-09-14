@@ -1,7 +1,9 @@
 # Solr
 
 `zero` exposes **Solr** (and other search engines) through a unified, type-erased
-`ctx.Search` handle. Index, fetch, delete, and query documents with the same calls
+`ctx.Search` handle.
+
+Index, fetch, delete, and query documents with the same calls
 regardless of backend — add more backends (Elasticsearch, Meilisearch, …) in
 `src/datasource/specialized/searchInterface.zig`.
 
@@ -11,6 +13,7 @@ is configured, so always guard with `if (ctx.Search) |s| { ... } else { notConfi
 ## Configuration
 
 ::: code-group
+
 ```bash [configs/.env]
 # App configs
 APP_ENV=dev
@@ -25,13 +28,14 @@ SOLR_DEFAULT_COLLECTION=docs
 # Optional HTTP basic auth, as "user:pass"
 SOLR_BASIC_AUTH=admin:secret
 ```
+
 :::
 
-| Env | Required | Description |
-| --- | --- | --- |
-| `SOLR_URL` | yes | Base URL of the Solr node (include `/solr`). |
-| `SOLR_DEFAULT_COLLECTION` | yes | Collection/core used when a call omits `collection`. |
-| `SOLR_BASIC_AUTH` | no | `user:pass` sent as HTTP Basic auth. |
+| Env                       | Required | Description                                          |
+| ------------------------- | -------- | ---------------------------------------------------- |
+| `SOLR_URL`                | yes      | Base URL of the Solr node (include `/solr`).         |
+| `SOLR_DEFAULT_COLLECTION` | yes      | Collection/core used when a call omits `collection`. |
+| `SOLR_BASIC_AUTH`         | no       | `user:pass` sent as HTTP Basic auth.                 |
 
 ## API
 

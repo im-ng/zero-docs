@@ -1,16 +1,19 @@
 # Cassandra
 
 `zero` exposes **Cassandra** (and other wide-column / document stores) through a unified,
-type-erased `ctx.NoSQL` handle. The same calls work regardless of which NoSQL backend is
-configured, so swapping backends later is a config change, not a code change. (More backends
-such as MongoDB are planned — add them in `src/datasource/nosqlInterface.zig`.)
+type-erased `ctx.NoSQL` handle.
 
-`ctx.NoSQL` is **optional**: it is `null` until `CASSANDRA_CONTACT_POINTS` is configured, so
-always guard with `if (ctx.NoSQL) |n| { ... } else { notConfigured }`.
+The same calls work regardless of which NoSQL backend is configured, so swapping backends later is
+a config change, not a code change. (More backends such as MongoDB are planned,
+add them in `src/datasource/nosqlInterface.zig`.)
+
+`ctx.NoSQL` is **optional**: it is `null` until `CASSANDRA_CONTACT_POINTS` is configured,
+so always guard with `if (ctx.NoSQL) |n| { ... } else { notConfigured }`.
 
 ## Configuration
 
 ::: code-group
+
 ```bash [configs/.env]
 # App configs
 APP_ENV=dev
@@ -26,14 +29,15 @@ CASSANDRA_KEYSPACE=zero_demo
 CASSANDRA_USER=cassandra
 CASSANDRA_PASSWORD=cassandra
 ```
+
 :::
 
-| Env | Required | Description |
-| --- | --- | --- |
-| `CASSANDRA_CONTACT_POINTS` | yes | Comma-separated `host:port` seed nodes. |
-| `CASSANDRA_KEYSPACE` | yes | Keyspace to connect to. |
-| `CASSANDRA_USER` | no | Auth username. |
-| `CASSANDRA_PASSWORD` | no | Auth password. |
+| Env                        | Required | Description                             |
+| -------------------------- | -------- | --------------------------------------- |
+| `CASSANDRA_CONTACT_POINTS` | yes      | Comma-separated `host:port` seed nodes. |
+| `CASSANDRA_KEYSPACE`       | yes      | Keyspace to connect to.                 |
+| `CASSANDRA_USER`           | no       | Auth username.                          |
+| `CASSANDRA_PASSWORD`       | no       | Auth password.                          |
 
 ## API
 

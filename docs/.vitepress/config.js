@@ -7,7 +7,7 @@ const shared = {
       noExternal: ["zeroTheme"],
     },
   },
-  title: "zero framework",
+  title: "Zero Framework",
   description:
     "A simple and opinionated microservice web framework written in Zig",
   head: [
@@ -27,10 +27,6 @@ const shared = {
   themeConfig: {
     appearance: "force-light",
     title: "   ",
-    logo: {
-      light: "/zero-fmk-light.webp",
-      dark: "/zero-fmk-dark.webp",
-    },
     socialLinks: [{ icon: "github", link: "https://github.com/im-ng/zero" }],
   },
 };

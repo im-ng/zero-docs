@@ -31,21 +31,25 @@ const Context = zero.Context;
 const utils = zero.utils;
 
 pub fn main(init: std.process.Init) !void {
-    utils.setIo(init.io);                       // 1. wire up I/O
     var gpa: std.heap.DebugAllocator(.{}) = .init;
     const allocator = gpa.allocator();
 
-    const app = try App.new(allocator, init.environ_map); // 2. pass env map
+    // I/O reactor is injected directly into App.new (no global setIo call).
+    const app = try App.new(allocator, init.io, init.environ_map); // pass I/O + env map
     try app.get("/json", jsonResponse);
     try app.run();
 }
 ```
 
-The two mechanical changes from 0.15.2:
+The mechanical changes from 0.15.2:
 
-1. `pub fn main() !void` → `pub fn main(init: std.process.Init) !void` and call
-   `utils.setIo(init.io);` as the first line.
-2. `App.new(allocator)` → `App.new(allocator, init.environ_map)`.
+1. `pub fn main() !void` → `pub fn main(init: std.process.Init) !void` and inject
+    the process I/O reactor by passing `init.io` as the second argument to `App.new`.
+2. `App.new(allocator)` → `App.new(allocator, init.io, init.environ_map)`. The
+    `std.Io` reactor is no longer installed via a global `utils.setIo(init.io)` call;
+    it is stored on the `container` and `Context` (`container.io` / `ctx.io`) and
+    seeded into the thin `utils.io` global inside `App` bootstrap for stateless
+    helpers (utils, logger, zsutil, metricz, kvstore).
 
 `build.zig.zon` should target the new compiler:
 

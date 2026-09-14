@@ -14,22 +14,23 @@ hero:
       text: View on GitHub
       link: https://github.com/im-ng/zero
   image:
-    src: /zero-fmk-light.webp
+    light: /g4.svg
+    dark: /g5.svg
     alt: zero framework
 features:
   - title: Zero boilerplate
-    details: Configure everything through .env — databases, queues, auth and observability plug in with no glue code.
+    details: Configure everything through .env, databases, queues, auth and observability plug in<br> with no glue code.
   - title: Single static binary
-    details: Compile to one dependency-free binary. Tiny RSS (~16–65 MiB), no runtime, ships anywhere including Kubernetes.
+    details: Compile to one dependency-free binary. Tiny RSS (~16–65 MiB),<br> no runtime, ships anywhere including Kubernetes.
   - title: Batteries included
-    details: REST, Postgres / SQLite / DuckDB, Redis, Kafka / NATS / MQTT, GraphQL, protobuf, auth, metrics and tracing — out of the box.
+    details: REST, SQL, NoSQL, Cache, PubSub, GraphQL, Protobuf, Search, auth, metrics and tracing <br> out of the box.
   - title: Observable by default
     details: Structured JSON logs, Prometheus metrics, distributed tracing and health endpoints are wired in from the first request.
 ---
 
-## Hello world in ~15 lines
+## Hello Json in ~15 lines
 
-```zig
+```zig:line-numbers
 const std = @import("std");
 const zero = @import("zero");
 const utils = zero.utils;
@@ -37,11 +38,10 @@ const utils = zero.utils;
 pub const std_options: std.Options = .{ .logFn = zero.logger.custom };
 
 pub fn main(init: std.process.Init) !void {
-    utils.setIo(init.io);
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
 
-    const app = try zero.App.new(arena.allocator(), init.environ_map);
+    const app = try zero.App.new(arena.allocator(), init.io, init.environ_map);
     try app.get("/json", jsonResponse);
     try app.run();
 }
@@ -51,12 +51,23 @@ fn jsonResponse(ctx: *zero.Context) !void {
 }
 ```
 
-Drop that in `src/main.zig`, add a `configs/.env`, and `zig build run` serves a JSON endpoint with structured logs and `/metrics` already live. The full walkthrough is in [Hello world](/hello-zero).
+Drop that in `src/main.zig`, add a `configs/.env`, and `zig build run` serves a JSON endpoint
+with structured logs and `/metrics` already live.
+
+The full walkthrough is in [Hello world](/hello-zero).
 
 ## Fast, and small
 
-A single node serves **tens of thousands of requests/sec** while holding **~100 MiB RSS** — no GC pauses, no JIT warm-up. See the numbers and how to reproduce them in [Benchmark](/benchmark).
+A single binary serves **tens of thousands of requests/sec** while holding **~50 MiB RSS**
+
+No GC pauses, no JIT warm-up.
+
+See the numbers and how to reproduce them in [Benchmark](/benchmark).
 
 ## Why zero?
 
-If you want Go's ergonomics without its runtime, or Node's speed without its footprint, zero gives you a strongly-opinionated Zig framework: explicit memory, a single binary, and microservice building blocks you'd otherwise wire together by hand. Start with [Getting Started](/started) or browse the [Examples](/examples).
+If you want Go's ergonomics without its runtime, or Node's speed without its footprint, zero gives you a strongly-opinionated
+
+Zig framework: explicit memory, a single binary, and microservice building blocks you'd otherwise wire together by hand.
+
+Start with [Getting Started](/started) or browse the [Examples](/examples).

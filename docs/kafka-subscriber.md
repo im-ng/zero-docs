@@ -174,12 +174,11 @@ pub const std_options: std.Options = .{
 const topicName = "zero-topic";
 
 pub fn main(init: std.process.Init) !void {
-    utils.setIo(init.io);
     var gpa: std.heap.GeneralPurposeAllocator(.{}) = .init;
     const allocator = gpa.allocator();
     _ = gpa.detectLeaks();
 
-    const app: *App = try App.new(allocator, init.environ_map);
+    const app: *App = try App.new(allocator, init.io, init.environ_map);
 
     try app.addKafkaSubscription(topicName, subscribeTask);
 

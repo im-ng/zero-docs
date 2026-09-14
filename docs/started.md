@@ -2,7 +2,8 @@
 ![logo](./zero-fmk-dark.webp){.dark-only}
 
 ::: danger Requires Zig 0.16.0
-`zero` targets **Zig 0.16.0**. Install it first (see [ziglang.org](https://ziglang.org/learn/getting-started/)) — an older toolchain will fail to build.
+`zero` main targets **Zig 0.16.0**. Install it first (see [ziglang.org](https://ziglang.org/learn/getting-started/))
+, an older toolchain will fail to build.
 :::
 
 # Getting Started
@@ -73,11 +74,10 @@ const utils = zero.utils;
 pub const std_options: std.Options = .{ .logFn = zero.logger.custom };
 
 pub fn main(init: std.process.Init) !void {
-    utils.setIo(init.io);
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
 
-    const app = try zero.App.new(arena.allocator(), init.environ_map);
+    const app = try zero.App.new(arena.allocator(), init.io, init.environ_map);
     try app.get("/json", jsonResponse);
     try app.run();
 }
@@ -89,8 +89,9 @@ fn jsonResponse(ctx: *zero.Context) !void {
 
 ### 4. Configure via `.env`
 
-`zero` is configured entirely through environment variables (12-factor). Create
-`configs/.env`:
+`zero` is configured entirely through environment variables (12-factor).
+
+Create `configs/.env`:
 
 ```bash
 APP_ENV=dev
@@ -117,8 +118,9 @@ curl localhost:8080/metrics      # Prometheus metrics, already live
 curl localhost:8080/.well-known/health   # liveness probe
 ```
 
-That's the whole loop: configure → register routes → `app.run()`. Everything else
-(databases, queues, auth, tracing) is opt-in through `.env`.
+That's the whole loop: configure → register routes → `app.run()`.
+
+Everything else (databases, queues, auth, tracing) is opt-in through `.env`.
 
 ## Run the official examples
 
@@ -127,6 +129,7 @@ The framework ships complete, runnable apps in its
 
 - **`zero-basic`** — a full HTTP microservice (REST, Postgres/SQLite, Redis, GraphQL,
   observability) with a multi-stage `Dockerfile.multi-stage` ready for Kubernetes.
+
 - **`zero-cli`** — a command-line app built on `App.newCmd` / `app.runCmd` (see
   [CLI Apps](/cli)).
 
@@ -142,18 +145,23 @@ zig build run          # boots the demo service on :8080
 zero-allocation hot paths while keeping development ergonomic.
 
 - **Zig, not a runtime.** No GC pauses, no JIT warm-up, no VM. You get explicit memory
-  management and a single static binary — closer to Go's DX than its runtime weight.
+  management and a single static binary, closer to Go's DX than its runtime weight.
+
 - **Config over code.** Following the 12-factor methodology, you attach best-in-class
   built-ins (databases, queues, caches, auth, observability) through `.env` instead of
   hand-wiring clients and middleware.
+
 - **Microservice-ready out of the box.** REST, auto-CRUD, GraphQL, protobuf, pub/sub,
   scheduling, rate limiting, structured logging, metrics and tracing are first-class.
 
-### What's included
+## What's included
 
 - `.env` based configuration to boot the app
 - Drop-in support for well-known technologies
   - `Postgres` / `SQLite` / `DuckDB` — seed data on startup, manage migrations with ease
+  - NoSQL through `Cassandra`
+  - Timeseries `InfluxDB`
+  - Search through `Solr`
   - KV Store — `Redis`, `NATS KV`, `Memory`, `SQLite`
   - Cache — `Redis` (with `nats_kv` / `sqlite` / `memory` backends)
   - Pub/Sub — `MQTT`, `NATS`, `Kafka`

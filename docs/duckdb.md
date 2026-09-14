@@ -44,13 +44,13 @@ pub fn analytics(ctx: *Context) !void {
     const Row = struct { region: []const u8, revenue: f64 };
 
     // DuckDB speaks full ANSI SQL — including analytics functions.
-    var row = try ctx.SQL.queryRow(
+    const top = try ctx.SQL.queryRow(
+        ctx,
+        Row,
         "select region, sum(amount) from sales group by region order by 2 desc limit 1",
         .{},
     ) orelse unreachable;
-    defer row.deinit() catch {};
 
-    const top = try row.to(Row, .{});
     try ctx.json(top);
 }
 ```

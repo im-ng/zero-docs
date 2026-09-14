@@ -1,17 +1,21 @@
 # InfluxDB
 
 `zero` exposes **InfluxDB** (and other time-series stores) through a unified, type-erased
-`ctx.Timeseries` handle. Write points and run Flux queries with the same calls regardless of
-backend — add more backends (Prometheus, VictoriaMetrics, …) in
-`src/datasource/specialized/timeseriesInterface.zig`.
+`ctx.Timeseries` handle.
 
-`ctx.Timeseries` is **optional**: it is `null` until `INFLUXDB_URL` (plus `INFLUXDB_ORG` and
+Write points and run Flux queries with the same calls regardless of
+backend in `src/datasource/specialized/timeseriesInterface.zig`.
+
+`ctx.Timeseries` is **optional**:
+
+it is `null` until `INFLUXDB_URL` (plus `INFLUXDB_ORG` and
 `INFLUXDB_BUCKET`) is configured, so always guard with
 `if (ctx.Timeseries) |ts| { ... } else { notConfigured }`.
 
 ## Configuration
 
 ::: code-group
+
 ```bash [configs/.env]
 # App configs
 APP_ENV=dev
@@ -27,14 +31,15 @@ INFLUXDB_BUCKET=metrics
 # Optional (required if the bucket is token-protected)
 INFLUXDB_TOKEN=my-super-secret-token
 ```
+
 :::
 
-| Env | Required | Description |
-| --- | --- | --- |
-| `INFLUXDB_URL` | yes | Base URL of the InfluxDB instance. |
-| `INFLUXDB_ORG` | yes | Organisation. |
-| `INFLUXDB_BUCKET` | yes | Default bucket for writes/queries. |
-| `INFLUXDB_TOKEN` | no | API token (required for secured buckets). |
+| Env               | Required | Description                               |
+| ----------------- | -------- | ----------------------------------------- |
+| `INFLUXDB_URL`    | yes      | Base URL of the InfluxDB instance.        |
+| `INFLUXDB_ORG`    | yes      | Organisation.                             |
+| `INFLUXDB_BUCKET` | yes      | Default bucket for writes/queries.        |
+| `INFLUXDB_TOKEN`  | no       | API token (required for secured buckets). |
 
 ## API
 
@@ -48,8 +53,9 @@ defer ctx.allocator.free(csv);
 ```
 
 `write` takes `measurement`, `tags`, `fields` (both line-protocol strings), and an optional
-timestamp (`?i64`; pass `null` to use server time). `query` runs a Flux string and returns
-the result as CSV text — free it with `defer ctx.allocator.free(...)`.
+timestamp (`?i64`; pass `null` to use server time).
+
+`query` runs a Flux string and returns the result as CSV text — free it with `defer ctx.allocator.free(...)`.
 
 ## Example handler
 

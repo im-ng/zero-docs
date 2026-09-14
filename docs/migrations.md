@@ -102,13 +102,12 @@ pub const std_options: std.Options = .{
 };
 
 pub fn main(init: std.process.Init) !void {
-    utils.setIo(init.io);
     var arean: ArenaAllocator = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arean.deinit();
 
     const allocator: Allocator = arean.allocator();
 
-    const app: *App = try App.new(allocator, init.environ_map);
+    const app: *App = try App.new(allocator, init.io, init.environ_map);
 
     try prepareMigrations(app);
 

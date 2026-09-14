@@ -37,10 +37,9 @@ fn userResolver(ctx: *Context, args: struct { id: i64 }) anyerror!?User {
 var query_root = Query{ .users = usersResolver, .user = userResolver };
 
 pub fn main(init: std.process.Init) !void {
-    utils.setIo(init.io);
     var gpa: std.heap.DebugAllocator(.{}) = .init;
     const allocator = gpa.allocator();
-    const app = try App.new(allocator, init.environ_map);
+    const app = try App.new(allocator, init.io, init.environ_map);
 
     // Register the endpoint. Mutation is optional (pass `null`).
     try app.graphql("/graphql", Query, null, &query_root, null);

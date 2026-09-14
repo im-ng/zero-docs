@@ -1,9 +1,11 @@
 # Interface
 
-`zero` talks to many interchangeable backends — Redis, NATS KV, in-memory and
+`zero` talks to many interchangeable backends - Redis, NATS KV, in-memory and
 SQLite for key-value; local/ftp/sftp for files; Postgres/SQLite for SQL; and
-Kafka/MQTT/NATS for pub/sub. To keep handler code backend-agnostic, each of these
-is exposed through a **type-erased interface**: a stable, uniform API backed by a
+Kafka/MQTT/NATS for pub/sub.
+
+To keep handler code backend-agnostic, each of these is exposed through
+a **type-erased interface**: a stable, uniform API backed by a
 concrete implementation that the caller never names.
 
 There are two shapes in the framework:
@@ -11,6 +13,7 @@ There are two shapes in the framework:
 - **Enum-tagged** — a `*anyopaque` pointer plus a `Backend`/`Dialect` enum; each
   method `switch`es on the tag and casts the pointer to the concrete type. Used by
   `KVStore`, `FileStore` and `Datasource`.
+
 - **VTable (fat pointer)** — a `*anyopaque` pointer plus a `*const VTable` of
   function pointers. Used by `PubSub`.
 
@@ -76,9 +79,10 @@ pub const KVStore = struct {
 
 `KVStore.build(container, backend, opts)` constructs the concrete backend from the
 container's configured connections (e.g. it reads `container.redis` for `.redis`, or
-`container.Nats.?.js` for `.nats_kv`) and wraps it. The wrapped handle is stored in
-`container.kvStores`; the first one registered — or the Redis client auto-registered
-on connect — becomes the default `ctx.KV`.
+`container.Nats.?.js` for `.nats_kv`) and wraps it.
+
+The wrapped handle is stored in `container.kvStores`; the first one registered
+or the Redis client auto-registered on connect — becomes the default `ctx.KV`.
 
 `FileStore` (backends `local` / `ftp` / `sftp`) and `Datasource` (dialects
 `postgres` / `sqlite`) use the identical pattern.
@@ -135,9 +139,12 @@ fn onMessage(ctx: *Context) !void {
 ## Why it matters
 
 Because the concrete type is erased, handler code only ever touches `ctx.KV`,
-`ctx.FileStore`, `ctx.SQL` and `ctx.pubsub`. Swapping a backend — Redis → NATS KV,
-or Postgres → SQLite — is a configuration change (`PUBSUB_BACKEND`, `DB_DIALECT`,
-`app.addKVStore(...)`), not a code change. See
-[KV Store](/kv-store), [File Store](/file-store), [Using Pubsub](/pubsub) and
+`ctx.FileStore`, `ctx.SQL` and `ctx.pubsub`.
+
+Swapping a backend — Redis → NATS KV, or Postgres → SQLite
+is a configuration change (`PUBSUB_BACKEND`, `DB_DIALECT`, `app.addKVStore(...)`),
+not a code change.
+
+See [KV Store](/kv-store), [File Store](/file-store), [Using Pubsub](/pubsub) and
 [Using Postgres](/rest-handler) for the public-facing APIs built on these
 interfaces.

@@ -2,7 +2,9 @@
 
 `zero` can run as a **command-line application** instead of an HTTP server. A CLI app
 wires up the same config, logging, container, datasources, and migrations — but it starts
-**no HTTP server and no metrics server**. This makes it ideal for:
+**no HTTP server and no metrics server**.
+
+This makes it ideal for:
 
 - **one-time jobs** (seed data, backfills, exports),
 - **long-running migrations** driven by `app.onStartup` hooks,
@@ -24,14 +26,13 @@ const utils = zero.utils;
 pub const std_options: std.Options = .{ .logFn = zero.logger.custom };
 
 pub fn main(init: std.process.Init) !void {
-    utils.setIo(init.io);
 
     var gpa: std.heap.DebugAllocator(.{}) = .init;
     const allocator = gpa.allocator();
 
     // CLI mode: wires config/logging/container/datasources/migrations,
     // but starts NO HTTP or metrics server.
-    const app = try App.newCmd(allocator, init.environ_map);
+    const app = try App.newCmd(allocator, init.io, init.environ_map);
 
     try app.SubCommand("seed", seed, .{ .description = "populate the demo table" });
     try app.SubCommand("list", list, .{ .description = "list rows from the demo table" });
@@ -44,9 +45,10 @@ pub fn main(init: std.process.Init) !void {
 
 ## Register subcommands
 
-`app.SubCommand` maps a token the user passes after the program name to a handler. The
-handler signature is `fn (*Context) anyerror!void` — the same `Context` you use in HTTP
-handlers, so `ctx.SQL`, `ctx.NoSQL`, `ctx.Timeseries`, `ctx.Search`, … are all available
+`app.SubCommand` maps a token the user passes after the program name to a handler.
+
+The handler signature is `fn (*Context) anyerror!void`, the same `Context` you use in HTTP
+handlers, so `ctx.SQL`, `ctx.NoSQL`, `ctx.Timeseries`, `ctx.Search`, and are all available
 (configured via env as usual).
 
 ```zig
@@ -72,11 +74,11 @@ pub fn list(ctx: *Context) !void {
 
 Anything after the subcommand is parsed into `ctx.params`. Both styles work:
 
-| Invocation | Read in handler |
-| --- | --- |
-| `myapp greet --name John` | `ctx.Param("name")` → `"John"` |
-| `myapp greet --name=John` | `ctx.Param("name")` → `"John"` |
-| `myapp greet -n John` | `ctx.Param("n")` → `"John"` |
+| Invocation                  | Read in handler                  |
+| --------------------------- | -------------------------------- |
+| `myapp greet --name Sashti` | `ctx.Param("name")` → `"Sashti"` |
+| `myapp greet --name=Sashti` | `ctx.Param("name")` → `"Sashti"` |
+| `myapp greet -n Sashti`     | `ctx.Param("n")` → `"Sashti"`    |
 
 ```zig
 pub fn greet(ctx: *Context) !void {

@@ -66,14 +66,13 @@ pub const std_options: std.Options = .{
 };
 
 pub fn main(init: std.process.Init) !void {
-    utils.setIo(init.io);
     
     var arena_instance = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena_instance.deinit();
 
     const allocator = arena_instance.allocator();
 
-    const app = try App.new(allocator, init.environ_map);
+    const app = try App.new(allocator, init.io, init.environ_map);
 
     app.onStatup(prepareCache);
 
@@ -168,10 +167,9 @@ const Context = zero.Context;
 const utils = zero.utils;
 
 pub fn main(init: std.process.Init) !void {
-    utils.setIo(init.io);
     var gpa: std.heap.DebugAllocator(.{}) = .init;
     const allocator = gpa.allocator();
-    const app = try App.new(allocator, init.environ_map);
+    const app = try App.new(allocator, init.io, init.environ_map);
 
     // pick a backend: .redis | .nats_kv | .memory | .sqlite
     try app.addKVStore("cache", .memory, .{});                       // in-memory

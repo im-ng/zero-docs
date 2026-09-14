@@ -40,10 +40,9 @@ const Context = zero.Context;
 const utils = zero.utils;
 
 pub fn main(init: std.process.Init) !void {
-    utils.setIo(init.io);
     var gpa: std.heap.DebugAllocator(.{}) = .init;
     const allocator = gpa.allocator();
-    const app = try App.new(allocator, init.environ_map);
+    const app = try App.new(allocator, init.io, init.environ_map);
 
     try app.addCronJob("* * * * * *", "publisher-1", publishTask1);
     try app.run();

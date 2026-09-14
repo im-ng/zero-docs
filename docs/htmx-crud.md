@@ -64,7 +64,6 @@ pub const std_options: std.Options = .{
 };
 
 pub fn main(init: std.process.Init) !void {
-    utils.setIo(init.io);
     var arean = std.heap.ArenaAllocator.init(
         std.heap.page_allocator,
     );
@@ -72,7 +71,7 @@ pub fn main(init: std.process.Init) !void {
 
     const allocator = arean.allocator();
 
-    const app = try App.new(allocator, init.environ_map);
+    const app = try App.new(allocator, init.io, init.environ_map);
 
     try migrations.all(app);
 
@@ -116,8 +115,8 @@ _Check out the example entire code to understand the usage better_
 ::: code-group
 ```zig [get method]
 pub fn getAll(ctx: *Context) !void {
-    var rows = try ctx.SQL.queryRows(models.getAllTodos, .{});
-    defer rows.deinit();
+    var _rows = std.array_list.Managed(models.Todo).init(ctx.allocator);
+    _ = try ctx.SQL.selectSlice(ctx, models.Todo, &_rows, models.getAllTodos, .{});
 
     var responses = std.array_list.Managed(
         models.HandlerTodo,
@@ -125,17 +124,15 @@ pub fn getAll(ctx: *Context) !void {
         ctx.allocator,
     );
 
-    while (try rows.next()) |row| {
-        const todo = try row.to(models.Todo, .{});
-
+    for (_rows.items) |row| {
         const response = models.HandlerTodo{
-            .id = try std.fmt.allocPrint(ctx.allocator, "{d}", .{todo.id.?}),
-            .description = todo.description,
-            .task = todo.task,
-            .isDone = todo.isDone,
+            .id = try std.fmt.allocPrint(ctx.allocator, "{d}", .{row.id.?}),
+            .description = row.description,
+            .task = row.task,
+            .isDone = row.is_done,
             .created_at = try utils.DTtimestampz(
                 ctx.allocator,
-                todo.created_at,
+                row.created_at,
             ),
         };
 
@@ -158,7 +155,7 @@ pub fn persistTodo(ctx: *Context) !void {
     }
 
     // persist todo entry in database
-    const id = try ctx.SQL.exec(models.addTodoEntry, .{ t.task, t.description });
+    const id = try ctx.SQL.exec(ctx, models.addTodoEntry, .{ t.task, t.description });
 
     if (id) |_id| {
         const status = try utils.toStringFromInt(
@@ -169,27 +166,26 @@ pub fn persistTodo(ctx: *Context) !void {
         ctx.info(status);
     }
 
-    var row = try ctx.SQL.queryRow(
+    const row: ?models.Todo = try ctx.SQL.select(
+        ctx,
+        models.Todo,
         models.getTodoEntry,
         .{},
-    ) orelse unreachable;
-    defer row.deinit() catch {};
-
-    const res = try row.to(models.Todo, .{});
+    );
 
     var response = models.HandlerTodo{
         .id = try std.fmt.allocPrint(
             ctx.allocator,
             "{d}",
-            .{res.id.?},
+            .{row.?.id.?},
         ),
-        .description = res.description,
-        .task = res.task,
-        .isDone = res.isDone,
+        .description = row.?.description,
+        .task = row.?.task,
+        .isDone = row.?.is_done,
     };
     response.created_at = try utils.DTtimestampz(
         ctx.allocator,
-        res.created_at,
+        row.?.created_at,
     );
 
     ctx.response.setStatus(.ok);
@@ -204,6 +200,7 @@ pub fn updateTodo(ctx: *Context) !void {
 
     // persist todo entry in database
     const id = try ctx.SQL.exec(
+        ctx,
         models.updateTodo,
         .{ t.?.task.?, t.?.description.?, todoID },
     );
@@ -217,27 +214,26 @@ pub fn updateTodo(ctx: *Context) !void {
         ctx.info(status);
     }
 
-    var row = try ctx.SQL.queryRow(
+    const row: ?models.Todo = try ctx.SQL.select(
+        ctx,
+        models.Todo,
         models.getTodoByID,
         .{todoID},
-    ) orelse unreachable;
-    defer row.deinit() catch {};
-
-    const res = try row.to(models.Todo, .{});
+    );
 
     var response = models.HandlerTodo{
         .id = try std.fmt.allocPrint(
             ctx.allocator,
             "{d}",
-            .{res.id.?},
+            .{row.?.id.?},
         ),
-        .description = res.description,
-        .task = res.task,
-        .isDone = res.isDone,
+        .description = row.?.description,
+        .task = row.?.task,
+        .isDone = row.?.is_done,
     };
     response.created_at = try utils.DTtimestampz(
         ctx.allocator,
-        res.created_at,
+        row.?.created_at,
     );
 
     var sb = Builder.init(ctx.allocator);
@@ -253,6 +249,8 @@ pub fn deleteTodo(ctx: *Context) !void {
     ctx.info(id);
 
     const row = ctx.SQL.queryRow(
+        ctx,
+        models.Todo,
         models.getTodoByID,
         .{id},
     ) catch |err| {
@@ -275,7 +273,7 @@ pub fn deleteTodo(ctx: *Context) !void {
         return;
     }
 
-    _ = try ctx.SQL.exec(models.deleteTodo, .{id});
+    _ = try ctx.SQL.exec(ctx, models.deleteTodo, .{id});
 
     ctx.response.setStatus(.ok);
     ctx.response.header("HX-Refresh", "true");

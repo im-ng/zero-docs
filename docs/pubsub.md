@@ -23,7 +23,7 @@ app.addKafkaSubscription("topic", subscriberHandler); #listens for upcoming even
 ```
 
 ```zig [MQTT]
-ctx.MQ.publish("topic"); #publishes message to a topic on the subscribed client
+ctx.MQ.Publish("topic", "payload"); #publishes message to a topic on the subscribed client
 
 app.addSubscription("topic", subscriber-handler); #listens for upcoming event and injects into subscriber handler.
 ```
@@ -165,4 +165,60 @@ fn onMessage(ctx: *Context) !void {
 
 // register at startup
 try app.addPubSubSubscription("zero", onMessage);
+```
+
+### Kafka
+
+Select Kafka with `PUBSUB_BACKEND=KAFKA`.
+
+Publish through the `ctx.KF` interface — resolve the topic handler once with
+`ctx.KF.getTopicHandler(ctx, topic)`, then `ctx.KF.publish(ctx, topic, key, payload)`;
+subscribe with `app.addKafkaSubscription(...)`.
+
+In the handler the message is available on `ctx.message.?.kafka`, which exposes `.topic`
+and `.payload` (`?[]const u8`).
+
+```zig [publish]
+// from a handler or cron job
+const topic = try ctx.KF.getTopicHandler(ctx, "zero-topic");
+try ctx.KF.publish(ctx, topic, "publisher-1", "publisher message!");
+```
+
+```zig [subscribe]
+fn subscribeTask(ctx: *Context) !void {
+    if (ctx.message) |message| {
+        const k = message.kafka;
+        ctx.info(k.payload); // k.topic and k.payload are []const u8 (?[]const u8)
+    }
+}
+
+// register at startup
+try app.addKafkaSubscription("zero-topic", subscribeTask);
+```
+
+### MQTT
+
+Select MQTT with `PUBSUB_BACKEND=MQTT`.
+
+Publish through the `ctx.MQ` interface (`ctx.MQ.Publish(topic, payload)`); subscribe
+with `app.addSubscription(...)`.
+
+In the handler the message is available on `ctx.message.?.mqtt`, which exposes `.topic`
+and `.payload` (`?[]const u8`).
+
+```zig [publish]
+// from a handler or cron job
+const id = try ctx.MQ.Publish("zero", "publisher 1 says hello!");
+```
+
+```zig [subscribe]
+fn subscribeTask(ctx: *Context) !void {
+    if (ctx.message) |message| {
+        const mq = message.mqtt;
+        ctx.info(mq.payload); // mq.topic and mq.payload are []const u8 (?[]const u8)
+    }
+}
+
+// register at startup
+try app.addSubscription("zero", subscribeTask);
 ```

@@ -47,13 +47,12 @@ pub const std_options: std.Options = .{
 const pubSubTopic = "zero";
 
 pub fn main(init: std.process.Init) !void {
-    utils.setIo(init.io);
     var arena_instance = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena_instance.deinit();
 
     const allocator: Allocator = arena_instance.allocator();
 
-    const app: *App = try App.new(allocator, init.environ_map);
+    const app: *App = try App.new(allocator, init.io, init.environ_map);
 
     try app.addCronJob("0 * * * * *", "publisher-1", publishTask1);
 

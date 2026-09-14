@@ -12,15 +12,11 @@ The same `ctx.SQL` interface used for Postgres drives SQLite; `zero` routes your
 to the right backend based on `DB_DIALECT`.
 
 ```bash
-ctx.SQL.queryRow(); #retrieves one row at a time
-
-ctx.SQL.queryRows(); #retrieve multiple rows at a time
-
-ctx.SQL.exec(); #execute any statements that persist the data
-
-ctx.SQL.select(comptime T: type) #retrieve and transform data to any known comptime T
-
-ctx.SQL.selectSlice(comptime T: type) #retrieve and transform one or more data to any known comptime T
+ctx.SQL.queryRow(ctx, comptime T: type, query, args);        # retrieves one row, returns ?T
+ctx.SQL.queryRows(ctx, comptime T: type, query, args);       # retrieve multiple rows, returns []T
+ctx.SQL.exec(ctx, query, args);                              # execute any statements that persist the data
+ctx.SQL.select(ctx, comptime T: type, query, args);          # retrieve and transform one row to comptime T
+ctx.SQL.selectSlice(ctx, comptime T: type, list, query, args); # retrieve and transform rows into a slice of T
 ```
 
 With the methods above, database calls are abstracted through the handler `Context` and
@@ -83,13 +79,12 @@ pub const std_options: std.Options = .{
 };
 
 pub fn main(init: std.process.Init) !void {
-    utils.setIo(init.io);
     var arean = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arean.deinit();
 
     const allocator = arean.allocator();
 
-    const app = try App.new(allocator, init.environ_map);
+    const app = try App.new(allocator, init.io, init.environ_map);
 
     try app.get("/db", dbResponse);
 
@@ -102,10 +97,7 @@ pub fn dbResponse(ctx: *Context) !void {
         name: []const u8,
     };
 
-    var row = try ctx.SQL.queryRow("select id, name from users limit 1", .{}) orelse unreachable;
-    defer row.deinit() catch {};
-
-    const user = try row.to(User, .{});
+    const user = try ctx.SQL.queryRow(ctx, User, "select id, name from users limit 1", .{}) orelse unreachable;
 
     try ctx.json(user);
 }
@@ -166,8 +158,8 @@ pub fn transfer(ctx: *Context) !void {
     try ctx.SQL.begin();
     errdefer ctx.SQL.rollback() catch {};
 
-    try ctx.SQL.exec("update accounts set balance = balance - 100 where id = 1", .{});
-    try ctx.SQL.exec("update accounts set balance = balance + 100 where id = 2", .{});
+    try ctx.SQL.exec(ctx, "update accounts set balance = balance - 100 where id = 1", .{});
+    try ctx.SQL.exec(ctx, "update accounts set balance = balance + 100 where id = 2", .{});
 
     try ctx.SQL.commit();
 }

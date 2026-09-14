@@ -84,7 +84,7 @@ stateDiagram-v2
 
 ```zig
 // `init.environ_map` is the `*std.process.EnvMap` from `pub fn main(init: std.process.Init)`
-const app = try App.new(allocator, init.environ_map);
+const app = try App.new(allocator, init.io, init.environ_map);
 ```
 
 `new()` launches the zero app instance, and coordinates and creates all underlying sub-systems if the valid configurations are available.

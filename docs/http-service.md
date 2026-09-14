@@ -64,13 +64,12 @@ pub const publicKeys = struct {
 };
 
 pub fn main(init: std.process.Init) !void {
-    utils.setIo(init.io);
     var arean = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arean.deinit();
 
     const allocator = arean.allocator();
 
-    const app = try App.new(allocator, init.environ_map);
+    const app = try App.new(allocator, init.io, init.environ_map);
 
     try app.addHttpService("auth-service", app.config.Get("SERVICE_URL"));
 
