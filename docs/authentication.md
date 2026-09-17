@@ -293,51 +293,42 @@ Behavior (per `src/mw/rbac.zig`):
 - If the request has no `role` claim (e.g. Basic / API Key auth, or no token) or the role is not allowed, the middleware returns `403 Forbidden`.
 - Method matching: `*` matches any verb and comparison is case-insensitive.
 - Path matching: a trailing `*` is a prefix wildcard (e.g. `/api/*` matches `/api/users/1`).
-
-### Registering rules in code
-
-```zig [main.zig]
-pub fn main(init: std.process.Init) !void {
-    var arean = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    defer arean.deinit();
-    const allocator = arean.allocator();
-
-    const app: *App = try App.new(allocator, init.io, init.environ_map);
-
-    // protect routes (enforced after auth)
-    try app.rbac("ADMIN", "*", "/api/admin/*");
-    try app.rbac("USER", "GET", "/api/resource");
-
-    try app.get("/", handler);
-    try app.run();
-}
-```
+- An `exempt` rule bypasses RBAC for its listed methods only; other methods on the same endpoint stay protected (they need a matching role rule).
 
 ### Config-driven rules
 
-Load rules from the environment by calling `app.rbacFromEnv()` in `main`, or from a
-JSON file via `app.rbacFromJsonFile(path)`. `rbacFromEnv()` reads:
+RBAC rules are config-driven only — there is no code-based `app.rbac(...)` API. Load
+them by calling `app.rbacFromEnv()` in `main` (reads `RBAC_CONFIG`), or from a JSON
+file via `app.rbacFromJsonFile(path)`. `app.rbacFromEnv()` accepts **only** the
+endpoint-rule JSON format below.
 
-- `RBAC_ROLE_<NAME>=METHOD:/path,METHOD:/path` — one env var per role.
-- `RBAC_CONFIG` — a JSON document (array of `{"role","method","path"}` objects, or an object mapping role → `["METHOD:/path", ...]`).
+`RBAC_CONFIG` is a single endpoint-rule object or an array of them:
 
-::: code-group
-```bash [config/.env — per-role keys]
-RBAC_ROLE_ADMIN=GET:/api/admin/*,POST:/api/admin/*
-RBAC_ROLE_USER=GET:/api/resource
-```
-
-```bash [config/.env — JSON document]
-RBAC_CONFIG=[{"role":"ADMIN","method":"*","path":"/api/admin/*"},{"role":"USER","method":"GET","path":"/api/resource"}]
-```
-
-```json [RBAC_CONFIG — object form]
+```json
 {
-  "ADMIN": ["GET:/api/admin/*", "POST:/api/admin/*"],
-  "USER": ["GET:/api/resource"]
+  "permissions": ["ROLE", ...],
+  "endpoint": "/path",
+  "methods": ["GET", ...],
+  "exempt": false
 }
 ```
+
+::: code-group
+```bash [config/.env — endpoint-rule JSON]
+# GET  /api/resource -> requires the USER role
+# POST /api/resource -> requires the ADMIN role
+RBAC_CONFIG=[{"permissions":["USER"],"endpoint":"/api/resource","methods":["GET"]},{"permissions":["ADMIN"],"endpoint":"/api/resource","methods":["POST"]}]
+```
+
+```bash [config/.env — exempt rule]
+# bypasses RBAC for GET/POST on /api/admin/* for any role,
+# but other methods (e.g. DELETE) stay protected
+RBAC_CONFIG=[{"permissions":["ADMIN"],"endpoint":"/api/admin/*","methods":["GET","POST"],"exempt":true}]
+```
 :::
+
+`exempt: true` claims the whole endpoint for its listed methods (any role passes),
+while methods not listed remain protected and require a matching permission rule.
 
 RBAC depends on a `role` claim in the verified JWT, so it is designed to work with
 `AUTH_MODE=OAuth`. Requests authenticated via Basic or API Key carry no role and

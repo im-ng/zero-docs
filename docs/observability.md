@@ -87,3 +87,8 @@ pub fn handler(ctx: *Context) !void {
 
 `L` is an `enum` whose variants become the metric's labels. Labels and `help` show up
 in the Prometheus output alongside the built-in metrics.
+
+::: tip
+Looking for distributed **traces** and a logs bridge to OpenTelemetry? Those are
+experimental and documented under [OpenTelemetry](/experimental).
+:::
