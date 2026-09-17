@@ -14,8 +14,17 @@ Levels in order (highest to lowest) - `fatal`, `error`, `warn`, `info` and `debu
 `LOG_LEVEL` can also be driven at runtime from a remote endpoint.
 
 When `REMOTE_LOG_URL` is configured, `zero` registers an outbound HTTP client
-and a cron job that fetches the level (JSON `{ "level": "info" }`) every `REMOTE_LOG_FETCH_INTERVAL`
-seconds (default 15) and applies it in-process.
+and a cron job that fetches the level (a `zero` service serves this at
+`GET /remote.log.service?id=<uuid>`, returning `{ "id": ..., "level": ... }`)
+every `REMOTE_LOG_REFRESH_INTERVAL` seconds (default 30) and applies it in-process.
+
+```mermaid
+json
+{
+  "id": "service-uuid",
+  "level": "debug"
+}
+```
 
 The feature is opt-in — leave `REMOTE_LOG_URL` empty to disable it.
 

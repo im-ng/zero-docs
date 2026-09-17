@@ -21,7 +21,7 @@ const urls = files.map((f) => {
   if (rel === "/index.html") return HOST + "/";
   if (rel.endsWith("/index.html"))
     return HOST + rel.slice(0, -"index.html".length);
-  if (rel.endsWith(".html")) return HOST + rel;
+  if (rel.endsWith(".html")) return HOST + rel.slice(0, -".html".length);
   return HOST + rel;
 });
 

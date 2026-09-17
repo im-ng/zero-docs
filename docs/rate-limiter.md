@@ -40,20 +40,25 @@ so a single correlation id flows across services and brokers without extra code.
 ## Remote log level
 
 Instead of exposing an endpoint, a service can _pull_ its log level from a remote
-log-level service. Set `REMOTE_LOG_URL` (and optionally `REMOTE_LOG_FETCH_INTERVAL`)
+log-level service. Set `REMOTE_LOG_URL` (and optionally `REMOTE_LOG_REFRESH_INTERVAL`)
 in `configs/.env`; on startup `zero` registers an outbound HTTP client for that URL
-and a cron job that fetches the level every `REMOTE_LOG_FETCH_INTERVAL` seconds
-(default 15) and applies it in-process.
+and a cron job that fetches the level every `REMOTE_LOG_REFRESH_INTERVAL` seconds
+(default 30) and applies it in-process.
 
 ```bash [configs/.env]
-REMOTE_LOG_URL=https://log.service.local/log-levels
-REMOTE_LOG_FETCH_INTERVAL=15
+REMOTE_LOG_URL=https://log.service.local/remote.log.service
+REMOTE_LOG_REFRESH_INTERVAL=30
 ```
 
-The remote endpoint must return the level as JSON:
+The remote endpoint must return the level as JSON (a zero service serves this at
+`GET /remote.log.service?id=<uuid>` and returns the `level` field):
 
-```json
-{ "level": "debug" }
+```mermaid
+json
+{
+  "id": "service-uuid",
+  "level": "debug"
+}
 ```
 
 Valid levels: `debug`, `info`, `warn`, `error`, `fatal`, `none`. An unrecognized

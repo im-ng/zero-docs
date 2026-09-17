@@ -18,12 +18,12 @@ exhaustive, screenshot-by-screenshot tutorial lives in [Hello world](/hello-zero
 ```bash
 mkdir hello-zero && cd hello-zero
 zig init
-zig fetch --save https://github.com/im-ng/zero/archive/refs/heads/experimental.zip
+zig fetch --save https://github.com/im-ng/zero/archive/refs/tags/v0.5.0.zip
 ```
 
 ::: tip
-`experimental.zip` tracks the `experimental` branch. Once a tagged release exists,
-pin to a stable archive instead.
+`v0.5.0.zip` is the pinned `v0.5.0` release archive. Swap the tag for a newer
+release (or use `refs/heads/main.zip`) to track `main`.
 :::
 
 ### 2. Wire up the dependency
@@ -37,8 +37,8 @@ pin to a stable archive instead.
     .minimum_zig_version = "0.16.0",
     .dependencies = .{
         .zero = .{
-            .url = "https://github.com/im-ng/zero/archive/refs/heads/experimental.zip",
-            .hash = "zero-0.0.1-W787cAhaAABPJQ30gkLvzn_hlUDZtR-7qAtq8jDqmoyH",
+            .url = "https://github.com/im-ng/zero/archive/refs/tags/v0.5.0.zip",
+            .hash = "zero-0.0.2-y0Q7wJorLADrWl4pwN9WqETmTqMm1YC_3Dkq2zWHodIR",
         },
     },
     .paths = .{ "build.zig", "build.zig.zon", "src" },
@@ -125,7 +125,7 @@ Everything else (databases, queues, auth, tracing) is opt-in through `.env`.
 ## Run the official examples
 
 The framework ships complete, runnable apps in its
-[`examples/`](https://github.com/im-ng/zero/tree/experimental/examples) directory:
+[`examples/`](https://github.com/im-ng/zero/tree/v0.5.0/examples) directory:
 
 - **`zero-basic`** — a full HTTP microservice (REST, Postgres/SQLite, Redis, GraphQL,
   observability) with a multi-stage `Dockerfile.multi-stage` ready for Kubernetes.

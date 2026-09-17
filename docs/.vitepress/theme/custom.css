@@ -89,6 +89,32 @@ html.dark {
   background-color: transparent !important;
 }
 
+/* The top-of-sidebar `.curtain` masks items scrolled beneath the transparent
+   navbar. It inherits --vp-sidebar-bg-color (set transparent above, so the dotted
+   page background shows through the sidebar body), which left the curtain see-through
+   and let scrolled items bleed through the navbar. Re-paint the curtain to mirror the
+   page background exactly (dots + tint) so it blends with the navbar region while
+   still hiding content scrolled underneath it. */
+html:not(.dark) .VPSidebar .curtain {
+  background-color: #eaf0f7 !important;
+  background-image:
+    radial-gradient(rgba(15, 23, 42, 0.10) 1.2px, transparent 1.3px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.80), rgba(238, 242, 248, 0.88));
+  background-size: 24px 24px, cover;
+  background-position: 0 0, center;
+  background-repeat: repeat, no-repeat;
+  background-attachment: fixed, fixed;
+}
+
+html.dark .VPSidebar .curtain {
+  background-color: #0d1117 !important;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.25) 1.3px, transparent 1.4px);
+  background-size: 24px 24px;
+  background-position: 0 0;
+  background-repeat: repeat;
+  background-attachment: fixed;
+}
+
 /* Home hero stays transparent so the dotted background shows through. */
 .VPHero {
   background: transparent !important;

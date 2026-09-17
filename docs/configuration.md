@@ -363,27 +363,30 @@ AUTH_REFRESH_INTERVAL=10
 ## RBAC
 
 Role-based access control rules are loaded by `app.rbacFromEnv()` (call it in
-`main`).
+`main`), which reads the `RBAC_CONFIG` env var. There is no code-based `app.rbac(...)`
+API and no `RBAC_ROLE_*` env-var form — `RBAC_CONFIG` is the sole supported schema.
 
 Routes with a rule are protected; routes without one stay public.
 
 The caller's role is taken from the JWT `role` claim, so RBAC pairs with
 `AUTH_MODE=OAuth`.
 
-::: code-group
+`RBAC_CONFIG` is a single endpoint-rule object or an array of them:
 
-```bash [per-role env keys]
-RBAC_ROLE_ADMIN=GET:/api/admin/*,POST:/api/admin/*
-RBAC_ROLE_USER=GET:/api/resource
+```json
+{ "permissions": ["ROLE", ...], "endpoint": "/path", "methods": ["GET", ...], "exempt": false }
 ```
 
-```bash [RBAC_CONFIG JSON document]
-RBAC_CONFIG=[{"role":"ADMIN","method":"*","path":"/api/admin/*"},{"role":"USER","method":"GET","path":"/api/resource"}]
+::: code-group
+
+```bash [RBAC_CONFIG — endpoint-rule JSON]
+RBAC_CONFIG=[{"permissions":["ADMIN"],"endpoint":"/api/admin/*","methods":["GET","POST"],"exempt":true},{"permissions":["USER"],"endpoint":"/api/resource","methods":["GET"]}]
 ```
 
 :::
 
-`RBAC_CONFIG` may also be an object mapping role → `["METHOD:/path", ...]`.
+`exempt: true` bypasses RBAC for the listed methods only; other methods on that
+endpoint stay protected (require a matching role rule).
 
 ## HTTP Service
 
@@ -504,16 +507,25 @@ When `REMOTE_LOG_URL` is set, `zero` registers an outbound HTTP client for it
 and a cron job that periodically fetches the current log level from that
 endpoint and hot-reloads the in-process `LOG_LEVEL`, no restart required.
 
-The endpoint must return JSON of the shape `{ "level": "info" }`, where `level` is
-one of `debug`, `info`, `warn`, `error`, `fatal` or `none`.
+The remote endpoint must return JSON containing a `level` field, where `level` is
+one of `debug`, `info`, `warn`, `error`, `fatal` or `none`. A `zero` service serves
+this at `GET /remote.log.service?id=<uuid>` (the `level` field is what gets read):
+
+```mermaid
+json
+{
+  "id": "service-uuid",
+  "level": "info"
+}
+```
 
 The feature is opt-in and never exposes an endpoint on this service.
 
 ::: code-group
 
 ```bash [remote log]
-REMOTE_LOG_URL=            # e.g. http://log.service.local/level
-REMOTE_LOG_FETCH_INTERVAL=15   # seconds between fetches (default 15)
+REMOTE_LOG_URL=                        # e.g. http://log-level-service/remote.log.service
+REMOTE_LOG_REFRESH_INTERVAL=30         # seconds between fetches (default 30)
 ```
 
 :::

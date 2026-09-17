@@ -37,6 +37,7 @@ const zig016Sidebar = [
   { text: "Getting Started", link: "/started" },
   { text: "Attribution", link: "/attribution" },
   { text: "Feature Parity", link: "/parity" },
+  { text: "Release Notes", link: "/release-notes" },
     {
       text: "Begin from zero",
       items: [
@@ -95,6 +96,12 @@ const zig016Sidebar = [
       { text: "File Store", link: "/file-store" },
       { text: "Auto CRUD", link: "/auto-crud" },
       { text: "Rate Limiter", link: "/rate-limiter" },
+    ],
+  },
+  {
+    text: "Experimental",
+    items: [
+      { text: "OpenTelemetry", link: "/experimental" },
     ],
   },
       {
@@ -182,13 +189,17 @@ export default withMermaid(
   defineConfig({
     ...shared,
     transformHead: async ({ pageData, head, content }) => {
+      // Build a clean, canonical URL: no `.html` suffix, matching the clean URLs
+      // used in internal links and in the generated sitemap. Preserve the
+      // `/0.15.2` locale prefix so the frozen snapshot isn't merged into root.
       const relRaw = (pageData.filePath || pageData.relativePath || "")
-        .replace(/\.md$/, ".html");
+        .replace(/\.md$/, "");
       let rel = "/" + relRaw;
-      if (rel.endsWith("/index.html")) rel = rel.slice(0, -"index.html".length);
+      if (rel.endsWith("/index")) rel = rel.slice(0, -"/index".length);
+      if (rel === "") rel = "/";
+      if (rel.endsWith(".html")) rel = rel.slice(0, -".html".length);
 
-      const canonical =
-        SITE + (rel.startsWith("/0.15.2/") ? rel.slice("/0.15.2".length) : rel);
+      const canonical = SITE + rel;
 
       const setMeta = (name, content) => {
         const i = head.findIndex(
