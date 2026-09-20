@@ -1,8 +1,9 @@
 # Protobuf
 
-`zero` supports **Protocol Buffers over HTTP**. Define your schema in `proto/*.proto`,
-generate Zig structs with `zig build gen-proto` (runs `protoc` via the `protobuf`
-dependency), then bind the request body and write the response.
+`zero` supports **Protocol Buffers over HTTP**. You define your schema in
+`proto/*.proto`, then generate Zig structs with `zig build gen-proto`. That
+command runs `protoc` through the `protobuf` dependency. You then bind the
+request body and write the response.
 
 See [`examples/zero-proto`](https://github.com/im-ng/zero/tree/experimental/examples/zero-proto)
 for a runnable example.
@@ -27,9 +28,10 @@ zig build gen-proto
 
 ## Bind and encode in a handler
 
-`ctx.bindProto(T)` decodes an `application/x-protobuf` request body into `T` (any
-message exposing `decode`); `ctx.protobuf(data)` serializes `data` (exposing
-`encode`) into the response with `Content-Type: application/x-protobuf`.
+`ctx.bindProto(T)` decodes an `application/x-protobuf` request body into `T`.
+`T` is any message that exposes `decode`. `ctx.protobuf(data)` serializes
+`data` (which exposes `encode`) into the response. It sets
+`Content-Type: application/x-protobuf`.
 
 ```zig [src/main.zig]
 const std = @import("std");
@@ -62,9 +64,9 @@ pub fn echo(ctx: *Context) !void {
 }
 ```
 
-Messages may also be described by hand using the `protobuf` `encode`/`decode`
+You can also describe messages by hand. Use the `protobuf` `encode`/`decode`
 primitives plus a `_desc_table`.
 
-The runtime primitives are re-exported from the framework root, so generated and
-hand-written messages can reach them via `@import("zero").protobuf` (the benchmark and
-other built-in tools rely on this).
+The runtime primitives are re-exported from the framework root. Generated and
+hand-written messages reach them via `@import("zero").protobuf`. The benchmark
+and other built-in tools rely on this.

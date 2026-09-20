@@ -1,15 +1,11 @@
-![logo](./zero-fmk-light.webp){.light-only}
-![logo](./zero-fmk-dark.webp){.dark-only}
+# Getting Started
+
+This page walks you through standing up a running HTTP service in about five minutes. The full step-by-step tutorial lives in [Hello world](/hello-zero).
 
 ::: danger Requires Zig 0.16.0
 `zero` main targets **Zig 0.16.0**. Install it first (see [ziglang.org](https://ziglang.org/learn/getting-started/))
 , an older toolchain will fail to build.
 :::
-
-# Getting Started
-
-This page gets you from zero to a running HTTP service in about five minutes. The
-exhaustive, screenshot-by-screenshot tutorial lives in [Hello world](/hello-zero).
 
 ## 5-minute quickstart
 
@@ -28,12 +24,12 @@ release (or use `refs/heads/main.zip`) to track `main`.
 
 ### 2. Wire up the dependency
 
-`build.zig.zon` — declare the `zero` dependency (note `minimum_zig_version`):
+In `build.zig.zon`, declare the `zero` dependency. Note the `minimum_zig_version` field:
 
 ```zig
 .{
     .name = .hello_zero,
-    .version = "0.0.0",
+    .version = "0.0.1",
     .minimum_zig_version = "0.16.0",
     .dependencies = .{
         .zero = .{
@@ -45,7 +41,7 @@ release (or use `refs/heads/main.zip`) to track `main`.
 }
 ```
 
-`build.zig` — expose `zero` as a module to your executable:
+In `build.zig`, expose `zero` as a module to your executable:
 
 ```zig
 const zero = b.dependency("zero", .{});
@@ -64,7 +60,7 @@ b.installArtifact(exe);
 
 ### 3. Write the app
 
-`src/main.zig`:
+Here's `src/main.zig`:
 
 ```zig
 const std = @import("std");
@@ -89,7 +85,7 @@ fn jsonResponse(ctx: *zero.Context) !void {
 
 ### 4. Configure via `.env`
 
-`zero` is configured entirely through environment variables (12-factor).
+`zero` reads all its config from environment variables, following the 12-factor model.
 
 Create `configs/.env`:
 
@@ -114,21 +110,20 @@ zig build run
 curl localhost:8080/json
 # {"msg":"hello zero!"}
 
-curl localhost:8080/metrics      # Prometheus metrics, already live
-curl localhost:8080/.well-known/health   # liveness probe
+curl localhost:2121/metrics      # Prometheus metrics, already live
+curl localhost:2121/.well-known/health   # liveness probe
 ```
 
-That's the whole loop: configure → register routes → `app.run()`.
+That's the full loop: configure, register routes, then call `app.run()`.
 
-Everything else (databases, queues, auth, tracing) is opt-in through `.env`.
+Everything else — databases, queues, auth, tracing — is opt-in through `.env`.
 
 ## Run the official examples
 
-The framework ships complete, runnable apps in its
+The framework ships complete, runnable example apps in its
 [`examples/`](https://github.com/im-ng/zero/tree/v0.5.0/examples) directory:
 
-- **`zero-basic`** — a full HTTP microservice (REST, Postgres/SQLite, Redis, GraphQL,
-  observability) with a multi-stage `Dockerfile.multi-stage` ready for Kubernetes.
+- **`zero-basic`** — a full HTTP microservice with REST, Postgres/SQLite, Redis, GraphQL and observability. It ships a multi-stage `Dockerfile.multi-stage` ready for Kubernetes.
 
 - **`zero-cli`** — a command-line app built on `App.newCmd` / `app.runCmd` (see
   [CLI Apps](/cli)).
@@ -141,18 +136,15 @@ zig build run          # boots the demo service on :8080
 
 ## Why zero?
 
-`zero` is a strongly-opinionated Zig web framework built on `http.zig`, aimed at
-zero-allocation hot paths while keeping development ergonomic.
+`zero` is a strongly-opinionated Zig web framework built on `http.zig`.
 
-- **Zig, not a runtime.** No GC pauses, no JIT warm-up, no VM. You get explicit memory
-  management and a single static binary, closer to Go's DX than its runtime weight.
+It targets zero-allocation hot paths while keeping development ergonomic.
 
-- **Config over code.** Following the 12-factor methodology, you attach best-in-class
-  built-ins (databases, queues, caches, auth, observability) through `.env` instead of
-  hand-wiring clients and middleware.
+- **Zig, not a managed runtime.** There's no garbage collector, no JIT, and no VM. You manage memory yourself and ship a single static binary. The developer experience feels closer to Go than to a heavyweight runtime.
 
-- **Microservice-ready out of the box.** REST, auto-CRUD, GraphQL, protobuf, pub/sub,
-  scheduling, rate limiting, structured logging, metrics and tracing are first-class.
+- **Config over code.** Following the 12-factor model, you attach built-ins through `.env` instead of hand-wiring clients and middleware. These built-ins cover databases, queues, caches, auth and observability.
+
+- **Ready for microservices out of the box.** REST, auto-CRUD, GraphQL, protobuf, pub/sub, scheduling, rate limiting, structured logging, metrics and tracing are all first-class.
 
 ## What's included
 
@@ -166,7 +158,7 @@ zero-allocation hot paths while keeping development ergonomic.
   - Cache — `Redis` (with `nats_kv` / `sqlite` / `memory` backends)
   - Pub/Sub — `MQTT`, `NATS`, `Kafka`
   - File Store — `Local`, `S3`, `FTP`, `SFTP`
-  - `Authentication` — OAuth, API Key, Basic; Role-Based Access Control (RBAC)
+  - `Authentication` — OAuth, API Key, Basic, Role-Based Access Control (RBAC)
 - REST standard out of the box, including Auto CRUD resource handlers
 - GraphQL-over-HTTP and Protobuf-over-HTTP
 - Structured logging with remote log-level hot reload

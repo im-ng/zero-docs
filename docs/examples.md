@@ -1,9 +1,9 @@
 # Examples
 
-The framework ships complete, runnable apps in its
+`zero` ships complete, runnable apps in its
 [`examples/`](https://github.com/im-ng/zero/tree/v0.5.0/examples) directory on
-GitHub (pinned to the `v0.5.0` release). They are the fastest way to see `zero`
-wired up for real — copy one as your starting point.
+GitHub (pinned to the `v0.5.0` release). They're the fastest way to see `zero`
+wired up for real. Copy one to use as your starting point.
 
 Every example below is a self-contained app. Clone the repo and run any of them:
 
@@ -17,8 +17,8 @@ zig build run            # boots the demo (port varies per example)
 
 ### zero-basic
 
-A full HTTP microservice that exercises the framework's hot paths: REST handlers,
-Postgres/SQLite, Redis caching, GraphQL, structured logging, metrics and health
+A full HTTP microservice that runs `zero`'s main paths: REST handlers,
+Postgres/SQLite, Redis caching, GraphQL, structured logging, metrics, and health
 endpoints. It also ships a multi-stage
 [`Dockerfile.multi-stage`](https://github.com/im-ng/zero/tree/v0.5.0/examples/zero-basic/Dockerfile.multi-stage)
 and is the reference app for the [Kubernetes](/kubernetes) deployment guide.
@@ -32,7 +32,7 @@ podman build -f examples/zero-basic/Dockerfile.multi-stage -t zero-basic .
 
 ### zero-cli
 
-A command-line application built on `App.newCmd` / `app.runCmd` — sub-commands, flag
+A command-line app built on `App.newCmd` / `app.runCmd`. It has sub-commands, flag
 parsing via `ctx.Param`, and `app.onStartup` hooks. See [CLI Apps](/cli) for the API.
 
 ```bash
@@ -44,7 +44,7 @@ zig build run -- help
 
 The benchmark harness lives at `src/bench/main.zig` (built with `zig build bench`). It
 boots a real `zero.App` and drives it with a concurrency ramp to measure throughput,
-latency and memory. Details and the regression gate are in [Benchmark](/benchmark).
+latency, and memory. Details and the regression gate are in [Benchmark](/benchmark).
 
 ## Relational & analytical data
 

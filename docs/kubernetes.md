@@ -1,23 +1,20 @@
 # Kubernetes
 
-This guide shows how to run a **zero** application on Kubernetes.
+This guide shows how to run a `zero` app on Kubernetes.
 
-The framework ships a production-oriented Helm chart — **Bee** (chart `version: 0.2.0` targets Zero
-`appVersion: 0.16.0`) — in its [`helm/`](https://github.com/im-ng/zero/tree/experimental/helm)
-directory.
+The framework ships a production-oriented Helm chart called **Bee**.
 
-You containerize your app once, push the image, then drive the whole deployment
-(config, secrets, probes, ingress, autoscaling, observability) from `values.yaml`.
+The chart `version: 0.2.0` targets Zero `appVersion: 0.16.0`. You'll find it in the [`helm/`](https://github.com/im-ng/zero/tree/experimental/helm) directory.
 
-Object names are derived from `app.name` / `nameOverride` — there is **no Helm release
-prefix**, so a release named `zero` produces objects literally named `zero`
-(Deployment, Service, Ingress, ServiceMonitor, …).
+You containerize your app once and push the image. Then you drive the whole deployment from `values.yaml` — config, secrets, probes, ingress, autoscaling, and observability.
+
+Object names come from `app.name` or `nameOverride`. There's no Helm release prefix. A release named `zero` produces objects literally named `payment` — payment-deployment, payment-service and so on.
 
 ## Prerequisites
 
 - A Kubernetes cluster and `kubectl` configured against it.
 - Helm 3 (`helm version --short`).
-- A built container image of your zero app in a registry you can pull from (see
+- A built container image of your `zero` app in a registry you can pull from (see
   [Containerize the app](#containerize-the-app-podman) below).
 - (Optional) Prometheus — either the Prometheus Operator (for `ServiceMonitor`) or a
   standalone Prometheus (for the alerts ConfigMap).
@@ -26,15 +23,14 @@ prefix**, so a release named `zero` produces objects literally named `zero`
 
 The framework provides a multi-stage
 [`Dockerfile.multi-stage`](https://github.com/im-ng/zero/tree/experimental/examples/zero-basic/Dockerfile.multi-stage)
-under `examples/zero-basic/`.
+in `examples/zero-basic/`.
 
-It builds natively for **musl** on Alpine (zig 0.16.0), bundles the Alpine-specific `libduckdb.so`,
-and ships a minimal container image.
+It builds natively for **musl** on Alpine (zig 0.16.0). It bundles the Alpine-specific `librdkafka` and
+`libduckdb.so` and ships a minimal image.
 
-> Build from the **framework repo root**
-> the Dockerfile `COPY`s `build.zig`, `src`, `examples/zero-basic`, and
-> `examples/zero-basic/libs/`,
-> so the build context must be `.`.
+> Build from the **framework repo root** or copy multi-stage dockerfile as necessary.
+> The Dockerfile `COPY`s `build.zig`, `src`, `examples/zero-basic`, and
+> `examples/zero-basic/libs/`. The build context must be `.`.
 
 ```bash
 # 1. Build the image (run from the zero repo root)
@@ -50,7 +46,7 @@ podman run --rm -it --name zero-basic --security-opt seccomp=unconfined \
 
 Replace `gitea.pi/ng/zero-basic:v1.0` with your own registry/repo/tag.
 
-Pull `Dockerfile.multi-stage` to your own app repo and start building the container image.
+Copy `Dockerfile.multi-stage` into your own app repo, then start building the image.
 
 ### Runtime layout
 
@@ -58,22 +54,18 @@ The runtime image expects:
 
 | Path           | Purpose                                                             |
 | -------------- | ------------------------------------------------------------------- |
-| `/app/basic`   | The compiled zero binary (entrypoint).                              |
+| `/app/basic`   | The compiled `zero` binary (entrypoint).                            |
 | `/app/configs` | Loaded as `./configs/.env` at startup — mount your config dir here. |
 | `/app/static`  | Static files served by the app.                                     |
 | `/app/data`    | Local data (e.g. SQLite files, file-store).                         |
 
-Because the app uses an **io-threaded HTTP server**, it issues syscalls the default Docker
-seccomp profile blocks — hence `--security-opt seccomp=unconfined` on `podman run`.
+The app uses an **io-threaded HTTP server**. It issues syscalls that the default Docker seccomp profile blocks. That's why we pass `--security-opt seccomp=unconfined` to `podman run`.
 
-In Kubernetes this is covered by the chart's `securityContext` / `podSecurityContext` values
-(you normally do **not** need a custom seccomp profile).
+In Kubernetes, the chart's `securityContext` and `podSecurityContext` values cover this. You normally don't need a custom seccomp profile.
 
 ### Port note
 
-The `zero-basic` example listens on **`8080`**. The Helm chart defaults `app.port` to
-`8080`, so when you deploy via the chart, set `app.port` (and the container's `HTTP_PORT`)
-to match the port your image actually listens on.
+The `zero-basic` example listens on **`8080`**. The chart defaults `app.port` to `8080`. When you deploy with the chart, set `app.port` (and the container's `HTTP_PORT`) to match the port your image actually listens on.
 
 ## Quickstart (Helm)
 
@@ -158,8 +150,7 @@ Three mechanisms, applied in order (`env` overrides `envFrom`):
 
 ### 1. Bulk-load (`envFrom`)
 
-Embedded `configMap` / `secret` are named from `nameOverride` and auto-loaded,
-so no manual names to repeat:
+Embedded `configMap` and `secret` are named from `nameOverride` and auto-loaded. You don't repeat any names manually:
 
 ```yaml
 nameOverride: zero
@@ -178,11 +169,11 @@ secret:
 
 This renders
 
-`envFrom:`
-
-`- configMapRef: {name: zero-cm}`
-
-`- secretRef: {name: zero-secret}`
+```yaml
+envFrom:
+  - configMapRef: { name: zero-cm }
+  - secretRef: { name: zero-secret }
+```
 
 External ConfigMaps/Secrets can still be bulk-loaded by name:
 
@@ -206,14 +197,13 @@ env:
 ```yaml
 secretEnv:
   - name: DHAN_CLIENT_ID
-    secretName: zero-secret
+    secretName: dhan-client-id
     key: client_id
 ```
 
 ## Embed ConfigMaps and Secrets
 
-Names are derived from `nameOverride` (`<nameOverride>-cm`, `<nameOverride>-secret`), so
-there is a single source of truth:
+Names come from `nameOverride` (`<nameOverride>-cm`, `<nameOverride>-secret`). There's a single source of truth:
 
 ```yaml
 nameOverride: zero
@@ -232,8 +222,7 @@ secret:
     access_token: your-dhan-access-token
 ```
 
-Each becomes a `ConfigMap` / `Secret` manifest and its keys are automatically loaded into
-the container via `envFrom`.
+Each becomes a `ConfigMap` or `Secret` manifest. Its keys load into the container automatically via `envFrom`.
 
 ## Attach an existing PVC
 
@@ -272,13 +261,11 @@ serviceMonitor:
     team: zero
 ```
 
-The scrape path falls back to `app.metricsPath` (default `/metrics`) when
-`serviceMonitor.path` is empty.
+The scrape path falls back to `app.metricsPath` (default `/metrics`) when `serviceMonitor.path` is empty.
 
 ### Alerts (standalone Prometheus)
 
-Renders a `v1 ConfigMap` named `prometheus-rules-<app>` in `monitoring` (not a
-`PrometheusRule` CR — this cluster runs standalone Prometheus, not the operator).
+It renders a `v1 ConfigMap` named `prometheus-rules-<app>` in `monitoring`. It's not a `PrometheusRule` CR — this cluster runs standalone Prometheus, not the operator.
 
 Mount it as a volume in your Prometheus deployment:
 
@@ -328,22 +315,20 @@ nodeAffinity:
 
 ## Health, metrics & probes (zero 0.16)
 
-Zero 0.16 serves its liveness endpoint at **`/.well-known/health`** (not `/health`).
+Zero 0.16 serves its liveness endpoint at **`/.well-known/health`** instead of `/health`.
 
-The chart hardcodes that default in `app.healthPath` and wires it into the `livenessProbe`,
-`readinessProbe`, and a `startupProbe` (the latter tolerates slow boots such as DB
-migrations).
+The chart hardcodes that default in `app.healthPath`. It wires the path into the `livenessProbe`, `readinessProbe`, and `startupProbe`.
 
-Metrics are scraped from `app.metricsPort` at `app.metricsPath` (default
-`/metrics`).
+The startup probe tolerates slow boots, like DB migrations.
 
-## Resource sizing (zero 0.16)
+Metrics are scraped from `app.metricsPort` at `app.metricsPath` (default `/metrics`).
 
-The chart default requests are `cpu: 100m / memory: 64Mi` (limits `200m / 128Mi`).
-Scale requests up if you enable large SQLite/S3 workloads.
+## Resource sizing (zero 0.5.0+)
+
+The chart's default requests are `cpu: 100m / memory: 64Mi` (limits `200m / 128Mi`). Scale requests up if you enable large SQLite/S3 workloads.
 
 ```yaml
-# -- Resource sizing for zero 0.16 steady-state RSS (~16-65MiB)
+# -- Resource sizing for zero 0.5.0 steady-state RSS (~16-65MiB)
 resources:
   requests:
     cpu: 100m
@@ -353,9 +338,9 @@ resources:
     memory: 128Mi
 ```
 
-## Zero 0.16 config reference
+## Zero config reference
 
-All keys exposed through the chart's `env`/`configMap` mirror the framework
+All keys exposed through the chart's `env` and `configMap` mirror the framework's
 [`config.md`](https://github.com/im-ng/zero/tree/experimental/docs/configuration.md):
 
 - Logging:
@@ -379,8 +364,8 @@ All keys exposed through the chart's `env`/`configMap` mirror the framework
 ## Full example
 
 See [`values-override.yaml`](https://github.com/im-ng/zero/tree/experimental/helm/values-override.yaml)
-for the `zero` example, and
+for the `zero` example. See
 [`values-zero-0.16.yaml`](https://github.com/im-ng/zero/tree/experimental/helm/values-zero-0.16.yaml)
-for a complete **zero 0.16** example that exercises the new configuration surface
-(`RATE_LIMIT_*`, `ZERO_HTTP_LARGE_BUFFER_*`, `S3_*`, `SQLITE_*`, `SERVICE_<NAME>_*`, JSON
-logging, inbound auth, circuit breaker, etc.).
+for a full **zero 0.5.0** example that uses the new configuration surface:
+`RATE_LIMIT_*`, `ZERO_HTTP_LARGE_BUFFER_*`, `S3_*`, `SQLITE_*`, `SERVICE_<NAME>_*`, JSON
+logging, inbound auth, circuit breaker, and more.

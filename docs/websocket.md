@@ -5,7 +5,7 @@ import { ImgComparisonSlider } from '@img-comparison-slider/vue';
 
 # Websocket
 
-`zero` framework offers built-in support to leverage the persistent, bi-directional, low latency tcp connections to stream data to and fro from the clients. With this the real-time communication options, app chit-chat will be easy.
+`zero` offers built-in support for persistent, bi-directional, low-latency TCP connections. These stream data to and from clients. This makes real-time communication straightforward.
 
 ::: code-group
 ```zig [method signature]
@@ -26,7 +26,7 @@ try ctx.wsClient.write("hello!");
 
 ### Using in zero
 
-1. Refer following `zero-stream` example further to know more on getting started of this.
+1. See the `zero-stream` example below for a full getting-started walkthrough.
 
 ::: code-group
 ```zig [main.zig]
@@ -90,10 +90,10 @@ pub fn stream(ctx: *Context) !void {
 }
 
 ```
-_Check out the example entire code to understand the usage better_
+_Read the full example to see how it all fits together._
 :::
 
-2. Boom! lets build and run our app.
+2. Let's build and run the app.
 
 
 ```bash
@@ -123,7 +123,7 @@ DEBUG [00:11:20] pubsub is disabled, as pubsub mode is not provided.
  INFO [00:12:50] completed cron job: stream in 7ms
 ```
 
-3. Preview server status and streaming hardware monitor informations.
+3. Preview the server status and the streaming hardware monitor.
 
 <ImgComparisonSlider>
 <!-- eslint-disable -->

@@ -19,4 +19,4 @@ import { ImgComparisonSlider } from '@img-comparison-slider/vue';
 <!-- eslint-enable -->
 </ImgComparisonSlider>
 
-_Use this image slider to switch between the module's underlying author and framework building elements. This seemed like a fun and great way to at least honor them._
+_Use this slider to compare the module's underlying author and the framework building elements behind it. It's a small way to credit the people and pieces that made it._

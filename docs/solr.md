@@ -3,12 +3,18 @@
 `zero` exposes **Solr** (and other search engines) through a unified, type-erased
 `ctx.Search` handle.
 
+```zig
+ctx.Search.query(ctx, "docs", "title:zero");
+```
+
 Index, fetch, delete, and query documents with the same calls
-regardless of backend — add more backends (Elasticsearch, Meilisearch, …) in
+regardless of backend. Add more backends (Elasticsearch, Meilisearch, and so on) in
 `src/datasource/specialized/searchInterface.zig`.
 
 `ctx.Search` is **optional**: it is `null` until `SOLR_URL` (plus `SOLR_DEFAULT_COLLECTION`)
-is configured, so always guard with `if (ctx.Search) |s| { ... } else { notConfigured }`.
+is configured.
+
+Always guard with `if (ctx.Search) |s| { ... } else { notConfigured }`.
 
 ## Configuration
 
@@ -41,12 +47,15 @@ SOLR_BASIC_AUTH=admin:secret
 
 ```zig
 try ctx.Search.index(ctx, "docs", "{\"id\":\"1\",\"title\":\"zero framework\"}"); // index a doc
+
 const hits = try ctx.Search.query(ctx, "docs", "title:zero");                  // search -> JSON hits
+
 const doc  = try ctx.Search.get(ctx, "docs", "1");                             // fetch by id (?[]const u8)
+
 try ctx.Search.delete(ctx, "docs", "1");                                      // delete by id
 ```
 
-Returned `[]const u8` slices (`query`/`get`) are allocated on the request allocator — free
+Returned `[]const u8` slices (`query`/`get`) are allocated on the request allocator. Free
 them with `defer ctx.allocator.free(slice)` when you hold a reference, or let the
 request-scoped allocator release them at the end of the handler.
 
@@ -80,7 +89,7 @@ pub fn search(ctx: *Context) !void {
 
 ## Recommendation
 
-🚩 Use the `ctx` allocator wherever possible; it is tied to the request lifecycle, so its
+Use the `ctx` allocator wherever possible. It is tied to the request lifecycle, so its
 memory is released automatically and you avoid leaks.
 
 See the runnable

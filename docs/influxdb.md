@@ -1,16 +1,12 @@
 # InfluxDB
 
-`zero` exposes **InfluxDB** (and other time-series stores) through a unified, type-erased
-`ctx.Timeseries` handle.
+`zero` gives you a single, type-erased `ctx.Timeseries` handle for **InfluxDB** and other time-series stores.
 
-Write points and run Flux queries with the same calls regardless of
-backend in `src/datasource/specialized/timeseriesInterface.zig`.
+You write points and run Flux queries through the same calls, whatever the backend. See `src/datasource/specialized/timeseriesInterface.zig`.
 
-`ctx.Timeseries` is **optional**:
+`ctx.Timeseries` is **optional**.
 
-it is `null` until `INFLUXDB_URL` (plus `INFLUXDB_ORG` and
-`INFLUXDB_BUCKET`) is configured, so always guard with
-`if (ctx.Timeseries) |ts| { ... } else { notConfigured }`.
+It's `null` until you set `INFLUXDB_URL` (with `INFLUXDB_ORG` and `INFLUXDB_BUCKET`). So always guard with `if (ctx.Timeseries) |ts| { ... } else { notConfigured }`.
 
 ## Configuration
 
@@ -52,10 +48,9 @@ const csv = try ctx.Timeseries.query(ctx, "from(bucket:\"metrics\") |> range(sta
 defer ctx.allocator.free(csv);
 ```
 
-`write` takes `measurement`, `tags`, `fields` (both line-protocol strings), and an optional
-timestamp (`?i64`; pass `null` to use server time).
+The `write` method takes `measurement`, `tags`, and `fields` (both line-protocol strings), plus an optional timestamp (`?i64`). Pass `null` to use server time.
 
-`query` runs a Flux string and returns the result as CSV text — free it with `defer ctx.allocator.free(...)`.
+The `query` method runs a Flux string and returns the result as CSV text. Free it with `defer ctx.allocator.free(...)`.
 
 ## Example handler
 
@@ -94,8 +89,7 @@ pub fn queryFlux(ctx: *Context) !void {
 
 ## Recommendation
 
-🚩 Use the `ctx` allocator wherever possible; it is tied to the request lifecycle, so its
-memory is released automatically and you avoid leaks.
+Use the `ctx` allocator wherever you can. It's tied to the request lifecycle, so its memory is freed automatically and you avoid leaks.
 
 See the runnable
 [`zero-timeseries`](https://github.com/im-ng/zero/tree/experimental/examples/zero-timeseries)

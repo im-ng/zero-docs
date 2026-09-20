@@ -1,14 +1,14 @@
 # Benchmark
 
-`zero` ships a self-contained HTTP load-test harness so you can measure throughput,
-latency, and memory of a real running app, no third-party load generator required.
+`zero` ships a self-contained HTTP load-test harness. You measure throughput, latency,
+and memory of a real running app with it — no third-party load generator needed.
 
-It boots the real `zero.App` (via `App.run()` in a background thread), drives it with
-a fixed concurrency ramp using the `zul` HTTP client, and reports throughput plus
+It boots the real `zero.App` in a background thread (via `App.run()`). It drives the app
+with a fixed concurrency ramp using the `zul` HTTP client, then reports throughput and
 latency percentiles.
 
-For higher-fidelity distributed load you can instead point `wrk`/`k6` at the running
-app (see [External recipes](#external-recipes-optional)).
+For higher-fidelity distributed load, point `wrk` or `k6` at the running app instead
+(see [External recipes](#external-recipes-optional)).
 
 ## Build & run
 
@@ -24,8 +24,8 @@ zig build bench                              # builds ./zig-out/bin/bench
 ./zig-out/bin/bench --log                     # leave framework logging on
 ```
 
-The bench step is **not** part of the default `zig build` — run `zig build bench`
-explicitly. `report.json` is written on every run (see
+The bench step isn't part of the default `zig build`, so run `zig build bench`
+explicitly. The harness writes `report.json` on every run (see
 [JSON report](#json-report--leak-heuristic)); `--json` is still accepted for CI parity.
 
 ::: tip
@@ -53,7 +53,7 @@ the `--listen=-` stdout protocol would interfere.
 
 ### Scenario categories (`--target`)
 
-`--target` selects which scenario **categories** to run. With no flag, the harness runs a
+`--target` picks which scenario **categories** to run. With no flag, the harness runs a
 single `--path` scenario; `--target=all` (or `--suite`) runs the full set:
 
 | category     | scenarios                                                        |
@@ -68,8 +68,8 @@ single `--path` scenario; `--target=all` (or `--suite`) runs the full set:
 | `search`     | `solr-index`, `solr-query` _(gated on `SOLR_URL`)_               |
 | `nosql`      | `nosql-put`, `nosql-get` _(gated on `CASSANDRA_CONTACT_POINTS`)_ |
 
-`gated` scenarios are skipped unless the named backend env var is present, so the
-datasource routes only count toward the report when you actually wire the backend:
+`gated` scenarios are skipped unless you set the named backend env var. The datasource
+routes only count toward the report when you actually wire up the backend:
 
 ```bash
 DUCKDB_PATH=./data/bench.db INFLUXDB_URL=http://localhost:8086 \
@@ -93,16 +93,16 @@ peak RSS over run: 38.1 MiB
 ```
 
 - Columns: throughput (`req/s`), latency percentiles in µs, error count, resident set
-  size at end of level (`rss(MiB)`), and RSS growth within the level
-  (`dRss(KiB)` = end − start of that level).
+  size at the end of the level (`rss(MiB)`), and RSS growth within the level
+  (`dRss(KiB)` = level end − start).
 - **Memory** is sampled from `/proc/self/status` `VmRSS` (Linux) at the start and end
-  of each level, and the run-wide high-water mark is printed as `peak RSS`. This
-  captures the _whole process_ — framework server plus all benchmark clients — without
-  instrumenting allocators. A steadily climbing `dRss` across levels, or a `peak RSS`
-  that never plateaus, is the leak signal. On non-Linux platforms `readRss()` returns
-  0 and the columns read `0.0`.
+  of each level. The run-wide high-water mark prints as `peak RSS`. This captures the
+  _whole process_ — framework server plus all benchmark clients — without instrumenting
+  allocators. A `dRss` that climbs steadily across levels, or a `peak RSS` that never
+  plateaus, signals a leak. On non-Linux platforms `readRss()` returns 0 and the
+  columns read `0.0`.
 
-Latencies are end-to-end client-measured (request issue → response received).
+Latencies are measured end-to-end on the client (request issue → response received).
 
 ::: warning
 The framework's liveness endpoint is `/.well-known/health` (and `/.well-known/live`),
@@ -117,16 +117,16 @@ The harness writes `zig-out/bench/report.json` on **every** run (one entry per s
 { "name": "health", "peak_rss_mib": 38.1, "drss_kib": 0.0, "leak": false }
 ```
 
-`--debug-alloc` additionally runs under `DebugAllocator` and treats a run-wide RSS
-growth above **8 MiB** as a leak (`"leak": true`). This is the gate used by CI.
+`--debug-alloc` also runs under `DebugAllocator`. It treats run-wide RSS growth above
+**8 MiB** as a leak (`"leak": true`). CI uses this gate.
 
-A baseline snapshot is committed at `bench/baseline.json` (peak RSS per scenario); the
+A baseline snapshot lives at `bench/baseline.json` (peak RSS per scenario). The
 regression gate compares fresh runs against it.
 
 ## Local regression check (`check_regression.sh`)
 
-`bench/check_regression.sh` replicates the CI gate locally: it builds the harness, runs
-the suite, and diffs the report against `bench/baseline.json`.
+`bench/check_regression.sh` runs the CI gate locally. It builds the harness, runs the
+suite, and diffs the report against `bench/baseline.json`.
 
 ```bash
 DURATION=2 LEVELS=1,25,100 TARGET=all bench/check_regression.sh
@@ -148,21 +148,21 @@ failure. A scenario is flagged as a **regression** when its `peak_rss_mib` grew 
 
 ## CI regression job
 
-The `.github/workflows/ci.yml` `bench_regression` job runs the same gate (via
-`check_regression.sh`) against the committed baseline (`bench/baseline.json`) and fails on
-any `"leak": true` **or** RSS growth exceeding both 15% and 8 MiB.
+The `bench_regression` job in `.github/workflows/ci.yml` runs the same gate (via
+`check_regression.sh`) against the committed baseline (`bench/baseline.json`). It fails
+on any `"leak": true` **or** on RSS growth exceeding both 15% and 8 MiB.
 
-The baseline is refreshed on merge, so a legitimate performance/footprint change must update
-`bench/baseline.json` alongside the code.
+The baseline refreshes on merge. So a legitimate performance or footprint change must
+update `bench/baseline.json` alongside the code.
 
 ## External recipes (optional)
 
-The in-repo harness is sufficient for most capacity checks. For higher-fidelity
-distributed load, start the app separately (e.g. `zig build && ./zig-out/bin/zero`) and
-point an external generator at it.
+The in-repo harness covers most capacity checks. For higher-fidelity distributed load,
+start the app separately (e.g. `zig build && ./zig-out/bin/zero`) and point an external
+generator at it.
 
-The repo ships k6 helpers under `bench/k6/` (`baseline.js`, plus `report.html` /
-`report.json` captured from a sample run).
+The repo ships k6 helpers under `bench/k6/` — `baseline.js`, plus `report.html` and
+`report.json` from a sample run.
 
 ### wrk
 
@@ -190,8 +190,8 @@ k6 run script.js
 
 - `build.zig` — `bench_module` + `bench_exe` + `bench_step` ("bench").
 
-- Timing uses `clock_gettime(CLOCK_MONOTONIC)`; the latency histogram uses fixed
+- Timing uses `clock_gettime(CLOCK_MONOTONIC)`. The latency histogram uses fixed
   upper-bound buckets, so memory is `O(buckets)` regardless of request count.
 
-- The `zul` client reuses one `Client` + one connection per worker; requests set
+- The `zul` client reuses one `Client` and one connection per worker. Requests set
   `Connection: close` to avoid keep-alive pipelining skew.

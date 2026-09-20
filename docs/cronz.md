@@ -1,21 +1,22 @@
 # Scheduling Tasks
 
-`zero` allows one can schedule one or more mundane tasks to complete any app specific tasks for developer.
+`zero` lets you schedule one or more tasks to run automatically in your app.
 
-`zero` follows `crontab` notation to provide a clear and concise understanding of task repetition and even to the level of `seconds`
+`zero` uses `crontab` notation. The schedule stays clear and readable, and it can repeat down to the level of `seconds`.
 
 ```bash
 second(s) minute(s) hours(s) dayOfMonth(s) month(s) dayOfWeek(s)
     *       *          *          *           *         *
 ```
 
-### Cronz 
+### Cronz
 
-`zero` has a built-in solution called `cronz` let you schedule one or more tasks that leverage underlying container to achieve something useful in the app life-time.
+`zero` ships with a built-in scheduler called `cronz`. It lets you schedule one or more tasks that run on the app's container during its lifetime.
 
-This built-in support offers a straightforward invocation and allows developers to easily define and manage their scheduling needs.
+You call it with a simple method, so defining and managing jobs stays straightforward.
 
 ::: code-group
+
 ```zig [method signature]
 app.addCronJob("cron-schedule", "task-name", task-handler);
 ```
@@ -25,33 +26,32 @@ fn task1(ctx: *Context) !void {
     # your needed tasks executed here
 }
 ```
+
 :::
 
 ### Supported Crontab notations
 
-| Format                  | What it does?                                  | Mode   |
-| ----------------------- | ---------------------------------------------- | ------ |
-| \* \* \* \* \* \*       | Execute on every second                        |        |
-| 1-10 \* \* \* \* \*     | Execute between 1-10 seconds of each minute    | Range  |
-| \*/2 \* \* \*      | Execute on every two minutes                   | Split  |
+| Format                 | What it does?                                  | Mode   |
+| ---------------------- | ---------------------------------------------- | ------ |
+| \* \* \* \* \* \*      | Execute on every second                        |        |
+| 1-10 \* \* \* \* \*    | Execute between 1-10 seconds of each minute    | Range  |
+| \*/2 \* \* \*          | Execute on every two minutes                   | Split  |
 | 0 1,3,5,10 \* \* \* \* | Execute on every 1st, 3rd, 5th and 10th Minute | Repeat |
-
 
 ### Example
 
-This document demonstrates the scheduling of tasks using the `zero` built-in solution called `cronz`.
+This example shows how to schedule tasks with the `zero` built-in `cronz` scheduler.
 
-
-1. Refer following `zero-cronz` example further to know more on getting started of this.
+1. The `zero-cronz` example below shows how to get started.
 
 ::: code-group
+
 ```zig [main.zig]
 const std = @import("std");
 const zero = @import("zero");
 
 const App = zero.App;
 const Context = zero.Context;
-const utils = zero.utils;
 
 pub const std_options: std.Options = .{
     .logFn = zero.logger.custom,
@@ -84,12 +84,13 @@ fn task2(ctx: *Context) !void {
     ctx.info(timestamp);
 }
 ```
+
 :::
 
-2. Boom! lets build and run our app.
+2. Let's build and run the app.
 
 ```bash
-zero/examples/zero-cronz on  main [✘!?] via ↯ v0.15.1 
+zero/examples/zero-cronz on  main [✘!?] via ↯ v0.15.1
 ❯ zig build cronz
  INFO [10:11:16] Loaded config from file: ./configs/.env
  INFO [10:11:16] config overriden ./configs/.dev.env file not found.
@@ -115,17 +116,16 @@ DEBUG [10:11:16] pubsub is disabled, as pubsub mode is not provided.
  INFO [10:11:30] completed cron job: task-2 in 0ms
 ```
 
-3. Preview server status and job repetitions.
+3. You can preview the server status and how the jobs repeat.
 
 ![cronz](./public/preview-cronz.webp)
 
 ## Reliability
 
-Each job run is **serialized** with a per-job mutex, so an overrunning tick will not
-stack on top of the previous one. If a run returns an error it is retried up to **3×
-with a 500 ms backoff** before being marked failed. Because `job.run` runs inside this
-guarded scope, a failing handler cannot leak a half-finished tick into the next one.
+Each job run is **serialized** with a per-job mutex. If a tick runs longer than its interval, the next one won't start on top of it.
+
+If a run returns an error, `zero` retries it up to **3× with a 500 ms backoff** before marking it failed. Because `job.run` runs inside this guarded scope, a failing handler can't leak a half-finished tick into the next one.
 
 ## Recommendation
 
-🚩 It is highly recommended to use the `ctx` allocator whenever possible, since it is tied up with request life-cycle, the de-allocation will be managed automatically and making sure the memory leak is not happening.
+Use the `ctx` allocator whenever you can. It's tied to the request lifecycle, so `zero` frees the memory for you and prevents leaks.

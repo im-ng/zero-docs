@@ -1,12 +1,12 @@
 # Context
 
-`context` are the key feature of the `zero` app and that is the gateway to perform all needed actions for developer. Any action that need to be performed on underlying resources only available through the context.
+The `context` is the key feature of the `zero` app. It's the gateway for everything you do as a developer. Any action on the underlying resources is only available through the context.
 
-`context` is the wrapper that references the incoming request, out-going response, container data sources, handles multiple transformations to complete the tasks.
+The `context` wraps the incoming request, the outgoing response, and the container's data sources. It handles the transformations needed to complete each task.
 
-`context` abstracts away all container access and provides convenient methods to logging, transform requests data, perform database operations, publish messages, etc.,
+The `context` hides container access behind convenient methods. You can log, transform request data, run database operations, publish messages, and more.
 
-🚨 It is highly recommended to use the `ctx` allocator whenever possible, since it is tied up with request life-cycle, the de-allocation will be managed automatically and making sure the memory leak is not happening.
+It is highly recommended to use the `ctx` allocator whenever you can. It's tied to the request life-cycle, so de-allocation is managed for you. That prevents memory leaks.
 
 ### Accessible methods
 
@@ -59,7 +59,7 @@ stateDiagram-v2
 
 ## Access Workflow
 
-The `context` internally has reference to `container` through which it will access all resources and performs the needed operations as part of the incoming requests.
+Internally, the `context` holds a reference to the `container`. It uses that reference to reach every resource and run the operations a request needs.
 
 ```mermaid
 sequenceDiagram
@@ -73,55 +73,54 @@ sequenceDiagram
     Handler-->>Request: response are written and closes the connection
 ```
 
-## Methods explaination
+## Methods explanation
 
 ```zig
 fn customHandler(ctx *Context) !void {}
 ```
 
-`ctx` instance is created on-fly and injected into the custom handler 
-to perform the operations.
+A `ctx` instance is created on the fly and injected into your custom handler so you can perform operations on it.
 
 
 ```zig
 ctx.info("message");
 ```
 
-`info()` method allow user to log something to stdout and uses the context allocator to expand the message with timestamp and logs the output.
+The `info()` method logs a message to stdout. It uses the context allocator to add a timestamp, then writes the output.
 
-_It is also application for `debug()`, `info()`, `err()`, `warn()`, `fatal()` as well_
+_This also applies to `debug()`, `err()`, `warn()`, and `fatal()`._
 
 
 ```zig
 ctx.bind(comptime T);
 ```
 
-`bind()` comes handy when you want to transform the incoming request json data to the comptime `Type`
+`bind()` is handy when you want to transform the incoming JSON request body into a comptime `Type`.
 
 ```zig
 ctx.param("param-name");
 ```
 
-`param()` allows us to retrieve the request params from the URL.
+`param()` lets you read request parameters from the URL.
 
 ```zig
 ctx.getAuthClaims();
 ```
 
-`getAuthClaims()` retrieve the incoming request claims if the `authorization` token exist in place
+`getAuthClaims()` returns the request's claims when an `authorization` token is present.
 
 ```zig
 ctx.getPublisher()
 ```
 
-`getPublisher` lets you to access the pubSub client and allow to send a message to the topic.
+`getPublisher` gives you access to the pub/sub client so you can publish a message to a topic.
 
 
 ```zig
 ctx.json(data);
 ```
 
-`json()` comes handy to return any zig struct as response, default response method for all developer actions.
+`json()` returns any Zig struct as the response. It's the default method for your handler actions.
 
 ```zig
 const kv = ctx.KV orelse ctx.GetKVStore("sessions") orelse return error.NoKV;
@@ -152,5 +151,3 @@ ctx.redirectWith(std.http.Status.moved_permanently, "https://example.com/new");
 `redirect()` issues a `302` redirect; `redirectWith(status, url)` issues an explicit status (see [Rate Limiter & Request Helpers](/rate-limiter)).
 
 The [PubSub](/pubsub) client is reachable through `ctx.pubsub` (and `ctx.NATS` / `ctx.Kakfa` / `ctx.MQ` for broker-specific access); the inbound message arrives on `ctx.message`.
-
-

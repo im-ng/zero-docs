@@ -1,8 +1,8 @@
 # Render API Specifications
 
-`zero` framework offers built-in support to preview the underlying API specifications using the well-known path.
+`zero` gives you a built-in way to preview your API specification at a known URL.
 
-In order to preview, one has to put the `openapi.json` specification file under the `static` directory and access following link to see them in action.
+To preview it, put your `openapi.json` file in the `static` directory, then open the link below.
 
 ::: code-group
 ```bash [swagger url]
@@ -14,7 +14,7 @@ http://zero.local:8080/.well-known/swagger
 
 ## Example
 
-1. Refer following `zero-todo-htmx` example further to know more on getting started of this.
+1. See the `zero-todo-htmx` example to get started.
 
 
 ![image](./public/preview-swagger.webp)

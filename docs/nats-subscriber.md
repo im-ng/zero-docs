@@ -1,10 +1,9 @@
 # NATS Subscriber
 
-This document demonstrates subscribing to a NATS subject using `zero`'s built-in
+This page shows how to subscribe to a NATS subject with `zero`'s built-in
 `pubsub` client.
 
-It is the continuation of the [Publisher](./nats-publisher) demo — prefer to read
-that first.
+This page continues the [Publisher](./nats-publisher) demo. Read that one first.
 
 ```zig [nats]
 // listens for upcoming event and injects into the subscriber handler
@@ -14,7 +13,7 @@ app.addPubSubSubscription("subject", subscriberHandler);
 
 ## Broker selection
 
-Same as the publisher — set `PUBSUB_BACKEND=NATS` and `PUBSUB_BROKER`.
+Use the same setup as the publisher — set `PUBSUB_BACKEND=NATS` and `PUBSUB_BROKER`.
 
 ```bash [configs/.env]
 PUBSUB_BACKEND=NATS
@@ -52,7 +51,7 @@ fn onMessage(ctx: *Context) !void {
 ```
 :::
 
-The inbound message is available on `ctx.message.?.nats`, which exposes `.subject`
-and `.payload` (both `[]const u8`). See
+The message arrives on `ctx.message.?.nats`. It exposes `.subject` and
+`.payload`, both `[]const u8`. See
 [`examples/zero-nats-subscriber`](https://github.com/im-ng/zero/tree/experimental/examples/zero-nats-subscriber)
 for a runnable example.

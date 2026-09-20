@@ -1,6 +1,6 @@
 # Architecture
 
-`zero` follows the dependency injection pattern and allows the abstractions to be centered around with main three components.
+`zero` uses the dependency injection pattern. It centers its abstractions around three main components.
 
 - `App` 
 - `Container`
@@ -23,10 +23,9 @@ stateDiagram-v2
 
 ## App - Orchestrator
 
-`App` orchestractes the application life cycle, manages the framework functionality.
+`App` orchestrates the application life cycle. It manages the framework's functionality.
 
-`App` references to all major sub-systems and provides methods to access and execute the configurations, routing, logging, registered migrations and over all 
-life-cycle
+`App` references all major sub-systems. It gives you methods to access and run the configuration, routing, logging, registered migrations, and the overall life-cycle.
 
 `App` is the main entry point for the `zero` app.
 
@@ -79,7 +78,7 @@ stateDiagram-v2
     Process --> Shutdown
 ```
 
-## Methods explaination
+## Methods explanation
 
 
 ```zig
@@ -87,55 +86,55 @@ stateDiagram-v2
 const app = try App.new(allocator, init.io, init.environ_map);
 ```
 
-`new()` launches the zero app instance, and coordinates and creates all underlying sub-systems if the valid configurations are available.
+`new()` launches the `zero` app instance. It sets up and creates all the underlying sub-systems when valid configuration is available.
 
 ```zig
 try app.get("path", custom-handler);
 ```
 
-`get()`, `post()`, `patch()`, `delete()` integrates the custom handlers to the http router and allows the resource endpoints to be responded on matched requests.
+`get()`, `post()`, `patch()`, `delete()` wire your custom handlers into the HTTP router. They let a resource endpoint respond when a request matches its path.
 
 ```zig
 try app.addMigration(key, migrateHanlder);
 ```
 
-`addMigration()` attaches the data model migrations to be executed on the application run. migrateHandler has to follow the `migrate` struct signature to execute correctly.
+`addMigration()` attaches a data model migration to run when the app starts. Your migrateHandler must follow the `migrate` struct signature to run correctly.
 
 ```zig
 try app.runMigrations();
 ```
 
-`runMigrations()` executes one or more migrations that has been attached in above steps, skips if the app found the migrations were already executed in it is flow.
+`runMigrations()` runs the migrations you attached in the steps above. It skips any migration it finds already ran in its flow.
 
 ```zig
 try app.addCronJob("schedule-notation", "task-name", taskHandler);
 ```
 
-`addCronJob()` comes handy to execute any repeatable jobs for the app has to perform.
+`addCronJob()` is how you run repeatable jobs the app needs to perform on a schedule.
 
 ```zig
 try app.addSubscription(pubSubTopic, subscribeHandler);
 ```
 
-`addSubscription()` allows app to subscribe to `pubsub` topic to perform needed actions.
+`addSubscription()` lets the app subscribe to a `pubsub` topic and act when messages arrive.
 
 ```zig
 try app.onStatup(prepareCache);
 ```
 
-`onStartup` synchronize any needed actions for the app to perform before serving any requests such as warming up the cache, taking backups.
+`onStartup` runs any setup the app needs before serving requests. Examples are warming up the cache or taking backups.
 
 ```zig
 try app.addHttpService("external-service", "service-url");
 ```
 
-`addHttpService()` help the developer to register any external http/https service to be associated with app life time and enables the service-to-service communications possible with minimal coding. 
+`addHttpService()` lets you register an external HTTP/HTTPS service for the app's lifetime. It makes service-to-service calls possible with minimal code.
 
 ```zig
 try app.addWebsocket(socketHandler);
 ```
 
-`addWebsocket` enables the app to upgrade and stream the bi-directional communications to the client over websockets.
+`addWebsocket` lets the app upgrade the connection and stream bi-directional communication to the client over websockets.
 
 ```zig
 try app.graphql("/graphql", Query, Mutation, &query_root, &mutation_root);

@@ -1,8 +1,6 @@
 # Command-line apps
 
-`zero` can run as a **command-line application** instead of an HTTP server. A CLI app
-wires up the same config, logging, container, datasources, and migrations — but it starts
-**no HTTP server and no metrics server**.
+`zero` can run as a **command-line application** instead of an HTTP server. A CLI app wires up the same config, logging, container, datasources, and migrations. It starts **no HTTP server and no metrics server**.
 
 This makes it ideal for:
 
@@ -12,8 +10,7 @@ This makes it ideal for:
 
 ## Create a CLI app
 
-Use `App.newCmd` instead of `App.new` — the only difference is that no network listeners
-are started.
+Use `App.newCmd` instead of `App.new`. The only difference is that it starts no network listeners.
 
 ```zig [src/main.zig]
 const std = @import("std");
@@ -47,9 +44,7 @@ pub fn main(init: std.process.Init) !void {
 
 `app.SubCommand` maps a token the user passes after the program name to a handler.
 
-The handler signature is `fn (*Context) anyerror!void`, the same `Context` you use in HTTP
-handlers, so `ctx.SQL`, `ctx.NoSQL`, `ctx.Timeseries`, `ctx.Search`, and are all available
-(configured via env as usual).
+The handler signature is `fn (*Context) anyerror!void`, the same `Context` you use in HTTP handlers. So `ctx.SQL`, `ctx.NoSQL`, `ctx.Timeseries`, and `ctx.Search` are all available (configured via env as usual).
 
 ```zig
 pub fn seed(ctx: *Context) !void {
@@ -87,12 +82,11 @@ pub fn greet(ctx: *Context) !void {
 }
 ```
 
-`ctx.Param("name")` returns `?[]const u8` — handle the missing case with `orelse`.
+`ctx.Param("name")` returns `?[]const u8`. Handle the missing case with `orelse`.
 
 ## Migrations before the command
 
-The same `app.onStartup` hook used by HTTP apps runs **before** the subcommand body, so
-long-running migrations execute automatically on every CLI invocation:
+The same `app.onStartup` hook used by HTTP apps runs **before** the subcommand body. Long-running migrations run automatically on every CLI invocation:
 
 ```zig
 try app.onStartup(migrateUp); // runs before seed/list/greet
@@ -100,8 +94,7 @@ try app.onStartup(migrateUp); // runs before seed/list/greet
 
 ## Help
 
-Pass `help`, `--help`, or `-h` (or run with no subcommand) to print the usage banner and
-the list of registered subcommands:
+Pass `help`, `--help`, or `-h`. You can also run with no subcommand. This prints the usage banner and the list of registered subcommands:
 
 ```text
 Usage:
@@ -115,10 +108,6 @@ Commands:
 
 ## Recommendation
 
-🚩 Use the `ctx` allocator wherever possible; it is tied to the request lifecycle, so its
-memory is released automatically and you avoid leaks.
+Use the `ctx` allocator wherever possible. It's tied to the request lifecycle, so its memory is released automatically and you avoid leaks.
 
-See the runnable
-[`zero-cli`](https://github.com/im-ng/zero/tree/experimental/examples/zero-cli) example
-and the implementation in
-[`src/app.zig`](https://github.com/im-ng/zero/tree/experimental/src/app.zig).
+See the runnable [`zero-cli`](https://github.com/im-ng/zero/tree/experimental/examples/zero-cli) example. The implementation lives in [`src/app.zig`](https://github.com/im-ng/zero/tree/experimental/src/app.zig).

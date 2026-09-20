@@ -1,8 +1,8 @@
 # Warmup
 
-`zero` framework offers built-in support to handle any synchronous tasks that has to be completed before serving any requests. 
+`zero` has built-in support for running synchronous tasks before it serves any requests.
 
-It can be achieved using the `onStatup` method of the App.
+You register them with the `onStartup` method of the `App`.
 
 ::: code-group
 ```zig [method signature]
@@ -13,7 +13,7 @@ try app.onStatup(custom-handler);
 
 ## Example
 
-1. Refer following `zero-redis` example further to know more on getting started of this.
+1. See the `zero-redis` example to get started.
 
 ::: code-group
 ```zig [main.zig]
@@ -56,9 +56,9 @@ fn cacheResponse(ctx: *Context) !void {
     try ctx.json(reply);
 }
 ```
-_Check out the `zero-redis` example code to understand the usage better_
+_See the `zero-redis` example code to understand the usage better_
 :::
 
 ## Recommendation
 
-🚩 It is highly recommended to use the `ctx` allocator whenever possible, since it is tied up with request life-cycle, the de-allocation will be managed automatically and making sure the memory leak is not happening.
+We recommend using the `ctx` allocator whenever possible. It's tied to the request life-cycle, so de-allocation is managed automatically and memory leaks won't happen.

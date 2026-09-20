@@ -1,6 +1,6 @@
 # Auto CRUD
 
-`zero` can scaffold REST handlers for a struct in one line, using the `AddRESTHandlers` fn.
+`zero` can scaffold REST handlers for a struct in one line, using the `addRestHandlers` fn.
 
 See [`examples/zero-autocrud`](https://github.com/im-ng/zero/tree/experimental/examples/zero-autocrud) for a runnable example.
 
@@ -39,16 +39,16 @@ PUT    /users/:id    # update (re-selects and returns the row)
 DELETE /users/:id    # delete (204-style {deleted: n})
 ```
 
-The generated SQL is emitted for **Postgres** (`$N` placeholders), **SQLite** (`?`), and **DuckDB** and dispatched at runtime on `ctx.SQL.dialect`, so the same struct works against any of those backends (selected via `DB_DIALECT` / `DUCKDB_PATH`).
+The generated SQL is emitted for **Postgres** (`$N` placeholders), **SQLite** (`?`), and **DuckDB**. It's dispatched at runtime based on `ctx.SQL.dialect`, so the same struct works against any of those backends. You pick the backend with `DB_DIALECT` or `DUCKDB_PATH`.
 
 ## Rules
 
 - `resource` is the URL segment. `table` defaults to `resource` (override via `opts.table`).
 
-- The primary key is auto-detected as the field named `id`; override with `opts.id_field`. The struct must have that field or it fails to compile.
+- `id` is auto-detected as the primary key field; override it with `opts.id_field`. The struct must have that field, or it won't compile.
 
 - Struct **field names map to column names exactly** (the `pgz` mapper is reused), so name your columns to match. `POST`/`PUT` bind the request JSON into the struct.
 
-- The primary key is taken from the request body on create (supply it) and from the `:id` path param on get/update/delete.
+- On create, the primary key comes from the request body (you supply it). On get, update, and delete, it comes from the `:id` path param.
 
-Auto CRUD does not create the table — run your migration (or `ctx.SQL.exec`) first, as the `examples/zero-autocrud` demo does with a `/init` handler.
+Auto CRUD does not create the table. Run your migration (or `ctx.SQL.exec`) first. The `examples/zero-autocrud` demo shows this with a `/init` handler.

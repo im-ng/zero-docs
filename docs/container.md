@@ -1,6 +1,6 @@
 # Container
 
-`container` are the centralized dependency injection that the app creates and holds references to all resources including configurations, authentication keys, data sources, logging, metrics and external http services.
+`container` is the central dependency-injection mechanism that your app creates. It holds references to every resource: configurations, auth keys, data sources, logging, metrics, and external HTTP services.
 
 ## Overview
 
@@ -35,7 +35,7 @@ stateDiagram-v2
 
 ## Access Workflow
 
-The `context` internally has reference to `container` through which it will access all resources and performs the needed operations as part of the incoming requests.
+The `context` holds a reference to the `container`. Through it, the context reaches every resource and runs the operations each incoming request needs.
 
 ```mermaid
 sequenceDiagram
@@ -47,19 +47,18 @@ sequenceDiagram
     Data Source-->>Container: Results
     Container-->>Context: Return results/error
     Context-->Request: Success/Failed
+```
 
-`PubSub` covers Kafka, MQTT and NATS. `KVStore` (Redis / NATS KV / memory / SQLite)
-and `FileStore` (local / ftp / sftp) are the unified key-value and blob backends
-registered via `app.addKVStore(...)` / `app.addFileStore(...)` (see
-[KV Store](/kv-store) and [File Store](/file-store)).
+`PubSub` covers Kafka, MQTT, and NATS. `KVStore` (Redis / NATS KV / memory / SQLite) and `FileStore` (local / ftp / sftp) are the unified key-value and blob backends. Register them with `app.addKVStore(...)` and `app.addFileStore(...)` (see [KV Store](/kv-store) and [File Store](/file-store)).
 
 ## Health checks
 
-The container aggregates component health behind two well-known endpoints:
+The `container` aggregates component health behind two well-known endpoints:
 
 - `GET /.well-known/health` — returns the aggregated status as JSON
   (`{ "<name>": "up" }`). If any check fails the response body reports the failing
   component as `down` and the endpoint returns a non-200 status.
+
 - `GET /.well-known/live` — liveness probe, always returns `200` (the process is up).
 
 Two probes are registered **automatically** when the corresponding datasource is

@@ -4,10 +4,9 @@ import { ImgComparisonSlider } from '@img-comparison-slider/vue';
 
 # Kafka Subscriber
 
-This document demonstrates the kafka subscriber capability to a topic using `zero` built-in solution 
-`KF` client.
+This page shows how to subscribe to a Kafka topic using the built-in `zero` `KF` client.
 
-It is continuation of the [Publisher](./kafka-publisher) to preview the subscriber demo. Prefer to read that first.
+It continues the [Publisher](./kafka-publisher) walkthrough. Read that page first if you haven't.
 
 
 ```zig [kafka]
@@ -18,16 +17,13 @@ app.addKafkaSubscription("topic", subscriberHandler);
 
 ## Interim solution
 
-🚩 Zero framework comes with Kafka support through `librdkafka` C Library linking. Since we don't have a pure Zig 
-Kafka client, we are leveraging the use of this C implementations, achieving the message queue capability. 
+`zero` ships Kafka support by linking to the `librdkafka` C library. We don't yet have a pure Zig Kafka client, so we use this C implementation to get message queueing.
 
-🚩 Unlike other driver support, we need to `install` librdkafka separately in your Linux container or in developer machine
-to make use of this. I am sorry for these limitations but pleased to make use of `zig` inter-operability to achieve Kafka 
-publishing without any shortcomings.
+Unlike our other drivers, you must install `librdkafka` separately on your Linux container or dev machine to use Kafka. The upside is that `zig`'s C interop lets us reach Kafka for publishing and subscribing without extra glue code.
 
 ## Recommendation
 
-It is highly recommended to install the `librdkafka` library in developer / container machine.
+We recommend installing the `librdkafka` library on your dev machine or container.
 
 ::: code-group
 ```bash [debian]
@@ -39,7 +35,7 @@ brew install librdkafka
 ```
 :::
 
-If you are using the macOS (intel or M chips), prefer to checkout these build lines to adjust the header and library relative path to build the `kafka` dependencies properly.
+On macOS (Intel or Apple Silicon), use these build lines to point the header and library paths at your `kafka` dependencies.
 
 ::: code-group
 ```zig [build.zig]
@@ -53,15 +49,15 @@ if (builtin.os.tag == .macos) {
 
 ## Example
 
-1. Refer following `zero-kafka-subscriber` example further to know more on getting started of this.
+1. Check out the `zero-kafka-subscriber` example for a full working project.
 
-2. Spin up kafka container locally to subscriber to published topic messages
+2. Start a local Kafka container so the subscriber can receive published messages.
 
 ```bash
 podman pull docker.io/apache/kafka:4.1.1
 ```
 
-_We have enabled the kafka support for all security mechanism, and have been tested with `SASL` and `PLAIN` format alone_
+_We enabled Kafka support for all security mechanisms, but we've only tested `SASL` and `PLAIN`._
 
 ::: code-group
 ```bash [SASL_PLAINTEXT]
@@ -101,7 +97,7 @@ docker.io/apache/kafka:4.1.1
 ```
 :::
 
-Prefer to check out `jaas` config provided in the `configs` folder for `SASL` mechanism.
+For the `SASL` mechanism, check the `jaas` config in the `configs` folder.
 
 ::: code-group
 ```bash
@@ -114,7 +110,7 @@ KafkaServer {
 ```
 :::
 
-3. Let us attach needed configurations to connect with our `kafkaserver` cluster.
+3. Now attach the configuration to connect to your `kafkaserver` cluster.
 
 ::: code-group
 ```bash [config/.env]
@@ -155,7 +151,7 @@ KAFKA_SASL_PASSWORD=secret
 ```
 :::
 
-4. Add basic subscriber to receive messages from `zero-topic`
+4. Add a basic subscriber to receive messages from the `zero-topic` topic.
 
 ::: code-group
 
@@ -206,7 +202,7 @@ fn subscribeTask(ctx: *Context) !void {
 ```
 :::
 
-5. Boom! lets build and run our app.
+5. Build and run the app.
 
 ::: code-group
 ```bash
@@ -242,7 +238,7 @@ DEBUG [04:31:37] redis is disabled, as redis host is not provided.
 ```
 :::
 
-3. Preview publisher status of the our application.
+3. Preview the publisher status of your application.
 
 <ImgComparisonSlider>
 <img
@@ -257,13 +253,13 @@ DEBUG [04:31:37] redis is disabled, as redis host is not provided.
 />
 </ImgComparisonSlider>
 
-4. `zero` comes with subscriber metrics handy to preview success/failed counts.
+4. `zero` exposes subscriber metrics so you can see success and failure counts.
 
 ![metrics](./public/zero-kafka-subscriber-3.webp)
 
 ## Issues
 
-Zig build will fail if the above dependency is not installed properly.
+Zig build will fail if you don't install the dependency above correctly.
 
 ```bash
 ❯ zig build pubsub

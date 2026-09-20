@@ -5,7 +5,7 @@ import { ImgComparisonSlider } from '@img-comparison-slider/vue';
 
 # Cache
 
-`zero` has built-in support for the accessing the redis database.
+`zero` has built-in support for accessing the Redis database.
 
 ```bash
 ctx.Cache.Get(); #retrieves value from cache
@@ -15,15 +15,15 @@ ctx.Cache.Set(); #persists value to cache
 
 ### zero-redis example
 
-This example demonstrates the first step to spin up the basic web app using the `zero` framework. As we are going to connect to redis and retrieve in this example.
+This example shows the first step to build a basic web app with the `zero` framework. We'll connect to Redis and read a value from it.
 
-Also in this example, we are going to combine built-in solution `OnStartup`. 
+We'll also use the built-in `OnStartup` hook.
 
-The `OnStartup` helps us to warm up the redis cache with data loaded. It is not only limited to redis, but all attachable services of zero.
+`OnStartup` lets us warm up the Redis cache with data. It works with any attachable `zero` service, not just Redis.
 
 ---
 
-1. Pull and run podman or docker container.
+1. Pull and run a Podman or Docker container.
 
 ::: code-group
 ```bash [redis container]
@@ -32,7 +32,7 @@ The `OnStartup` helps us to warm up the redis cache with data loaded. It is not 
 ```
 :::
 
-2. Let us update our app configurations `configs/.env` with this.
+2. Update your app config in `configs/.env`.
 
 
 ```bash [config/.env]
@@ -49,7 +49,7 @@ REDIS_PASSWORD=password
 REDIS_DB=0
 ```
 
-3. Let refer following snippet to understand the usage of the redis in zero app.
+3. Let's look at the following snippet to see how to use Redis in a `zero` app.
 
 ::: code-group
 ```zig [main.zig]
@@ -108,7 +108,7 @@ fn cacheResponse(ctx: *Context) !void {
 ```
 :::
 
-4. Boom! Lets build and run our app.
+4. Now let's build and run the app.
 
 ```bash
 zero/examples/zero-basic on main via ↯ v0.15.1 
@@ -148,15 +148,11 @@ DEBUG [04:01:48] pubsub is disabled, as pubsub mode is not provided.
 <!-- eslint-enable -->
 </ImgComparisonSlider>
 
-_Make use of this image slider to glide between status and response_
+_Use the slider to compare server status and handler response._
 
 ## Other cache backends (KV Store)
 
-Beyond Redis (`ctx.Cache`), `zero` exposes a unified **KV store** that can serve as
-your cache, backed by **NATS JetStream KV**, **in-memory**, or **SQLite** — so you
-are not tied to a Redis dependency. Register a store at startup with
-`app.addKVStore(name, backend, opts)`; the first store you register also becomes the
-default, reachable from a handler via `ctx.KV` or `ctx.GetKVStore(name)`.
+Beyond Redis (`ctx.Cache`), `zero` gives you a unified **KV store** you can use as a cache. It runs on **NATS JetStream KV**, **in-memory**, or **SQLite**, so you don't need Redis. Register a store at startup with `app.addKVStore(name, backend, opts)`. The first store you register is also the default, and you can reach it from a handler via `ctx.KV` or `ctx.GetKVStore(name)`.
 
 ```zig [main.zig]
 const std = @import("std");
@@ -182,9 +178,7 @@ pub fn main(init: std.process.Init) !void {
 }
 ```
 
-The handler API is identical across backends — `get`/`set`/`delete`/`exists`/`expire`.
-Returned slices from `get` are caller-owned (free with `ctx.allocator.free`); TTLs are
-set with `expire(ctx, key, ms)` (unsupported on `nats_kv`).
+The handler API is the same across all backends: `get`/`set`/`delete`/`exists`/`expire`. Slices returned by `get` are caller-owned, so free them with `ctx.allocator.free`. Set TTLs with `expire(ctx, key, ms)`; this is unsupported on `nats_kv`.
 
 ```zig [main.zig]
 fn cacheSet(ctx: *Context) !void {
@@ -208,8 +202,7 @@ fn cacheGet(ctx: *Context) !void {
 
 ### Memory
 
-The in-memory backend has zero dependencies and is handy for tests or single-instance
-apps. Values live for the lifetime of the process.
+The in-memory backend needs no dependencies. It's handy for tests or single-instance apps. Values live for the lifetime of the process.
 
 ```zig [main.zig]
 try app.addKVStore("cache", .memory, .{});
@@ -217,8 +210,7 @@ try app.addKVStore("cache", .memory, .{});
 
 ### SQLite
 
-The SQLite backend reuses the SQLite datasource and stores entries in a `kv(k, v, exp)`
-table — no extra service beyond your SQLite database.
+The SQLite backend reuses your SQLite datasource and stores entries in a `kv(k, v, exp)` table. You don't need any extra service beyond your SQLite database.
 
 ```zig [main.zig]
 try app.addKVStore("cache", .sqlite, .{});
@@ -226,8 +218,7 @@ try app.addKVStore("cache", .sqlite, .{});
 
 ### NATS KV
 
-The NATS backend reuses the `nats` dependency and requires a JetStream-enabled
-connection. Set the bucket via the `bucket` option.
+The NATS backend reuses the `nats` dependency and needs a JetStream-enabled connection. Set the bucket with the `bucket` option.
 
 ```zig [main.zig]
 try app.addKVStore("cache", .nats_kv, .{ .bucket = "cache" });
@@ -235,10 +226,10 @@ try app.addKVStore("cache", .nats_kv, .{ .bucket = "cache" });
 
 See [KV Store](/kv-store) for the full reference.
 
-## Limitations 🚨 
+## Limitations
 
-🚩 There will be slowness in the app and limit yourself to have 2-5 concurrent connections to serve the data from redis cache. There is a work in progress to get this mitigated.
+Redis access can slow down under load. Keep to 2–5 concurrent connections when serving from the Redis cache. We're working on a fix.
 
 ## Recommendation
 
-🚩 It is highly recommended to use the `ctx` allocator whenever possible, since it is tied up with request life-cycle, the de-allocation will be managed automatically and making sure the memory leak is not happening.
+Use the `ctx` allocator whenever you can. It's tied to the request lifecycle, so deallocation is handled for you and you avoid memory leaks.

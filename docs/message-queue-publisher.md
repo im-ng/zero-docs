@@ -4,11 +4,11 @@ import { ImgComparisonSlider } from '@img-comparison-slider/vue';
 
 # MQTT Publisher
 
-This document demonstrates the publishing to a topic using `zero` built-in solution `MQ` client.
+This guide shows how to publish to a topic using the built-in `MQ` client in `zero`.
 
-1. Refer following `zero-mqtt-publisher` example further to know more on getting started of this.
+1. See the `zero-mqtt-publisher` example below to get started.
 
-Create following mosquitto.conf file to kick start our MQTT server
+Create the following `mosquitto.conf` file to start our MQTT server:
 
 ```bash
 ❯ mkdir -p config
@@ -22,7 +22,7 @@ persistence_file mosquitto.db
 persistence_location /mosquitto/data/
 ```
 
-Pull and run podman or docker container.
+Pull and run the container with podman or docker.
 
 ```
 ❯ podman pull docker.io/library/eclipse-mosquitto
@@ -93,7 +93,7 @@ fn publishTask2(ctx: *Context) !void {
 
 :::
 
-2. Boom! lets build and run our app.
+2. Let's build and run the app.
 
 ```bash
 zero/examples/zero-mqtt-publisher on  main [✘!?] via ↯ v0.15.1
@@ -119,7 +119,7 @@ DEBUG [03:11:11] redis is disabled, as redis host is not provided.
  INFO [03:12:00] completed cron job: publisher-2 in 0ms
 ```
 
-3. Preview server status and publish status.
+3. Preview the server status and the published messages.
 
 <ImgComparisonSlider>
 <!-- eslint-disable -->
@@ -136,8 +136,8 @@ DEBUG [03:11:11] redis is disabled, as redis host is not provided.
 <!-- eslint-enable -->
 </ImgComparisonSlider>
 
-_In next demo we will replace the `mosquitto_client` with `zero` subscriber to listen to topic and capture the events._
+_In the next demo we'll replace the `mosquitto_client` with a `zero` subscriber that listens to the topic and captures the events._
 
 ## Recommendation
 
-🚩 It is highly recommended to use the `ctx` allocator whenever possible, since it is tied up with request life-cycle, the de-allocation will be managed automatically and making sure the memory leak is not happening.
+It is highly recommended to use the `ctx` allocator whenever possible. It is tied to the request life-cycle, so de-allocation is handled automatically and you avoid memory leaks.

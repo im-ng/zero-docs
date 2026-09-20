@@ -1,9 +1,12 @@
 # GraphQL
 
-`zero` ships a schema-less **GraphQL-over-HTTP** engine. You describe your
-schema as plain Zig structs: constant fields are returned as-is, and
-`*const fn (*Context, Args) anyerror!T` fields are invoked as resolvers (the
-`Args` struct is populated from the GraphQL arguments).
+`zero` ships a schema-less **GraphQL-over-HTTP** engine.
+
+You describe your schema as plain Zig structs. Constant fields are returned as-is.
+
+Fields of type `*const fn (*Context, Args) anyerror!T` are called as resolvers.
+
+The `Args` struct is filled from the GraphQL arguments.
 
 See [`examples/zero-graphql`](https://github.com/im-ng/zero/tree/experimental/examples/zero-graphql)
 for a runnable example.
@@ -49,7 +52,7 @@ pub fn main(init: std.process.Init) !void {
 
 ## Mutations
 
-Pass a `Mutation` type (and its root) as the 3rd/5th arguments:
+Pass a `Mutation` type and its root as the 3rd and 5th arguments.
 
 ```zig [src/main.zig]
 const Mutation = struct {
@@ -73,9 +76,9 @@ try app.graphql("/graphql", Query, Mutation, &query_root, &mutation_root);
 - `POST /graphql` with `{"query": "..."}` and optional `variables` / `operationName`
 - `GET  /graphql?query=...&variables=...&operationName=...` (URL-encoded)
 
-The engine resolves nested objects, lists, arguments, inline/fragment spreads,
-and collects per-field errors into `errors` while still returning the partial
-`data` payload.
+The engine resolves nested objects, lists, arguments, and inline or fragment
+spreads. It collects per-field errors into `errors` but still returns the
+partial `data` payload.
 
 ```bash [query]
 curl -X POST http://localhost:8080/graphql \

@@ -4,8 +4,7 @@ import { ImgComparisonSlider } from '@img-comparison-slider/vue';
 
 # Kafka Publisher
 
-This document demonstrates the publishing to a topic using `zero` built-in solution 
-`KF` client.
+This page shows how to publish a message to a Kafka topic using the `zero` built-in `KF` client.
 
 
 ```zig [kafka]
@@ -15,16 +14,13 @@ ctx.KF.publish(ctx, "topic", "message-key", "payload");
 
 ## Interim solution
 
-🚩 Zero framework comes with Kafka support through `librdkafka` C Library linking. Since we don't have a pure Zig 
-Kafka client, we are leveraging the use of this C implementations, achieving the message queue capability. 
+`zero` ships Kafka support by linking the `librdkafka` C library. We don't have a pure-Zig Kafka client yet, so we reuse this C implementation to get message-queue capability.
 
-🚩 Unlike other driver support, we need to `install` librdkafka separately in your Linux container or in developer machine
-to make use of this. I am sorry for these limitations but pleased to make use of `zig` inter-operability to achieve Kafka 
-publishing without any shortcomings.
+Unlike the other drivers, you must install `librdkafka` yourself on your Linux container or dev machine. The `zig` C interop lets us publish to Kafka without any major limitations.
 
 ## Recommendation
 
-It is highly recommended to install the `librdkafka` library in developer / container machine.
+Install the `librdkafka` library on your dev machine or container.
 
 ::: code-group
 ```bash [debian]
@@ -36,7 +32,7 @@ brew install librdkafka
 ```
 :::
 
-If you are using the macOS (intel or M chips), prefer to checkout these build lines to adjust the header and library relative path to build the `kafka` dependencies properly.
+On macOS (Intel or Apple Silicon), adjust the header and library paths in your build so the `kafka` dependencies compile.
 
 ::: code-group
 ```zig [build.zig]
@@ -50,15 +46,15 @@ if (builtin.os.tag == .macos) {
 
 ## Example
 
-1. Refer following `zero-kafka-publisher` example further to know more on getting started of this.
+1. See the `zero-kafka-publisher` example to get started.
 
-2. Spin up kafka container locally to publish the messages
+2. Start a local Kafka container to publish messages.
 
 ```bash
 podman pull docker.io/apache/kafka:4.1.1
 ```
 
-_We have enabled the kafka support for all security mechanism, and have been tested with `SASL` and `PLAIN` format alone_
+_We support all Kafka security mechanisms, but we have only tested `SASL` and `PLAIN` so far._
 
 ::: code-group
 ```bash [SASL_PLAINTEXT]
@@ -98,7 +94,7 @@ docker.io/apache/kafka:4.1.1
 ```
 :::
 
-Prefer to check out `jaas` config provided in the `configs` folder for `SASL` mechanism.
+Check the `jaas` config in the `configs` folder for the `SASL` mechanism.
 
 ::: code-group
 ```bash
@@ -111,7 +107,7 @@ KafkaServer {
 ```
 :::
 
-3. Let us attach needed configurations to connect with our `kafkaserver` cluster.
+3. Add the configs needed to connect to your `kafkaserver` cluster.
 
 ::: code-group
 ```bash [config/.env]
@@ -150,7 +146,7 @@ KAFKA_SASL_PASSWORD=secret
 ```
 :::
 
-4. Add basic publisher to send message to `zero-topic`
+4. Add a basic publisher that sends a message to `zero-topic`
 
 ::: code-group
 
@@ -217,7 +213,7 @@ fn transform(ctx: *Context, p: *const Payload) ![]const u8 {
 ```
 :::
 
-5. Boom! lets build and run our app.
+5. Build and run the app.
 
 ::: code-group
 ```bash
@@ -241,7 +237,7 @@ DEBUG [04:09:27] redis is disabled, as redis host is not provided.
 ```
 :::
 
-3. Preview publisher status of the our application.
+3. Preview the publisher status of your application.
 
 <ImgComparisonSlider>
 <img
@@ -256,13 +252,13 @@ DEBUG [04:09:27] redis is disabled, as redis host is not provided.
 />
 </ImgComparisonSlider>
 
-4. `zero` comes with publisher metrics handy to preview success/failed counts.
+4. `zero` exposes publisher metrics so you can see success and failure counts.
 
 ![metrics](./public/zero-kafka-publisher-3.webp)
 
 ## Issues
 
-Zig build will fail if the above dependency is not installed properly.
+If the dependency above is not installed, the Zig build will fail.
 
 ```bash
 ❯ zig build pubsub

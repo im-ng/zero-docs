@@ -5,7 +5,7 @@ import { ImgComparisonSlider } from '@img-comparison-slider/vue';
 
 # CRUD
 
-`zero` framework offers support to manage the RESTful endpoints with custom handlers that allow us to combine with built-in services, and let us to manage `Create, Read, Update and Delete` operations with ease.
+The `zero` framework lets you manage RESTful endpoints with custom handlers. You can combine them with built-in services to handle Create, Read, Update, and Delete operations.
 
 
 ::: code-group
@@ -25,23 +25,19 @@ try app.delete("/todos/:id", handler.deleteTodo);
 
 ### Example
 
-Refer the `zero-htmx-todo` example to understand further on using the CRUD operations fully.
+Look at the `zero-htmx-todo` example to see how the CRUD operations work end to end.
 
-This example includes a working prototype of the frontend using htmx, helps us to perform the operations of the to-do tasks
+This example ships a working htmx frontend for a to-do app. It lets you perform these operations:
 
-Operations such as:
+- Add one or more `todo` tasks with `POST`
+- Update a `task` and its `description` with `PUT`
+- View one or more tasks with `GET`
+- Mark a `task` done with `POST`
+- Delete a `task` you no longer want with `DELETE`
 
-- Add one or more `todo` tasks using `POST` method
-- Update `task` and `description` of the tasks using `PUT` method
-- Preview one or more tasks using `GET` method
-- Mark `task`s are done with `POST` method
-- Delete if you don't want to keep them around using `DELETE` method
+The `htmx` frontend lives in the `static` directory and is served automatically at `:8080/index.html`.
 
-The `htmx` frontend is available in the `static` directory and will be automatically served from `:8080/index.html`
-
-As we are dealing with `CRUD` operations, this example uses the `demo` database to persist, retrieve and update the underlying data. 
-
-Please refer to `config/.env` for more. The app automatically runs the migrations and make the tables available for our `CRUD` operations.
+Because this example uses `CRUD` operations, it stores data in the `demo` database. Check `config/.env` for the settings. The app runs migrations on startup and creates the tables your `CRUD` operations need.
 
 ::: code-group
 ```zig [main.zig]
@@ -107,10 +103,10 @@ DB_NAME=demo
 DB_PORT=5432
 DB_DIALECT=postgres
 ```
-_Check out the example entire code to understand the usage better_
+_Read the full example to see how it fits together._
 :::
 
-2. Let us break down and see how the `custom` handlers are performing the `CRUD` operations.
+2. Let's look at how the `custom` handlers implement the `CRUD` operations.
 
 ::: code-group
 ```zig [get method]
@@ -281,7 +277,7 @@ pub fn deleteTodo(ctx: *Context) !void {
 ```
 :::
 
-3. Boom! lets build and run our app.
+3. Let's build and run the app.
 
 
 ```bash
@@ -312,7 +308,7 @@ zero/examples/zero-todo-htmx on  main [!] via ↯ v0.15.1
  INFO [02:19:42] ef17eead-2410-4d77-afce-3d5ce58d33a8	 200 3ms POST /done/10
 ```
 
-3. Preview server status of the `CRUD` operations.
+3. Preview the `CRUD` operations in the running server.
 
 <ImgComparisonSlider>
 <!-- eslint-disable -->
@@ -331,4 +327,4 @@ zero/examples/zero-todo-htmx on  main [!] via ↯ v0.15.1
 
 ## Recommendation
 
-🚩 It is highly recommended to use the `ctx` allocator whenever possible, since it is tied up with request life-cycle, the de-allocation will be managed automatically and making sure the memory leak is not happening.
+Use the `ctx` allocator whenever you can. It is tied to the request life-cycle, so it frees memory automatically and avoids leaks.

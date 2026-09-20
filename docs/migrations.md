@@ -4,13 +4,13 @@ import { ImgComparisonSlider } from '@img-comparison-slider/vue';
 
 # Migrations
 
-Migrations are common pattern to add/alter the underlying the data model as the app evolves.
+Migrations are a common pattern for adding or changing your data model as the app evolves.
 
-Manual bookkeeping of these changes will be difficult tasks for developer and can be an error prone at times.
+Tracking those changes by hand is tough and easy to get wrong.
 
-To limit all such difficulty, `zero` framework comes with built-in solution of `migrations`.
+To cut that pain, `zero` ships a built-in migrations solution.
 
-`zero` now ships with a CLI that **automates** migration creation and registration, so you no longer have to hand-wire each migration by hand.
+`zero` now ships a CLI that **automates** migration creation and registration, so you no longer wire each one by hand.
 You scaffold a migration, fill in the SQL, and `zero` wires it into your app and tracks it for you.
 
 ::: tip
@@ -18,11 +18,13 @@ Each migration runs inside a **database transaction**. If it fails, `zero` rolls
 back and leaves it **unrecorded**, so it is retried on the next run (it is not silently
 masked as applied). Only migrations that commit successfully are tracked in
 `zero_migrations` and skipped thereafter.
+
+**Migrations are limited to SQL dialect for now.**
 :::
 
 ## Automated migration creation
 
-The migration workflow has three moving parts — but only the SQL is yours to write:
+The migration workflow has three steps. Only the SQL is yours to write:
 
 1. Build the `zero` CLI.
 2. Scaffold a migration with `zero migrator add`.
@@ -30,9 +32,8 @@ The migration workflow has three moving parts — but only the SQL is yours to w
 
 ### 1. Build the zero CLI
 
-`zero` ships a small CLI used to scaffold migrations. Building the framework now also
-installs the CLI to any bin directory — the default `zig build` step does this, or
-you can run `zig build zero` with prefix explicitly.
+`zero` ships a small CLI to scaffold migrations. Building the framework also installs the CLI to a bin directory.
+The default `zig build` step does this, or you can run `zig build zero` with a prefix explicitly.
 
 ```bash
 zig build zero --prefix=/usr/local/bin
@@ -133,8 +134,8 @@ an existing migration by accident.
 ### 3. Register and run
 
 In `main.zig`, import the generated migrations module and call `migrations.all(app)`
-before `app.runMigrations()`. Order does not matter, `zero` sorts by
-`migrationNumber` at execution time.
+before `app.runMigrations()`. Order doesn't matter; `zero` sorts by
+`migrationNumber` when it runs.
 
 ::: code-group
 
@@ -179,8 +180,7 @@ DB_DIALECT=postgres
 
 :::
 
-Build and run. On the first run the migrations execute; on every subsequent run they
-are skipped once recorded.
+Build and run. On the first run the migrations execute. On every later run they're skipped once recorded.
 
 :::code-group
 
@@ -216,13 +216,13 @@ are skipped once recorded.
 
 :::
 
-## `zero_migrations` 🚨
+## `zero_migrations`
 
-`zero` app tracks all the successfully ran migrations in this `zero_migrations` table with needed details.
+`zero` tracks every migration that ran successfully in the `zero_migrations` table, with the needed details.
 
-If the entries are altered or removed from this table, the app execution will result in executing the migrations again and would corrupt the underlying data model.
+If you alter or remove rows from this table, `zero` runs the migrations again and can corrupt your data model.
 
-`zero` framework trust the developers that they won't do anything with this table entries.
+`zero` trusts you not to touch the rows in this table.
 
 <ImgComparisonSlider>
 <!-- eslint-disable -->
@@ -241,9 +241,9 @@ If the entries are altered or removed from this table, the app execution will re
 
 ## Recommendations
 
-`zero` app tracks the migrations through an unique `key`, if the `keys` altered, the migration would eventually re-run, but that still in control of the developers.
+`zero` tracks migrations by a unique `key`. If you change the `key`, the migration runs again, but that stays under your control.
 
-`zero` recommends to use the `epoch` timestamp as key for all migrations. This simple command quickly gets you the `key value`
+`zero` recommends using the `epoch` timestamp as the `key` for every migration. This command prints the `key` value quickly:
 
 ```bash
 ❯ date +%s
@@ -252,4 +252,4 @@ If the entries are altered or removed from this table, the app execution will re
 
 ## Recommendation
 
-🚩 It is highly recommended to use the `ctx` allocator whenever possible, since it is tied up with request life-cycle, the de-allocation will be managed automatically and making sure the memory leak is not happening.
+Use the `ctx` allocator whenever you can. It's tied to the request life-cycle, so `zero` frees it for you and prevents memory leaks.

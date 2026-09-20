@@ -4,9 +4,9 @@ import { ImgComparisonSlider } from '@img-comparison-slider/vue';
 
 # MQTT Subscriber
 
-This document is continuation of the [Publisher](./message-queue-publisher) to preview the subscriber demo. Prefer to read that first.
+This document continues the [Publisher](./message-queue-publisher) guide to show the subscriber demo. Read that first.
 
-The `MQ` client will be automatically added to `container` once the needed service configurations available.
+The `MQ` client is added to the `container` automatically once the required service configuration is present.
 
 ```zig
 ctx.MQ.publish("topic"); //publishes message to a topic on the subscribed client
@@ -16,14 +16,14 @@ app.addSubscription("topic", subscriber-handler); //listens for upcoming event a
 
 ### Limitations
 
-- Upto 32KB size of message supported by default.
+- Up to 32KB size of message supported by default.
 - Subscribes to only one topic now, work in progress to make it available for multiple `topics` without any change from app developers.
 
 ### Example
 
-This document demonstrates the subscribing to a topic using `zero` built-in solution `MQ` client.
+This document shows how to subscribe to a topic using the `zero` built-in `MQ` client.
 
-1. Refer following `zero-mqtt-subscriber` example further to know more on getting started of this.
+1. See the `zero-mqtt-subscriber` example to get started.
 
 ::: code-group
 
@@ -87,7 +87,7 @@ fn subscribeTask(ctx: *Context) !void {
 
 :::
 
-2. Boom! lets build and run our app.
+2. Build and run the app.
 
 ```bash [pubsub]
 zero/examples/zero-mqtt-subscriber on  main [✘!?] via ↯ v0.15.1
@@ -119,7 +119,7 @@ DEBUG [04:15:48] redis is disabled, as redis host is not provided.
  INFO [04:17:01] Received on [zero] publisher 2 says hi!
 ```
 
-3. Preview server status, subscription and publish status.
+3. Preview the server status, subscription, and publish status.
 
 <ImgComparisonSlider>
 <!-- eslint-disable -->
@@ -138,4 +138,4 @@ DEBUG [04:15:48] redis is disabled, as redis host is not provided.
 
 ## Recommendation
 
-🚩 It is highly recommended to use the `ctx` allocator whenever possible, since it is tied up with request life-cycle, the de-allocation will be managed automatically and making sure the memory leak is not happening.
+It is highly recommended to use the `ctx` allocator whenever possible, since it is tied up with request life-cycle, the de-allocation will be managed automatically and making sure the memory leak is not happening.

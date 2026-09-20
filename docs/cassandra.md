@@ -1,14 +1,10 @@
 # Cassandra
 
-`zero` exposes **Cassandra** (and other wide-column / document stores) through a unified,
-type-erased `ctx.NoSQL` handle.
+`zero` gives you access to **Cassandra** and other wide-column or document stores through a single, type-erased `ctx.NoSQL` handle.
 
-The same calls work regardless of which NoSQL backend is configured, so swapping backends later is
-a config change, not a code change. (More backends such as MongoDB are planned,
-add them in `src/datasource/nosqlInterface.zig`.)
+These calls are the same no matter which NoSQL backend you configure. Swapping backends later means changing a config value, not your code. More backends like MongoDB are planned; you add them in `src/datasource/nosqlInterface.zig`.
 
-`ctx.NoSQL` is **optional**: it is `null` until `CASSANDRA_CONTACT_POINTS` is configured,
-so always guard with `if (ctx.NoSQL) |n| { ... } else { notConfigured }`.
+`ctx.NoSQL` is **optional**. It is `null` until you set `CASSANDRA_CONTACT_POINTS`, so always guard with `if (ctx.NoSQL) |n| { ... } else { notConfigured }`.
 
 ## Configuration
 
@@ -41,8 +37,7 @@ CASSANDRA_PASSWORD=cassandra
 
 ## API
 
-The `NoSQL` handle mirrors `ctx.SQL` in spirit — a small, uniform verb set over a
-collection / key model:
+The `NoSQL` handle works like `ctx.SQL`. It gives you a small, uniform set of verbs over a collection or key model:
 
 ```zig
 try ctx.NoSQL.put(ctx, "users", "alice", "{ \"name\": \"alice\" }");   // upsert
@@ -51,9 +46,7 @@ try ctx.NoSQL.delete(ctx, "users", "alice");                         // remove
 const raw = try ctx.NoSQL.query(ctx, "users", "SELECT data FROM zero_demo.users LIMIT 50"); // raw CQL
 ```
 
-Returned `[]const u8` slices are allocated on the request allocator — free them with
-`defer ctx.allocator.free(slice)` when you hold a reference past the call, or rely on the
-request-scoped allocator to release them at the end of the handler.
+Returned `[]const u8` slices are allocated on the request allocator. Free them with `defer ctx.allocator.free(slice)` if you keep the reference past the call. Otherwise the request-scoped allocator frees them when the handler ends.
 
 ## Example handler
 
@@ -90,8 +83,7 @@ pub fn getUser(ctx: *Context) !void {
 
 ## Recommendation
 
-🚩 Use the `ctx` allocator wherever possible; it is tied to the request lifecycle, so its
-memory is released automatically and you avoid leaks.
+Use the `ctx` allocator whenever you can. It is tied to the request lifecycle, so `zero` releases its memory automatically and you avoid leaks.
 
 See the runnable
 [`zero-nosql`](https://github.com/im-ng/zero/tree/experimental/examples/zero-nosql)

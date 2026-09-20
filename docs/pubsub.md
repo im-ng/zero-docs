@@ -1,12 +1,12 @@
 # PubSub
 
-In the world of microservice architecture, the event driven approach is indistinguishable and `zero` framework has built-in support for the accessing the message queue systems.
+In microservice architectures, an event-driven approach is common, and `zero` has built-in support for message-queue systems.
 
-At times the app we develop has to rely on external service signal through API call and through events and let us decide the state of the data/action.
+Sometimes our app must react to signals from external services. These arrive as API calls or as events, and they tell us what state the data or action should be in.
 
-Alike, other built-in solutions, the `PubSub` clients will be automatically added to `container` once the needed service configurations available.
+Like the other built-in integrations, `zero` adds the `PubSub` clients to the `container` automatically once the required service config is present.
 
-`zero` app tries to connect, captures the `ping` status and attaches to the app life-time, otherwise app explicitly calls the `PubSub` is disabled.
+`zero` tries to connect and tracks the `ping` status, then ties the client to the app's lifetime. If the connection can't be made, `PubSub` stays disabled.
 
 ::: code-group
 
@@ -17,12 +17,16 @@ try app.addPubSubSubscription("zero", onMessage);
 ```
 
 ```zig [kafka]
+#ctx.KF will be deperecated
+
 ctx.KF.publish(ctx, "topic", "message-key", "payload"); #publishes message to a topic on the subscribed client
 
 app.addKafkaSubscription("topic", subscriberHandler); #listens for upcoming event and injects into subscriber handler for further actions.
 ```
 
 ```zig [MQTT]
+#ctx.KF will be deperecated
+
 ctx.MQ.Publish("topic", "payload"); #publishes message to a topic on the subscribed client
 
 app.addSubscription("topic", subscriber-handler); #listens for upcoming event and injects into subscriber handler.
@@ -50,13 +54,14 @@ All brokers degrade gracefully when the broker is unhealthy:
   - MQTT / NATS / Redis: `<topic>/dlq`
 
 Each dead-lettered message increments the `app_pubsub_dlq_total` counter (labels
-`topic`, `consumer`) — see [Observability](/observability). The `X-Correlation-ID` set
-by the inbound request is propagated into Kafka/NATS record headers and the outbound
-HTTP client, so a single id flows across services and brokers.
+`topic`, `consumer`) see [Observability](/observability).
+
+The `X-Correlation-ID` set by the inbound request is propagated into Kafka/NATS record
+headers and the outbound HTTP client, so a single id flows across services and brokers.
 
 ### Support
 
-`zero` framework supports following brokers to publish and subscriber to.
+`zero` supports the following brokers for publishing and subscribing.
 
 | Message Broker | Support |
 | -------------- | ------- |
@@ -67,7 +72,7 @@ HTTP client, so a single id flows across services and brokers.
 
 ### Configurations
 
-This list of configurations help the developer to prefer either Kafka or MQTT pubsub per instance.
+These settings let you choose Kafka, MQTT, NATS, or Redis per instance.
 
 | kafka config                   | Remarks                                                              | Default\* / Others                            | Required |
 | ------------------------------ | -------------------------------------------------------------------- | --------------------------------------------- | -------- |
@@ -94,25 +99,25 @@ This list of configurations help the developer to prefer either Kafka or MQTT pu
 | MQTT_PORT             | Port of the MQTT Server                       | None               | Yes      |
 | MQTT_CLIENT_ID_SUFFIX | Client ID name for the debug messages         | None               | No       |
 
-| NATS config          | Remarks                                       | Default\* / Others      | Required |
-| -------------------- | --------------------------------------------- | ----------------------- | -------- |
-| PUBSUB_BACKEND       | Set to `NATS` to use the NATS broker          | NATS                    | Yes      |
-| PUBSUB_BROKER        | NATS server URL                               | nats://localhost:4222   | Yes      |
-| NATS_STREAM          | JetStream stream name                         | None                    | No       |
-| NATS_SUBJECTS        | Comma-separated subjects to subscribe to      | None                    | No       |
-| NATS_CONSUMER        | Durable consumer name                         | None                    | No       |
-| NATS_MAX_WAIT        | Max wait (ms) for a pull subscription         | None                    | No       |
-| NATS_MAX_PULL_WAIT   | Max pull wait (ms)                            | 5000\*                  | No       |
-| NATS_CREDS_FILE      | Path to a NATS credentials file               | None                    | No       |
+| NATS config        | Remarks                                  | Default\* / Others    | Required |
+| ------------------ | ---------------------------------------- | --------------------- | -------- |
+| PUBSUB_BACKEND     | Set to `NATS` to use the NATS broker     | NATS                  | Yes      |
+| PUBSUB_BROKER      | NATS server URL                          | nats://localhost:4222 | Yes      |
+| NATS_STREAM        | JetStream stream name                    | None                  | No       |
+| NATS_SUBJECTS      | Comma-separated subjects to subscribe to | None                  | No       |
+| NATS_CONSUMER      | Durable consumer name                    | None                  | No       |
+| NATS_MAX_WAIT      | Max wait (ms) for a pull subscription    | None                  | No       |
+| NATS_MAX_PULL_WAIT | Max pull wait (ms)                       | 5000\*                | No       |
+| NATS_CREDS_FILE    | Path to a NATS credentials file          | None                  | No       |
 
-| Redis config         | Remarks                                       | Default\* / Others      | Required |
-| -------------------- | --------------------------------------------- | ----------------------- | -------- |
-| PUBSUB_BACKEND       | Set to `REDIS` to use the Redis broker        | REDIS                   | Yes      |
-| REDIS_HOST           | Redis server host                             | 127.0.0.1               | Yes      |
-| REDIS_PORT           | Redis server port                             | 6379                    | Yes      |
-| REDIS_USER           | Redis username                                | None                    | No       |
-| REDIS_PASSWORD       | Redis password                                | None                    | No       |
-| REDIS_DB             | Redis logical database                        | 0                       | No       |
+| Redis config   | Remarks                                | Default\* / Others | Required |
+| -------------- | -------------------------------------- | ------------------ | -------- |
+| PUBSUB_BACKEND | Set to `REDIS` to use the Redis broker | REDIS              | Yes      |
+| REDIS_HOST     | Redis server host                      | 127.0.0.1          | Yes      |
+| REDIS_PORT     | Redis server port                      | 6379               | Yes      |
+| REDIS_USER     | Redis username                         | None               | No       |
+| REDIS_PASSWORD | Redis password                         | None               | No       |
+| REDIS_DB       | Redis logical database                 | 0                  | No       |
 
 ### Redis
 
@@ -144,9 +149,9 @@ try app.addPubSubSubscription("zero", onMessage);
 
 ### NATS
 
-Select NATS with `PUBSUB_BACKEND=NATS`. 
+Select NATS with `PUBSUB_BACKEND=NATS`.
 
-Publish through the unified `ctx.pubsub` interface (works across Kafka, MQTT, NATS and Redis); subscribe with `app.addPubSubSubscription(...)`. 
+Publish through the unified `ctx.pubsub` interface (works across Kafka, MQTT, NATS and Redis); subscribe with `app.addPubSubSubscription(...)`.
 
 In the handler the message is available on `ctx.message.?.nats`, which exposes `.subject` and `.payload` (`[]const u8`).
 

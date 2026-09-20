@@ -4,9 +4,9 @@ import { ImgComparisonSlider } from '@img-comparison-slider/vue';
 
 # Hello Zero!
 
-This document outlines the step to get started with `hello world` using the `zero` framework.
+This guide walks you through building a `hello world` app with the `zero` framework.
 
-Lets begin...
+Let's begin.
 
 0. Create an empty folder with `zig init`
 
@@ -27,7 +27,7 @@ info: see `zig build --help` for a menu of options
 
 :::
 
-1. Update app dependency to load `zero` fmk as module
+1. Add `zero` as a dependency so the build can load it as a module
 
 ::: code-group
 
@@ -86,7 +86,7 @@ pub fn build(b: *std.Build) void {
 
 :::
 
-2. Update app configrations in `configs/.env` to serve our hello world.
+2. Update the app configuration in `configs/.env` to serve our hello world
 
 ::: code-group
 
@@ -105,7 +105,7 @@ LOG_LEVEL=debug
 
 :::
 
-3. (Optional) Copy a favicon so the first request has an icon to serve.
+3. (Optional) Copy a favicon so the first request has an icon to serve
 
 ::: code-group
 
@@ -117,7 +117,7 @@ cp <your-favorite-icon> static/
 
 :::
 
-4. Start writing your zero web app to serve first request
+4. Now write your `zero` web app to serve its first request
 
 ::: code-group
 
@@ -162,7 +162,7 @@ fn jsonResponse(ctx: *Context) !void {
 
 :::
 
-5. Finally build and serve your new web app
+5. Build and run your new web app
 
 <ImgComparisonSlider>
 <!-- eslint-disable -->
@@ -179,7 +179,7 @@ fn jsonResponse(ctx: *Context) !void {
 <!-- eslint-enable -->
 </ImgComparisonSlider>
 
-6. Start and graceful shutdown of server
+6. Start the server and shut it down gracefully
 
 ::: code-group
 
@@ -244,4 +244,4 @@ received shutdown signal
 
 ## Recommendation
 
-🚩 It is highly recommended to use the `ctx` allocator whenever possible, since it is tied up with request life-cycle, the de-allocation will be managed automatically and making sure the memory leak is not happening.
+We recommend using the `ctx` allocator whenever you can. It's tied to the request life-cycle, so `zero` frees the memory for you. That prevents leaks.
