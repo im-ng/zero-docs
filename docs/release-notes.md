@@ -13,7 +13,7 @@ Docs always track `main`. Pin to a tagged release in your own project — the
 
 Work currently on `main` ahead of the `v0.5.0` tag:
 
-- **Automated migration creation** — a new `zero` CLI (`zig build zero`) scaffolds
+- **Automated migration creation** - a new `zero` CLI (`zig build zero`) scaffolds
   migrations with `zero migrator add --name <name>`, generating
   `src/migrations/<name>.zig` and auto-regenerating `src/migrations/all.zig`. See
   [Migrations](/migrations).
@@ -21,7 +21,21 @@ Work currently on `main` ahead of the `v0.5.0` tag:
   default-targeting the **rootPrint** OSS collector (any OTLP HTTP collector works).
   Automatic server spans, `traceparent` propagation, and a `std.log` → OTel logs
   bridge. See [OpenTelemetry](/experimental).
-- **RBAC** limited via JSON config; remote log-level retrieval format revisited.
+- **RBAC** limited via JSON config, remote log-level retrieval format revisited.
+- **HTTP server tuning** — new knobs: `ZERO_HTTP_WORKERS` (I/O workers),
+  `ZERO_HTTP_THREAD_POOL_COUNT` (handler threads), `ZERO_HTTP_MAX_BODY_SIZE`
+  (413 on overflow), and `ZERO_KEEPALIVE_TIMEOUT_MS` (idle keep-alive now defaults
+  to 60s). Inbound concurrency is now bulkhead-capped at 1024 by
+  default. See [Configuration](/configuration#http-server).
+- **Postgres pool tuning** — `PG_POOL_SIZE` and `PG_POOL_ACQUIRE_TIMEOUT_MS`.
+  See [Configuration](/configuration#database).
+- **Bootstrap arena** — `ZERO_FRAMEWORK_MEM_SIZE` sizes a fixed bootstrap allocator
+  for early / short-lived allocations. See [Configuration](/configuration#app).
+- **OAuth hardening** — `OAUTH_AUDIENCE` / `OAUTH_ISSUER` enforce the JWT `aud` /
+  `iss` claims when set. See [Configuration](/configuration#auth).
+- **Health & startup probe** — new `GET /.well-known/startup` endpoint plus
+  `app.addHealthCheck(...)`, per-check timeout via `HEALTH_CHECK_TIMEOUT_MS`.
+  See [Container](/container#health-checks).
 
 ## v0.5.0 (2026-09-14)
 

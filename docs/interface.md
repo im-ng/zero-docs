@@ -1,21 +1,21 @@
 # Interface
 
-`zero` talks to many interchangeable backends - Redis, NATS KV, in-memory and
+`zero` talks to many interchangeable backends: Redis, NATS KV, in-memory, and
 SQLite for key-value; local/ftp/sftp for files; Postgres/SQLite for SQL; and
 Kafka/MQTT/NATS for pub/sub.
 
-To keep handler code backend-agnostic, each of these is exposed through
-a **type-erased interface**: a stable, uniform API backed by a
-concrete implementation that the caller never names.
+We expose each backend through a **type-erased interface** so your handler code
+stays backend-agnostic. The interface is a stable, uniform API. A concrete
+implementation backs it, but the caller never names that type.
 
-There are two shapes in the framework:
+The framework uses two shapes:
 
-- **Enum-tagged** — a `*anyopaque` pointer plus a `Backend`/`Dialect` enum; each
-  method `switch`es on the tag and casts the pointer to the concrete type. Used by
-  `KVStore`, `FileStore` and `Datasource`.
+- **Enum-tagged** — a `*anyopaque` pointer plus a `Backend` or `Dialect` enum.
+  Each method `switch`es on the tag and casts the pointer to the concrete type.
+  `KVStore`, `FileStore`, and `Datasource` use this shape.
 
 - **VTable (fat pointer)** — a `*anyopaque` pointer plus a `*const VTable` of
-  function pointers. Used by `PubSub`.
+  function pointers. `PubSub` uses this shape.
 
 ```mermaid
 classDiagram
@@ -53,8 +53,8 @@ classDiagram
 
 ## Enum-tagged interface — `KVStore`
 
-The handle stores the opaque pointer and the backend tag. `init` wraps any concrete
-`*T`; every method re-casts `ptr` to the right type based on `backend`.
+The handle stores the opaque pointer and the backend tag. `init` wraps any
+concrete `*T`. Every method re-casts `ptr` to the right type based on `backend`.
 
 ```zig
 pub const KVStore = struct {
@@ -81,17 +81,18 @@ pub const KVStore = struct {
 container's configured connections (e.g. it reads `container.redis` for `.redis`, or
 `container.Nats.?.js` for `.nats_kv`) and wraps it.
 
-The wrapped handle is stored in `container.kvStores`; the first one registered
-or the Redis client auto-registered on connect — becomes the default `ctx.KV`.
+The wrapped handle is stored in `container.kvStores`. The first one you register
+becomes the default `ctx.KV`. The Redis client that `zero` auto-registers on
+connect also becomes the default.
 
 `FileStore` (backends `local` / `ftp` / `sftp`) and `Datasource` (dialects
 `postgres` / `sqlite`) use the identical pattern.
 
 ## VTable interface — `PubSub`
 
-Instead of a tag, the handle carries a table of function pointers. Each backend
-(MQTT, Kafka, NATS) supplies a `VTable`; `Publish`/`subscribe` forward to it after
-casting `ptr` back to the concrete client.
+Instead of a tag, the handle carries a table of function pointers. Each backend —
+MQTT, Kafka, or NATS — supplies a `VTable`. `Publish` and `subscribe` forward to
+it after casting `ptr` back to the concrete client.
 
 ```zig
 pub const Interface = struct {
@@ -125,7 +126,7 @@ pub const Message = union(enum) {
 };
 ```
 
-In a handler the active field is selected by the connected backend:
+In a handler, the connected backend selects the active field:
 
 ```zig
 fn onMessage(ctx: *Context) !void {
@@ -138,12 +139,12 @@ fn onMessage(ctx: *Context) !void {
 
 ## Why it matters
 
-Because the concrete type is erased, handler code only ever touches `ctx.KV`,
+The concrete type is erased, so your handler code only ever touches `ctx.KV`,
 `ctx.FileStore`, `ctx.SQL` and `ctx.pubsub`.
 
-Swapping a backend — Redis → NATS KV, or Postgres → SQLite
-is a configuration change (`PUBSUB_BACKEND`, `DB_DIALECT`, `app.addKVStore(...)`),
-not a code change.
+Swapping a backend — Redis to NATS KV, or Postgres to SQLite — is a
+configuration change. You set `PUBSUB_BACKEND`, `DB_DIALECT`, or call
+`app.addKVStore(...)`. You don't change handler code.
 
 See [KV Store](/kv-store), [File Store](/file-store), [Using Pubsub](/pubsub) and
 [Using Postgres](/rest-handler) for the public-facing APIs built on these

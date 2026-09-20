@@ -4,31 +4,31 @@ import { ImgComparisonSlider } from '@img-comparison-slider/vue';
 
 # Authentication
 
-Authentication (Auth) is a defacto standard to enforce and protect your web applications resources against unwanted service calls. With which we can make sure that valid user can operate on underlying resources,data and service once authenticated.
+Authentication (Auth) is the standard way to protect your web app's resources from unwanted calls. Once a user is authenticated, only valid users can operate on your data, services, and other resources.
 
-`zero` app comes with 3 mode of the authentication and follows the industry standards to protect your app resources.
+`zero` supports three auth modes. It follows industry standards to protect your app's resources.
 
 - `Basic`
 - `API Key`
 - `OAuth`
 
-Authentication can be managed using the `AUTH_MODE` and available in following options:
+Configure auth with the `AUTH_MODE` env var. The available options are:
 
 ```bash
 AUTH_MODE=Basic #ApiKey, OAuth
 AUTH_KEYS=encoded-values
 ```
 
-`zero` assumes all your authentication handled only through `Authorization` and `x-api-key` headers for now, `NO custom headers` considered.
+`zero` handles auth only through the `Authorization` and `x-api-key` headers. Custom headers aren't supported yet.
 
 ## HTTP Basic Auth
 
-HTTP Basic Authentication is a simple, built-in method in the HTTP protocol for a client to send a username and password to a server using the `Authorization` header and embed the Base64 encoded `username:password` value as `Basic encodedValue`.
+HTTP Basic Auth is a built-in HTTP method. The client sends a username and password in the `Authorization` header. It encodes `username:password` as Base64 and prefixes it with `Basic `.
 
-`zero` comes with built-in solution to embed `basic` auth validation and protect against the resource endpoints.
-
+`zero` has a built-in Basic auth validator that protects your endpoints.
 
 ::: code-group
+
 ```zig [main.zig]
 pub fn main(init: std.process.Init) !void {
     var arean = std.heap.ArenaAllocator.init(std.heap.page_allocator);
@@ -61,12 +61,12 @@ HTTP_PORT=8081
 AUTH_MODE=Basic
 AUTH_KEYS="bmFtZTpwYXNzd29yZA==,bmFtZTE6cGFzc3dvcmQx"
 ```
-:::
 
+:::
 
 ## API Key Authentication
 
-`zero` will start validate and authenticate if the incoming requests has the allowed list of `api-key` in the `x-api-key` header.
+`zero` validates incoming requests against an allow-list of API keys in the `x-api-key` header.
 
 ::: code-group
 
@@ -101,8 +101,8 @@ HTTP_PORT=8081
 AUTH_MODE=APIKey
 AUTH_API_KEYS="caf208fb-e407-497a-8f03-d636fb689b2e,b12eb288-e7b5-4919-8082-09586e4b6dd7"
 ```
-:::
 
+:::
 
 ```bash
 ❯ zig build auth
@@ -139,8 +139,6 @@ DEBUG [02:50:45] pubsub is disabled, as pubsub mode is not provided.
 <!-- eslint-enable -->
 </ImgComparisonSlider>
 
-
-
 <ImgComparisonSlider>
 <!-- eslint-disable -->
 <img
@@ -156,20 +154,20 @@ DEBUG [02:50:45] pubsub is disabled, as pubsub mode is not provided.
 <!-- eslint-enable -->
 </ImgComparisonSlider>
 
-
 ## OAuth
 
-OAuth 2.0 is the industry-standard protocol for authorization. OAuth 2.0 focuses on client developer simplicity while providing specific authorization flows for web applications, desktop applications, mobile phones, and living room devices. 
+OAuth 2.0 is the industry-standard protocol for authorization. It gives client developers a simple model and provides specific auth flows for web, desktop, and mobile apps.
 
-`zero` allows developer to opt for this industry standard using built-in functions and all underlying resource endpoints will be protected against the one or more signed `jwt` tokens.
+`zero` supports OAuth through built-in functions. All your resource endpoints are protected by one or more signed JWTs.
 
-The process involves registering the `jwks_endpoint` into the `zero` app and the app automatically captures available public keys and authenticates the incoming request authorization tokens.
+Register your `jwks_endpoint` with `zero`. The app fetches the public keys and validates the incoming token automatically.
 
-If token signature or invalid format found, the app restricts and returns `401` unauthorized as response.
+If the signature is invalid or the format is wrong, the app rejects the request with `401 Unauthorized`.
 
-To get started on this, we may need to provide few needed details to app to start processing the `jwt` tokens.
+To get started, give the app a few details so it can process JWTs.
 
 ::: code-group
+
 ```zig [main.zig]
 pub fn main(init: std.process.Init) !void {
     var arean = std.heap.ArenaAllocator.init(std.heap.page_allocator);
@@ -189,6 +187,7 @@ pub fn oauthResponse(ctx: *Context) !void {
     try ctx.json(claims);
 }
 ```
+
 ```bash [config/.env]
 APP_ENV=dev
 APP_NAME=start
@@ -203,13 +202,13 @@ AUTH_MODE=OAuth
 # assuming we have our own key server that provides publick keys to validate
 AUTH_JWKS_URL=http://localhost:8080/keys
 
-# zero app automatically recaptures the public keys 
+# zero app automatically recaptures the public keys
 AUTH_REFRESH_INTERVAL=10  #in seconds
 ```
+
 :::
 
-
-2. Boom! lets build and run our app.
+2. Build and run the app.
 
 ```bash
 zero/examples/zero-auth on  main [!] via ↯ v0.15.1
@@ -235,7 +234,7 @@ DEBUG [03:10:40] pubsub is disabled, as pubsub mode is not provided.
  INFO [03:10:54] ae66b8d2-7d9c-4677-8545-89c83107329a	 401 0ms GET /oauth
 ```
 
-3. Preview server status and check jwt authorization for protected resources against valid/invalid tokens.
+3. Preview the server and check JWT authorization against valid and invalid tokens.
 
 <ImgComparisonSlider>
 <!-- eslint-disable -->
@@ -252,8 +251,6 @@ DEBUG [03:10:40] pubsub is disabled, as pubsub mode is not provided.
 <!-- eslint-enable -->
 </ImgComparisonSlider>
 
-
-
 <ImgComparisonSlider>
 <!-- eslint-disable -->
 <img
@@ -269,7 +266,7 @@ DEBUG [03:10:40] pubsub is disabled, as pubsub mode is not provided.
 <!-- eslint-enable -->
 </ImgComparisonSlider>
 
-_Prefer to use these token to get this tested quickly_
+_Use these tokens to test quickly._
 
 Valid token
 
@@ -278,13 +275,14 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Inplcm8tZnJhbWV3b3JrLWFwcCJ9.eyJpc3M
 ```
 
 Invalid token
+
 ```
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Inplcm8tZnJhbWV3b3JrLWFwcC0xIn0.eyJpc3MiOiJpc3MiLCJpYXQiOjE3NjI1OTY4MDcsImV4cCI6MjA1MTI1OTEzNywiYXVkIjoiemVyby1hcHAiLCJzdWIiOiJ0ZXN0LWtleSIsImp0aSI6Imp0aSIsIm5iZiI6MTc2MjU5NjgwN30.o5mmBhlLr6zu-OcLNesNNrNH58mBFceyyDeKYRArOhU
 ```
 
 ## RBAC
 
-Role-Based Access Control (RBAC) restricts routes to specific roles after authentication. It is enforced by the `rbac` middleware, which runs after auth and reads the caller's role from the verified JWT `role` claim.
+Role-Based Access Control (RBAC) restricts routes to specific roles after auth. The `rbac` middleware runs after auth and reads the caller's role from the verified JWT `role` claim.
 
 Behavior (per `src/mw/rbac.zig`):
 
@@ -297,10 +295,7 @@ Behavior (per `src/mw/rbac.zig`):
 
 ### Config-driven rules
 
-RBAC rules are config-driven only — there is no code-based `app.rbac(...)` API. Load
-them by calling `app.rbacFromEnv()` in `main` (reads `RBAC_CONFIG`), or from a JSON
-file via `app.rbacFromJsonFile(path)`. `app.rbacFromEnv()` accepts **only** the
-endpoint-rule JSON format below.
+RBAC is config-driven only. Load rules by calling `app.rbacFromEnv()` in `main` (reads `RBAC_CONFIG`), or from a JSON file via `app.rbacFromJsonFile(path)`. `app.rbacFromEnv()` accepts **only** the endpoint-rule JSON format below.
 
 `RBAC_CONFIG` is a single endpoint-rule object or an array of them:
 
@@ -314,6 +309,7 @@ endpoint-rule JSON format below.
 ```
 
 ::: code-group
+
 ```bash [config/.env — endpoint-rule JSON]
 # GET  /api/resource -> requires the USER role
 # POST /api/resource -> requires the ADMIN role
@@ -325,25 +321,17 @@ RBAC_CONFIG=[{"permissions":["USER"],"endpoint":"/api/resource","methods":["GET"
 # but other methods (e.g. DELETE) stay protected
 RBAC_CONFIG=[{"permissions":["ADMIN"],"endpoint":"/api/admin/*","methods":["GET","POST"],"exempt":true}]
 ```
+
 :::
 
-`exempt: true` claims the whole endpoint for its listed methods (any role passes),
-while methods not listed remain protected and require a matching permission rule.
+`exempt: true` opens the listed methods to any role. Methods not listed stay protected and need a matching permission rule.
 
-RBAC depends on a `role` claim in the verified JWT, so it is designed to work with
-`AUTH_MODE=OAuth`. Requests authenticated via Basic or API Key carry no role and
-receive `403` on any protected route.
+RBAC needs a `role` claim in the verified JWT, so it works with `AUTH_MODE=OAuth`. Basic and API Key auth carry no role, so they get `403` on protected routes.
 
-## Limitations 🚨 
+## Limitations
 
-- 🚩 The public key refresh can happen as low as 1 second interval
-- 🚩 The `jwt` claim validation is limited to `kid` alone for now, but there is a work in progress to extend this to validate based on the custom preferences through app method signature.
-
-```zig
-# will be available in 0.0.2 onwards
-app.addOAuthValidateOptions('expiry-check','issuer-check','subject-check');
-```
+- The public key refresh interval can be as low as 1 second.
 
 ## Recommendation
 
-🚩 It is highly recommended to use the `ctx` allocator whenever possible, since it is tied up with request life-cycle, the de-allocation will be managed automatically and making sure the memory leak is not happening.
+We recommend using the `ctx` allocator whenever possible. It's tied to the request lifecycle, so deallocation is automatic and memory leaks are avoided.

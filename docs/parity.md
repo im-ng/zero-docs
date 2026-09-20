@@ -1,8 +1,8 @@
 # Feature Parity
 
-`zero` framework comes with the following features out-of-box for quick development.
+The `zero` framework ships with the following features out of the box, so you can start building quickly.
 
-Instead of developing and integrating with these boilerplates, an app developer can immediately focus on the business logic.
+Instead of wiring up that boilerplate yourself, you can jump straight to your business logic.
 
 ---
 
@@ -32,7 +32,7 @@ Instead of developing and integrating with these boilerplates, an app developer 
 - ✅ Traceability
   - ✅ Basic (X-Correlation-ID)
   - ✅ Downstream propagation (outbound HTTP + Kafka/NATS headers)
-  - ⬜ Open Telemetry
+  - ✅ Open Telemetry (experimental)
 - ✅ Well structured logging mechanism
   - ✅ UTC Timezone
   - ✅ Custom Timezone (`ZERO_LOG_TIMEZONE`: local / utc / IANA)
@@ -73,9 +73,9 @@ Instead of developing and integrating with these boilerplates, an app developer 
   - ✅ `mqtt`
   - ✅ `kafka`
     - ✅ `rdkafka` driver integrated
-    - ⬜ Support for multiple topics subscription
     - ✅ Support for metrics (publish / subscribe / DLQ)
     - ✅ Reconnect + resubscribe, retry, dead-letter (DLQ)
+    - ⬜ Support for multiple topics subscription
   - ✅ `redis` (Pub/Sub)
 - ✅ NoSQL (wide-column / document)
   - ✅ `cassandra` (`ctx.NoSQL`)
@@ -91,8 +91,8 @@ Instead of developing and integrating with these boilerplates, an app developer 
 - ✅ File Store
   - ✅ `local`
   - ✅ `s3` (S3-compatible: MinIO / R2 / Spaces / B2)
-  - ⬜ `ftp` (deferred — no vendored Zig lib)
-  - ⬜ `sftp` (deferred — needs libssh)
+  - ⬜ `ftp` (deferred)
+  - ⬜ `sftp` (deferred)
 - ✅ Database Migrations
 - ✅ Seed data on App startup
 - ✅ Auto CRUD
@@ -135,7 +135,6 @@ Instead of developing and integrating with these boilerplates, an app developer 
   - ✅ Decode request bodies (`ctx.bindProto(T)` for `application/x-protobuf`)
   - ✅ Encode responses (`ctx.protobuf(data)`)
   - ✅ Codegen from `.proto` via `zig build gen-proto` (protoc)
-  - ✅ Hand-written messages via the `protobuf` `encode`/`decode` primitives
 - ✅ Protocol Buffers over HTTP
 - ✅ CLI Application
 - ✅ Memory leaks

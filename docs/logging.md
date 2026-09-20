@@ -1,22 +1,20 @@
 # Logging
 
-`zero` handles logging in well strucutred manner to provide ongoing state of the
-application and services that it attached to. The logs are tidy and visualque to understand the app status.
+`zero` logs in a structured way. It shows the ongoing state of your app and the services it runs. The logs stay tidy and give a clear visual cue about the app's status.
 
-The framework allows to customize and know only the needed information on any given time.
+You can customize what you see. Pick the information you need at any given time.
 
-Through `LOG_LEVEL` config one can adjust the app logging and know more of underlying state. The least level is `debug` and that let start see logs all above.
+Set `LOG_LEVEL` to control your app's logging. It reveals more about the underlying state. The lowest level is `debug`, which shows every log above it.
 
-Levels in order (highest to lowest) - `fatal`, `error`, `warn`, `info` and `debug`.
+Levels from highest to lowest: `fatal`, `error`, `warn`, `info`, and `debug`.
 
 ## Remote log level
 
 `LOG_LEVEL` can also be driven at runtime from a remote endpoint.
 
 When `REMOTE_LOG_URL` is configured, `zero` registers an outbound HTTP client
-and a cron job that fetches the level (a `zero` service serves this at
-`GET /remote.log.service?id=<uuid>`, returning `{ "id": ..., "level": ... }`)
-every `REMOTE_LOG_REFRESH_INTERVAL` seconds (default 30) and applies it in-process.
+and a cron job that fetches the level and every `REMOTE_LOG_REFRESH_INTERVAL` seconds
+(default 30) and applies it in-process.
 
 ```mermaid
 json
@@ -66,14 +64,14 @@ Resolution failure on an IANA name falls back to the system local zone, and ulti
 to UTC. The timezone is resolved before the first log line (e.g. _"Loaded config from
 file"_), so it applies to startup logs too.
 
-When `zero` app runs, it starts reading log level, allow us to know more
+When your `zero` app runs, it reads the log level. This tells you:
 
 - log level of statement
 - database/kv/mq connection status
 - authentication setup
 - static directory attachments,
 - request trace id, response status, response handling time
-- possibly errors that occured.
+- possibly errors that occurred.
 
 ## Visual cue
 

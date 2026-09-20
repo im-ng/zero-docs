@@ -1,17 +1,16 @@
 # Community & Help
 
-`zero` is open source and developed in the open. Here is where to go when you need help,
-want to report a bug, or want to shape the roadmap.
+`zero` is open source, and we build it in the open. Here's where to go for help, to report a bug, or to help shape the roadmap.
 
 ## Get help
 
-- **GitHub Discussions** — ask questions and share how you're using zero:
+- **GitHub Discussions** — ask questions and share how you're using:
   [github.com/im-ng/zero/discussions](https://github.com/im-ng/zero/discussions)
 - **GitHub Issues** — report bugs or request features:
   [github.com/im-ng/zero/issues](https://github.com/im-ng/zero/issues)
-- **Source** — the framework lives at
-  [github.com/im-ng/zero](https://github.com/im-ng/zero); the docs site you're reading
-  is in the same repo under `docs/`.
+- **Source** — `zero` lives at
+  [github.com/im-ng/zero](https://github.com/im-ng/zero), the docs site you're reading
+  is in the repo under [github.com/im-ng/zero-docs](https://github.com/im-ng/zero-docs).
 
 ## Before you ask
 
@@ -24,7 +23,6 @@ want to report a bug, or want to shape the roadmap.
 
 ## Contributing
 
-Docs and framework changes are both welcome via pull request against the `experimental`
-branch. The docs build with `bun run docs:build`; see `AGENTS.md` in the repo root for
-conventions (new pages must be registered in the sidebar/nav, and `docs/0.15.2/` is a
-frozen snapshot that must not be edited).
+We welcome pull requests against the `experimental` branch for both docs and framework changes. The docs build with `bun run docs:build`.
+
+See `AGENTS.md` in the repo root for conventions: new pages must be registered in the sidebar/nav, and `docs/0.15.2/` is a frozen snapshot.

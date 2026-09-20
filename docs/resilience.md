@@ -1,15 +1,12 @@
 # Resilience
 
-`zero` bakes in several resilience features so a service degrades gracefully under
-load and when its dependencies misbehave.
+`zero` includes several resilience features so your service degrades gracefully under load and when its dependencies misbehave.
 
-This page consolidates them; individual feature pages (Configuration, Observability,
-PubSub, KV Store) carry the full key and API references.
+This page consolidates them, individual feature pages (Configuration, Observability, PubSub, KV Store) carry the full key and API references.
 
 ## Inbound HTTP protections
 
-These are read from `configs/.env` and apply to every request before it reaches your
-handlers.
+These are read from `configs/.env` and apply to every request before it reaches your handlers.
 
 | Key                            | Default         | Effect                                                                                                       |
 | ------------------------------ | --------------- | ------------------------------------------------------------------------------------------------------------ |
@@ -21,10 +18,7 @@ handlers.
 | `RATE_LIMIT_MAX`               | `100`           | Max requests per window when `0`.                                                                            |
 | `RATE_LIMIT_WINDOW`            | `60`            | Window length (seconds) when `0`.                                                                            |
 
-The body-buffer pool keeps steady-state RSS small: larger bodies still grow on the
-per-request arena (capped by `request.max_body_size`) and are freed at the end of the
-request. `/.well-known/*` is exempt from the rate limiter so health checks are never
-throttled.
+The body-buffer pool keeps steady-state RSS small: larger bodies still grow on the per-request arena (capped by `request.max_body_size`) and are freed at the end of the request. `/.well-known/*` is exempt from the rate limiter so health checks are never throttled.
 
 ```bash [configs/.env]
 ZERO_REQUEST_TIMEOUT_MS=30000
@@ -38,12 +32,9 @@ RATE_LIMIT_WINDOW=60
 
 ## Circuit breakers
 
-Circuit breakers fail fast when a downstream is unhealthy instead of piling up
-timed-out calls.
+Circuit breakers fail fast when a downstream is unhealthy instead of piling up timed-out calls.
 
-A breaker opens after `failure_threshold` consecutive failures, stays
-open for `cooldown_ms`, then allows `half_open_trials` probe requests before closing
-again.
+A breaker opens after `failure_threshold` consecutive failures, stays open for `cooldown_ms`, then allows `half_open_trials` probe requests before closing again.
 
 While open, calls return `error.CircuitOpen`.
 
@@ -53,13 +44,11 @@ While open, calls return `error.CircuitOpen`.
 | Cache / KV            | `CACHE_CIRCUIT_BREAKER_ENABLE` | off     | Same threshold/cooldown as above. See [KV Store](/kv-store).                           |
 | Outbound HTTP service | `SERVICE_<NAME>_CB_*`          | off     | Per-service breaker + OAuth token-endpoint breaker. See [Http Service](/http-service). |
 
-When a breaker opens, `zero` increments the `app_circuit_open_total` counter
-(label `name`) — see [Observability](/observability).
+When a breaker opens, `zero` increments the `app_circuit_open_total` counter (label `name`) — see [Observability](/observability).
 
 ## PubSub resilience
 
-All brokers (Kafka, MQTT, NATS, Redis) now reconnect and re-subscribe transparently
-after a broker drop.
+All brokers (Kafka, MQTT, NATS, Redis) reconnect and re-subscribe transparently after a broker drop.
 
 Handler failures are retried up to 3× with a 500 ms backoff.
 
@@ -68,13 +57,11 @@ Poison messages that keep failing are dead-lettered:
 - Kafka: `<topic>__dlq`
 - MQTT / NATS / Redis: `<topic>/dlq`
 
-Each dead-lettered message increments `app_pubsub_dlq_total` (labels `topic`,
-`consumer`). See [PubSub](/pubsub) for details.
+Each dead-lettered message increments `app_pubsub_dlq_total` (labels `topic`, `consumer`). See [PubSub](/pubsub) for details.
 
 ## Outbound resilience (HTTP services)
 
-Registered services get per-request timeouts, retries, and an OAuth token-endpoint
-breaker.
+Registered services get per-request timeouts, retries, and an OAuth token-endpoint breaker.
 
 See [Http Service → Resilience](/http-service#resilience-timeouts--retries).
 
@@ -83,8 +70,7 @@ See [Http Service → Resilience](/http-service#resilience-timeouts--retries).
 - `LOG_FORMAT=json` emits one JSON object per log line (`{"ts":...,"level":...,"msg":...}`).
   See [Logging](/logging#json-structured-logging).
 
-- `ZERO_LOG_TIMEZONE` controls the timezone of log timestamps (`local` / `utc` / IANA
-  name). See [Logging](/logging#log-timezone).
+- `ZERO_LOG_TIMEZONE` controls the timezone of log timestamps (`local` / `utc` / IANA name). See [Logging](/logging#log-timezone).
 
 - `REQUIRED_CONFIG_KEYS` makes startup fail fast when a listed key is missing or empty:
 
@@ -92,5 +78,4 @@ See [Http Service → Resilience](/http-service#resilience-timeouts--retries).
 REQUIRED_CONFIG_KEYS=DB_HOST,DB_NAME
 ```
 
-If any listed key is unset or empty the app exits at startup with
-`error.MissingRequiredConfig` (opt-in; empty by default).
+If any listed key is unset or empty, the app exits at startup with `error.MissingRequiredConfig` (opt-in; empty by default).

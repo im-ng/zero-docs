@@ -46,6 +46,7 @@ const zig016Sidebar = [
         { text: "Logging", link: "/logging" },
         { text: "Observability", link: "/observability" },
         { text: "CLI Apps", link: "/cli" },
+        { text: "Zero CLI", link: "/cli-reference" },
         { text: "Kubernetes", link: "/kubernetes" },
         { text: "Build and debug", link: "/build-and-debug" },
       ],
@@ -62,12 +63,22 @@ const zig016Sidebar = [
         ],
       },
       {
-        text: "NoSQL & Analytics",
+        text: "Using NoSQL",
         items: [
           { text: "Cassandra", link: "/cassandra" },
-          { text: "InfluxDB", link: "/influxdb" },
-          { text: "Solr", link: "/solr" },
         ],
+      },
+      {
+        text: "Using Timeseries",
+        items: [
+          { text: "InfluxDB", link: "/influxdb"},
+        ]
+      },
+      {
+        text: "Using Search",
+        items: [
+          { text: "Solr", link: "/solr"},
+        ]
       },
       { text: "Using Redis", link: "/caching" },
       { text: "Migrations", link: "/migrations" },

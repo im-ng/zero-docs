@@ -1,29 +1,29 @@
 # Experimental
 
-This section documents **experimental** features of `zero`. They are opt-in, may
-change between releases, and are gated behind a config flag so they cost nothing
-when disabled.
+This section documents `zero`'s **experimental** features. They're opt-in and may
+change between releases. Each one is gated behind a config flag, so it costs
+nothing when you leave it disabled.
 
 ::: tip
-Every experimental feature here is **inert by default**. When its flag is off, no
-objects are created and no background threads run — your existing
-runtime behavior are completely unchanged.
+Every experimental feature here is **inert by default**. When its flag is off,
+`zero` creates no objects and runs no background threads — your existing
+runtime behavior is completely unchanged.
 :::
 
 ## OpenTelemetry
 
-`zero` can emit **traces** and **logs** to an OpenTelemetry (OTel) collector over the
-OTLP protocol. This is useful for distributed tracing, request correlation, and
+`zero` can emit **traces** and **logs** to an OpenTelemetry (OTel) collector over
+the OTLP protocol. That gives you distributed tracing, request correlation, and
 centralized log aggregation.
 
-The default target is **rootPrint** (an open-source observability backend), but any
-OTLP **HTTP/protobuf** collector works — just point `OTEL_EXPORTER_OTLP_ENDPOINT` at
-it. (The underlying opentelemetry SDK has no gRPC transport,
-so only HTTP/protobuf is supported.)
+The default target is **[rootPrint](https://rootprint.io/)** (an open-source observability backend), but
+any OTLP **HTTP/protobuf** collector works. Just point
+`OTEL_EXPORTER_OTLP_ENDPOINT` at it. The underlying OpenTelemetry SDK has no gRPC
+transport, so only HTTP/protobuf is supported.
 
 ### Enable
 
-Set `OTEL_EXPERIMENTAL=true` in your `configs/.env` then configure the OTLP exporter:
+Set `OTEL_EXPERIMENTAL=true` in your `configs/.env`, then configure the OTLP exporter:
 
 | Config key                       | Purpose                                                                    | Example                 |
 | -------------------------------- | -------------------------------------------------------------------------- | ----------------------- |
@@ -38,9 +38,9 @@ Set `OTEL_EXPERIMENTAL=true` in your `configs/.env` then configure the OTLP expo
 | `OTEL_LOG_JSON`                  | OTel log body shape: `true` → JSON line, unset → clean `LEVEL message`     | `true`                  |
 
 ::: tip
-The auth credential is kept **bare** (`Bearer <token>`, with no `Authorization=`
-prefix). Keep it quoted because the value contains a space. rootPrint,
-for example, expects a `Bearer` token here.
+Keep the auth credential **bare** (`Bearer <token>`, with no `Authorization=`
+prefix). Quote it because the value contains a space. rootPrint, for example,
+expects a `Bearer` token here.
 :::
 
 A ready-to-paste `configs/.env` snippet:
@@ -53,12 +53,11 @@ OTEL_EXPERIMENTAL=true
 OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:8282
 OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 OTEL_SERVICE_NAME=otel-demo
-# Bare Bearer credential for rootPrint (quoted: dotenv rejects spaces unquoted).
 OTEL_EXPORTER_OTLP_AUTH_HEADER="Bearer rp_73185556e91269bc6bdc864c2e6af82b9ae7956c580d38f7"
 # OTEL_EXPORTER_OTLP_HEADERS="Key=Value,..."
 OTEL_EXPORTER_OTLP_COMPRESSION=gzip
 LOG_FORMAT=json
-# OTEL_LOG_JSON=true
+OTEL_LOG_JSON=true
 ```
 
 :::
@@ -67,16 +66,16 @@ LOG_FORMAT=json
 
 With `OTEL_EXPERIMENTAL=true`, `zero` instruments your app without code changes:
 
-- **Server spans** — the `tracz` middleware wraps every HTTP request in a span. It
-  injects a `traceparent` response header and, when an upstream `traceparent` is
-  present, continues that trace. With no upstream context, the request's
-  `X-Correlation-ID` is reused as the OTel `trace_id`, so the two stay in lockstep.
+- **Server spans** — the `tracz` middleware wraps every HTTP request in a span.
+  It injects a `traceparent` response header and continues the trace when an
+  upstream `traceparent` is present. With no upstream context, the request's
+  `X-Correlation-ID` is reused as the OTel `trace_id`, so they stay in lockstep.
 - **Outbound propagation** — calls made through an HTTP service client
-  (`app.addHttpService`) automatically inject the active W3C `traceparent`, so
-  server → client spans link across services.
-- **Logs bridge** — every `std.log` record (routed through `zero.logger.custom`) is
-  mirrored into OTel logs, correlated with the active span. Console output is
-  unchanged.
+  (`app.addHttpService`) automatically inject the active W3C `traceparent`. This
+  links server → client spans across services.
+- **Logs bridge** — every `std.log` record routed through `zero.logger.custom`
+  is mirrored into OTel logs and correlated with the active span. Console output
+  is unchanged.
 
 ### Manual spans
 
@@ -98,14 +97,15 @@ fn slowWork(ctx: *Context) !void {
 }
 ```
 
-Access the active span handle (or `null`) with `ctx.span()`.
 :::
+
+Access the active span handle (or `null`) with `ctx.span()`.
 
 ### Example
 
-The `examples/zero-otel` app demonstrates traces, outbound propagation, and the log
-bridge. It self-calls an endpoint to prove the `traceparent` propagates from the
-client back to the server:
+The `examples/zero-otel` app demonstrates traces, outbound propagation, and the
+log bridge. It self-calls an endpoint to prove the `traceparent` propagates from
+the client back to the server:
 
 ::: code-group
 
@@ -182,8 +182,9 @@ fn logDemo(ctx: *Context) !void {
 
 :::
 
-Run it with `zig build otel-demo` from `examples/zero-otel`, with a collector
-listening on the configured `OTEL_EXPORTER_OTLP_ENDPOINT` receiving the telemetry.
+Run it with `zig build otel-demo` from `examples/zero-otel`.
+
+A collector must be listening on the configured `OTEL_EXPORTER_OTLP_ENDPOINT` to receive the telemetry.
 
 ### Caveats
 

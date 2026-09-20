@@ -4,9 +4,9 @@ import { ImgComparisonSlider } from '@img-comparison-slider/vue';
 
 # Http Service
 
-As we are leveraging the microservice architecture, the web application meant to serve others requests and also request other services as well.
+We use a microservice architecture. Our app serves requests from others and also calls other services.
 
-With that in mind, `zero` framework has built-in solution to register and communicate to external services as they do like database calls.
+With that in mind, `zero` gives you a built-in way to register and talk to external services, much like making a database call.
 
 ## What is supported?
 
@@ -19,10 +19,9 @@ With that in mind, `zero` framework has built-in solution to register and commun
 
 ## Usage
 
-`zero` comes with handy `addHttpService` method to register a http client and registered
-client will be available through `context`
+`zero` ships an `addHttpService` method. It registers an HTTP client that you can reach through the `context`.
 
-Prefer to use the unique service names to distinguish clients in the `zero` app life-time.
+Use a unique service name so clients stay distinct for the life of the `zero` app.
 
 ```zig
 app.addHttpService("service-name", "http://service-base-url");
@@ -33,7 +32,7 @@ app.addHttpService("service-name", app.config.Get("SERVICE_URL"));
 
 ## Example
 
-1. Refer following [`zero-service-client`](https://github.com/im-ng/zero/examples/zero-service-client) example further to know more on getting started of this. 
+1. See the [`zero-service-client`](https://github.com/im-ng/zero/examples/zero-service-client) example to get started.
 
 ::: code-group
 
@@ -97,9 +96,10 @@ LOG_LEVEL=info
 HTTP_PORT=9090
 SERVICE_URL="http://localhost:8080"
 ```
+
 :::
 
-2. Boom! lets build and run our app.
+2. Build and run the app.
 
 ```bash
 ❯ zig build external
@@ -115,9 +115,9 @@ SERVICE_URL="http://localhost:8080"
 
 ```
 
-3. Preview server status and capture `auth-service` public keys.
+3. Preview the server status and capture the `auth-service` public keys.
 
-_Assuming you are already running `zero-basic` app on http port `8080` to serve us the request_
+_Assume you already run the `zero-basic` app on HTTP port `8080` to serve the request._
 
 <ImgComparisonSlider>
 <!-- eslint-disable -->
@@ -136,22 +136,30 @@ _Assuming you are already running `zero-basic` app on http port `8080` to serve 
 
 ## Outbound Authentication
 
-Attach credentials to every request a service sends by passing `opts.auth` to
-`addHttpService`. Three modes are supported: `basic`, `apiKey` and `oauth`. For
-OAuth, `zero` fetches and caches the bearer token (refreshing before expiry) so
-you don't manage tokens manually.
+Attach credentials to every request a service sends by passing `opts.auth` to `addHttpService`. Three modes are supported: `basic`, `apiKey`, and `oauth`. For OAuth, `zero` fetches and caches the bearer token and refreshes it before it expires, so you don't manage tokens yourself.
 
 ```zig [main.zig]
 const zeroClient = zero.service.client;
 
 // Basic
 try app.addHttpService("legacy", "http://legacy.internal", .{
-    .auth = .{ .mode = .basic, .basic = .{ .username = "svc", .password = "secret" } },
+    .auth = .{
+        .mode = .basic,
+        .basic = .{
+            .username = "svc",
+            .password = "secret"
+        }
+    },
 });
 
 // API Key (sent as the `x-api-key` header)
 try app.addHttpService("partner", "http://partner.internal", .{
-    .auth = .{ .mode = .apiKey, .apiKey = .{ .key = "caf208fb-..." } },
+        .auth = .{
+            .mode = .apiKey,
+            .apiKey = .{
+                .key = "caf208fb-..."
+            }
+        },
 });
 
 // OAuth (token auto-fetched and refreshed)
@@ -168,14 +176,15 @@ try app.addHttpService("auth-service", "http://localhost:8080", .{
 
 ## Circuit Breaker
 
-A circuit breaker fails fast when a downstream is unhealthy, instead of piling up
-timed-out calls. It opens after `failure_threshold` consecutive failures, stays
-open for `cooldown_ms`, then allows `half_open_trials` probe requests before
-closing again. While open, calls return `error.CircuitOpen`.
+A circuit breaker fails fast when a downstream service is unhealthy, instead of piling up timed-out calls. It opens after `failure_threshold` consecutive failures. It stays open for `cooldown_ms`, then allows `half_open_trials` probe requests before closing again. While open, calls return `error.CircuitOpen`.
 
 ```zig [main.zig]
 try app.addHttpService("flaky", "http://flaky.internal", .{
-    .circuitBreaker = .{ .failure_threshold = 5, .cooldown_ms = 30_000, .half_open_trials = 1 },
+    .circuitBreaker = .{
+        .failure_threshold = 5,
+        .cooldown_ms = 30_000,
+        .half_open_trials = 1
+    },
 });
 ```
 
@@ -183,21 +192,22 @@ Defaults: `failure_threshold = 5`, `cooldown_ms = 30000`, `half_open_trials = 1`
 
 ## Rate Limiting (per service)
 
-Each registered service can be guarded by a fixed-window limiter for its outbound
-calls. When `limit` requests are made within `window_ms`, further calls return
-`error.RateLimited` (surfaced as `ClientError.RateLimited`) without hitting the
-network.
+Each registered service can use a fixed-window limiter for its outbound calls. When `limit` requests happen within `window_ms`, further calls return `error.RateLimited` (surfaced as `ClientError.RateLimited`) without reaching the network.
 
 ```zig [main.zig]
 try app.addHttpService("downstream", "http://downstream.internal", .{
-    .rateLimiter = .{ .allocator = allocator, .enabled = true, .limit = 100, .window_ms = 60_000 },
+    .rateLimiter = .{
+        .allocator = allocator,
+        .enabled = true,
+        .limit = 100,
+        .window_ms = 60_000
+    },
 });
 ```
 
 ## Resilience: timeouts & retries
 
-Outbound calls can be hardened with a per-request timeout and automatic retries. Pass
-`opts.timeout_ms` / `opts.max_retries` / `opts.retry_base_ms`:
+Outbound calls can be hardened with a per-request timeout and automatic retries. Pass `opts.timeout_ms`, `opts.max_retries`, and `opts.retry_base_ms`:
 
 ```zig [main.zig]
 try app.addHttpService("downstream", "http://downstream.internal", .{
@@ -207,28 +217,24 @@ try app.addHttpService("downstream", "http://downstream.internal", .{
 });
 ```
 
-- Retries apply to **transport errors and `5xx` responses**; `404` is **not** retried
-  (it returns `error.EntityNotFound`).
+- Retries apply to **transport errors and `5xx` responses**; `404` is **not** retried (it returns `error.EntityNotFound`).
 - Backoff is linear: the delay before attempt `n` is `retry_base_ms * n`.
-- For OAuth services, a `401` triggers a single token-refresh + replay before the call
-  is considered failed.
+- For OAuth services, a `401` triggers a single token-refresh and replay before the call is treated as failed.
 
 ### OAuth token-endpoint circuit breaker
 
-The OAuth token endpoint is guarded by its own circuit breaker. If it is open (or a
-refresh fails), `zero` falls back to the last cached token — possibly stale — instead
-of hard-failing every call. This keeps downstream calls working (degraded) while the
-token provider is unhealthy. When a service breaker (or the token breaker) trips,
-`zero` increments the `app_circuit_open_total` metric (label = service name).
+The OAuth token endpoint has its own circuit breaker. If it is open or a refresh fails, `zero` falls back to the last cached token, even if it's stale, rather than failing every call. This keeps downstream calls working in a degraded state while the token provider is unhealthy.
+
+When a service breaker or the token breaker trips, `zero` increments the `app_circuit_open_total` metric (label = service name).
 
 ## Configuration via environment
 
-Instead of code, resolve a service's auth / circuit-breaker / rate-limit settings
-from `SERVICE_<NAME>_*` env keys (service name uppercased, non-alphanumeric
-characters become `_`). For `addHttpService("auth-service", ...)` the prefix is
-`SERVICE_AUTH_SERVICE_`.
+Instead of writing code, resolve a service's auth, circuit-breaker, and rate-limit settings from `SERVICE_<NAME>_*` env keys. The service name is uppercased and its non-alphanumeric characters become `_`.
+
+For `addHttpService("auth-service", ...)` the prefix is `SERVICE_AUTH_SERVICE_`.
 
 ::: code-group
+
 ```bash [config/.env]
 # outbound auth
 SERVICE_AUTH_SERVICE_AUTH_MODE=oauth
@@ -254,6 +260,7 @@ SERVICE_AUTH_SERVICE_RETRY_BASE_MS=100  # linear backoff: delay = base * attempt
 SERVICE_AUTH_SERVICE_RATE_LIMIT=100
 SERVICE_AUTH_SERVICE_RATE_LIMIT_WINDOW_MS=60000
 ```
+
 :::
 
 ```zig [main.zig]
@@ -262,6 +269,6 @@ SERVICE_AUTH_SERVICE_RATE_LIMIT_WINDOW_MS=60000
 try app.addHttpService("auth-service", "http://localhost:8080", .{});
 ```
 
-## Limitations 🚨 
+## Limitations
 
-🚩 We encounter memory leaks when we try to access the external service URL with https and compression enabled. There is a work in progress to get this mitigated.
+We see memory leaks when we access an external service URL over https with compression enabled. Work is in progress to fix this.

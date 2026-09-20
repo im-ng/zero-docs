@@ -1,8 +1,6 @@
 # KV Store
 
-`zero` exposes a unified, type-erased **KV store** so handlers don't depend on a
-specific backend. The Redis client (when configured) is auto-registered as the
-default store; additional stores are registered at startup.
+`zero` gives you a single, type-erased **KV store**, so your handlers don't tie to one backend. When Redis is configured, the Redis client auto-registers as the default store. You register any extra stores at startup.
 
 See [`examples/zero-redis`](https://github.com/im-ng/zero/tree/experimental/examples/zero-redis)
 and [`examples/zero-nats-publisher`](https://github.com/im-ng/zero/tree/experimental/examples/zero-nats-publisher)
@@ -61,12 +59,9 @@ pub fn handler(ctx: *Context) !void {
 
 ## Circuit breaker
 
-The cache store (including the default `cache` store) can be wrapped in a circuit
-breaker. Enable it with `CACHE_CIRCUIT_BREAKER_ENABLE=true`.
+The cache store (including the default `cache` store) can sit behind a circuit breaker. Turn it on with `CACHE_CIRCUIT_BREAKER_ENABLE=true`.
 
-The breaker opens after `5` consecutive failures and stays open for `30s` (cooldown);
-while open, cache calls return `error.CircuitOpen` instead of piling up against
-an unhealthy backend.
+The breaker trips after `5` consecutive failures and stays open for `30s`. While it's open, cache calls return `error.CircuitOpen` instead of stacking up against a backend that's already unhealthy.
 
 See [Resilience → Circuit breakers](/resilience#circuit-breakers) for
 the shared behavior and the `app_circuit_open_total` metric.

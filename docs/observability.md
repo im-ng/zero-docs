@@ -1,58 +1,53 @@
 # Metrics
 
-Though `LOG_LEVEL` gives visual
-cue to understand the current status of the system, one can not keep scrolling through them all the time. There comes the `metrics` as handy.
+`LOG_LEVEL` gives you a visual cue about the system's current status. But you can't scroll through logs all the time. That's where `metrics` come in handy.
 
-`zero` exposes some default metrics to monitor the current state of the system in the `prometheus` format, which allows anyone can attach it to `prometheus` scrapper and preview the state in `Grafana` dashboards.
+`zero` exposes some default metrics in the `prometheus` format. You can attach them to a `prometheus` scraper and preview the state in `Grafana` dashboards.
 
-As this becomes industry standard, `zero` framework follows the same path to exhibit some basic and needed metris.
+This is an industry standard, so `zero` follows it and exposes a few basic, necessary metrics.
 
 The metrics are exposed on a **separate listener** (`METRICS_PORT`, default `2121`) — not
 on the app's `HTTP_PORT` — and are kept outside of the authentication route.
 
 Scrape `http://<host>:2121/metrics` with Prometheus.
 
-Following list of metrics value available
+The following metrics are available:
 
-| metric_name                        |  Export   |                                                       Description |
-| :--------------------------------- | :-------: | --------------------------------------------------------------: |
-| app_info                           |  counter  |                             The app and framework version       |
-| app_threads                        |   gauge   |                             Overall app thread count (Linux)    |
-| app_memory_usage                   |   gauge   |                             Overall app memory usage (Linux)    |
-| app_memory_total                   |   gauge   |                             Overall app memory total (Linux)    |
-| app_http_response                  | histogram |                         The response status and latencies       |
-| app_http_response_hits             |  counter  |                             Response counts of HTTP requests    |
-| app_sql_response                   | histogram |                    The query type and execution latencies       |
-| app_http_service_response          | histogram | The request status and latencies of the external services       |
-| app_pubsub_publish_total_count     |  counter  |                Total pub/sub publishes (label `topic`)          |
-| app_pubsub_publish_success_count   |  counter  |                Successful pub/sub publishes (label `topic`)     |
-| app_pubsub_subscriber_total_count  |  counter  |    Total pub/sub deliveries (labels `topic`, `consumer`)        |
-| app_pubsub_subscriber_success_count|  counter  |    Successful pub/sub deliveries (labels `topic`, `consumer`)   |
-| app_circuit_open_total             |  counter  |                Circuit-breaker open events (label `name`)       |
-| app_pubsub_dlq_total               |  counter  |       Dead-lettered messages (labels `topic`, `consumer`)       |
+| metric_name                         |  Export   |                                                Description |
+| :---------------------------------- | :-------: | ---------------------------------------------------------: |
+| app_info                            |  counter  |                              The app and framework version |
+| app_threads                         |   gauge   |                           Overall app thread count (Linux) |
+| app_memory_usage                    |   gauge   |                           Overall app memory usage (Linux) |
+| app_memory_total                    |   gauge   |                           Overall app memory total (Linux) |
+| app_http_response                   | histogram |                          The response status and latencies |
+| app_http_response_hits              |  counter  |                           Response counts of HTTP requests |
+| app_sql_response                    | histogram |                     The query type and execution latencies |
+| app_http_service_response           | histogram |  The request status and latencies of the external services |
+| app_pubsub_publish_total_count      |  counter  |                    Total pub/sub publishes (label `topic`) |
+| app_pubsub_publish_success_count    |  counter  |               Successful pub/sub publishes (label `topic`) |
+| app_pubsub_subscriber_total_count   |  counter  |      Total pub/sub deliveries (labels `topic`, `consumer`) |
+| app_pubsub_subscriber_success_count |  counter  | Successful pub/sub deliveries (labels `topic`, `consumer`) |
+| app_circuit_open_total              |  counter  |                 Circuit-breaker open events (label `name`) |
+| app_pubsub_dlq_total                |  counter  |        Dead-lettered messages (labels `topic`, `consumer`) |
 
 When a Postgres datasource is configured, the `pgz` driver additionally emits:
 
-| metric_name        | Export  |                                  Description |
-| :----------------- | :-----: | -------------------------------------------: |
-| pg_query           | counter |                              Queries executed |
-| pg_pool_empty      | counter |                       Pool empty acquisitions |
-| pg_pool_dirty      | counter |                        Pool dirty acquisitions |
-| pg_alloc_params    | counter |                      Param buffer allocations |
-| pg_alloc_columns   | counter |                     Column buffer allocations |
-| pg_alloc_reader    | counter |                       Reader buffer allocations |
+| metric_name      | Export  |               Description |
+| :--------------- | :-----: | ------------------------: |
+| pg_query         | counter |          Queries executed |
+| pg_pool_empty    | counter |   Pool empty acquisitions |
+| pg_pool_dirty    | counter |   Pool dirty acquisitions |
+| pg_alloc_params  | counter |  Param buffer allocations |
+| pg_alloc_columns | counter | Column buffer allocations |
+| pg_alloc_reader  | counter | Reader buffer allocations |
 
 ![metrics](./public/preview_metrics.webp)
 
 ## Tracing
 
-`zero` app by default injects a trace id for all your incoming requests and allows to propogate to execute your own logic.
+By default, `zero` injects a trace id into every incoming request. You can propagate it to run your own logic.
 
-The trace id is injected as `x-correlation-id`, with that we can gain more insights on how the requests are carry forwarded across multiple services and address if there is any bottleneck encountered.
-
-**NOTE**
-
-The tracing capability is limited and basic in `zero` app `0.0.1` version. The target to integrate OpenTelemetry depends on other factors.
+The trace id is injected as `x-correlation-id`. With it, you can see how requests are carried forward across services and spot any bottleneck.
 
 ![tracing](./public/preview_tracing.webp)
 

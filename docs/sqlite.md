@@ -4,12 +4,9 @@ import { ImgComparisonSlider } from '@img-comparison-slider/vue';
 
 # SQLite
 
-`zero` has built-in support for accessing the **SQLite** database. Unlike Postgres,
-SQLite is a local file — no server or container to run — so it is the fastest way to
-get a real datasource wired into your app.
+`zero` ships with built-in support for **SQLite**. SQLite is a local file, not a server or container. That makes it the fastest way to wire a real database into your app.
 
-The same `ctx.SQL` interface used for Postgres drives SQLite; `zero` routes your calls
-to the right backend based on `DB_DIALECT`.
+The `ctx.SQL` interface you use for Postgres also drives SQLite. `zero` picks the right backend from `DB_DIALECT`.
 
 ```bash
 ctx.SQL.queryRow(ctx, comptime T: type, query, args);        # retrieves one row, returns ?T
@@ -19,17 +16,16 @@ ctx.SQL.select(ctx, comptime T: type, query, args);          # retrieve and tran
 ctx.SQL.selectSlice(ctx, comptime T: type, list, query, args); # retrieve and transform rows into a slice of T
 ```
 
-With the methods above, database calls are abstracted through the handler `Context` and
-achieve the desired results without boilerplate.
+These methods run through the handler `Context`. You get your results without writing boilerplate.
 
 ## REST Handlers
 
-This example spins up a small app backed by SQLite. There is no container to pull —
-just point `DB_DIALECT=sqlite` at a local file.
+This example runs a small app on SQLite. There's no container to pull — just set `DB_DIALECT=sqlite` to a local file.
 
 1. Create the database file and a table.
 
 ::: code-group
+
 ```sql [SQL Schema]
 CREATE TABLE IF NOT EXISTS users(
  id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -38,14 +34,15 @@ CREATE TABLE IF NOT EXISTS users(
 
 INSERT INTO users(name) values ('anu');
 ```
+
 :::
 
-_You can also automate schema + seed data with [Migrations](./migrations.md) instead of
-running this by hand._
+_You can also automate the schema and seed data with [Migrations](./migrations.md) instead of doing this by hand._
 
 2. Update `configs/.env` for SQLite.
 
 ::: code-group
+
 ```bash [configs/.env]
 # App configs
 APP_ENV=dev
@@ -61,18 +58,19 @@ SQLITE_CREATE=true
 SQLITE_WRITE=true
 SQLITE_THREADING=multi-thread
 ```
+
 :::
 
-3. A simple `GET` handler that reads from SQLite.
+3. A `GET` handler that reads from SQLite.
 
 ::: code-group
+
 ```zig [main.zig]
 const std = @import("std");
 const zero = @import("zero");
 
 const App = zero.App;
 const Context = zero.Context;
-const utils = zero.utils;
 
 pub const std_options: std.Options = .{
     .logFn = zero.logger.custom,
@@ -102,9 +100,10 @@ pub fn dbResponse(ctx: *Context) !void {
     try ctx.json(user);
 }
 ```
+
 :::
 
-4. Boom! Build and run.
+4. Build and run.
 
 ```bash
 zero/examples/zero-sqlite on experimental via ↯ v0.16.0
@@ -140,18 +139,13 @@ zero/examples/zero-sqlite on experimental via ↯ v0.16.0
 <!-- eslint-enable -->
 </ImgComparisonSlider>
 
-_Make use of this image slider to glide between status and response_
+_Use this slider to compare the server status and the handler response._
 
-This is just a beginning — the full CRUD lifecycle (insert with `?` placeholders,
-`ctx.SQL.lastInsertRowID()`, `ctx.SQL.rowsAffected()`) is shown in the
-[`zero-sqlite`](https://github.com/im-ng/zero/tree/experimental/examples/zero-sqlite)
-example. More on [HTMX](./htmx-crud.md).
+This is just a start. The full CRUD lifecycle — insert with `?` placeholders, `ctx.SQL.lastInsertRowID()`, and `ctx.SQL.rowsAffected()` — is in the [`zero-sqlite`](https://github.com/im-ng/zero/tree/experimental/examples/zero-sqlite) example. See [HTMX](./htmx-crud.md) for more.
 
 ## Transactions
 
-`ctx.SQL` exposes `begin()` / `commit()` / `rollback()` so you can group statements on
-a single pinned connection. Begin a transaction, run your statements, then commit — and
-roll back on error:
+`ctx.SQL` exposes `begin()`, `commit()`, and `rollback()`. They group statements on one pinned connection. Begin, run your statements, commit — and roll back if something errors:
 
 ```zig [src/main.zig]
 pub fn transfer(ctx: *Context) !void {
@@ -165,11 +159,14 @@ pub fn transfer(ctx: *Context) !void {
 }
 ```
 
-Each statement also carries a default **30s per-statement timeout**. The SQLite
-datasource can be wrapped in a circuit breaker with `SQL_CIRCUIT_BREAKER_ENABLE=true`
-(trips open after 5 consecutive failures, returning `error.CircuitOpen`) — see
-[Resilience → Circuit breakers](/resilience#circuit-breakers).
+Each statement also has a default **30s per-statement timeout**.
+
+You can wrap the SQLite datasource in a circuit breaker with `SQL_CIRCUIT_BREAKER_ENABLE=true`.
+
+It trips open after 5 failures in a row and returns `error.CircuitOpen`.
+
+See [Resilience → Circuit breakers](/resilience#circuit-breakers).
 
 ## Recommendation
 
-🚩 It is highly recommended to use the `ctx` allocator whenever possible, since it is tied up with request life-cycle, the de-allocation will be managed automatically and making sure the memory leak is not happening.
+We recommend using the `ctx` allocator whenever you can. It's tied to the request lifecycle, so deallocation is handled for you and memory leaks are avoided.

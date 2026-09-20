@@ -1,16 +1,12 @@
 # File Store
 
-`zero` exposes a unified `FileStore` interface for blob storage, plus helpers for
-handling `multipart/form-data` uploads and serving downloads.
+`zero` exposes a unified `FileStore` interface for blob storage. It also gives you helpers for handling `multipart/form-data` uploads and serving downloads.
 
-The `local` backend (rooted at `FILE_STORE_ROOT`, with `..` traversal protection) and
-the `s3` backend (S3-compatible: AWS S3 / MinIO / R2 / Spaces / B2, signed with AWS Signature V4) are
-implemented; `FTP`/`SFTP` backends are **deferred**.
+The `local` backend is rooted at `FILE_STORE_ROOT` and blocks `..` path traversal. The `s3` backend works with any S3-compatible store (AWS S3, MinIO, R2, Spaces, B2) and signs requests with AWS Signature V4. The `FTP` and `SFTP` backends are **deferred**.
 
-The `local` store auto-registers as the default when `FILE_STORE_ROOT` is set.
+The `local` store becomes the default when `FILE_STORE_ROOT` is set.
 
-See [`examples/zero-filestore`](https://github.com/im-ng/zero/tree/experimental/examples/zero-filestore)
-for a runnable example.
+See [`examples/zero-filestore`](https://github.com/im-ng/zero/tree/experimental/examples/zero-filestore) for a runnable example.
 
 ## Register a store
 
@@ -41,10 +37,7 @@ pub fn main(init: std.process.Init) !void {
 
 ## Upload (multipart)
 
-The HTTP server enables `multipart/form-data` parsing by default (32 MB body /
-32 fields), so `ctx.GetFile` works without extra configuration. `f.data` is
-arena-owned and valid only for the duration of the request — copy it into a store
-to persist it.
+The HTTP server parses `multipart/form-data` by default (32 MB body, 32 fields). That means `ctx.GetFile` works without extra configuration. `f.data` is arena-owned and stays valid only for the life of the request, so copy it into a store if you want to keep it.
 
 ```zig [src/main.zig]
 pub fn uploadHandler(ctx: *Context) !void {
@@ -62,10 +55,7 @@ pub fn uploadHandler(ctx: *Context) !void {
 
 ## Download
 
-`GetFileFromStore` returns a request-arena slice (freed when the request ends),
-stream it to the client with `ctx.response.writer().writeAll(...)` rather than
-assigning it to `ctx.response.body` (the arena is reset before `response.body`
-is flushed).
+`GetFileFromStore` returns a slice from the request arena, which is freed when the request ends. Stream it to the client with `ctx.response.writer().writeAll(...)` instead of assigning it to `ctx.response.body`. The arena resets before `response.body` is flushed, so that assignment would lose the data.
 
 ```zig [src/main.zig]
 pub fn downloadHandler(ctx: *Context) !void {
@@ -93,8 +83,7 @@ try ctx.File("./public/report.pdf");
 
 ## S3 backend
 
-The `s3` backend targets any S3-compatible object store (AWS S3, MinIO, Cloudflare R2,
-DigitalOcean Spaces, Backblaze B2). Requests are signed with AWS Signature Version 4.
+The `s3` backend targets any S3-compatible object store: AWS S3, MinIO, Cloudflare R2, DigitalOcean Spaces, or Backblaze B2. Requests are signed with AWS Signature Version 4.
 
 ::: code-group
 
@@ -108,8 +97,6 @@ S3_ENDPOINT=                   # optional; defaults to https://s3.<region>.amazo
 
 :::
 
-Register it with `app.addFileStore("assets", .s3, .{})` — the bucket, region and
-credentials are read from the `S3_*` env keys above.
+Register it with `app.addFileStore("assets", .s3, .{})`. The bucket, region, and credentials come from the `S3_*` env keys above.
 
-The same `get` / `create` / `delete` / `list` operations work
-across all backends through the unified `FileStore`.
+The same `get` / `create` / `delete` / `list` operations work across all backends through the unified `FileStore`.

@@ -1,9 +1,9 @@
 # Configuration
 
-The app configurations are managed through `.env` file and allow you to inject
-and override them as necessary through the `zero` framework.
+You manage app configuration through an `.env` file. `zero` lets you inject and
+override values as needed.
 
-The configurations are expected to be available in the `app-folder/configs` directory.
+Your configs must live in the `app-folder/configs` directory.
 
 ::: code-group
 
@@ -29,7 +29,7 @@ The configurations are expected to be available in the `app-folder/configs` dire
 
 ## Defaults
 
-The framework goes with following defaults to get started.
+These defaults get you started.
 
 ::: code-group
 
@@ -43,7 +43,7 @@ LOG_LEVEL=info
 
 ## Overrides
 
-`zero` will override the environment specific configurations based on `APP_ENV` value.
+`zero` overrides environment-specific config based on the `APP_ENV` value.
 
 ::: code-group
 
@@ -53,15 +53,13 @@ APP_ENV=dev
 
 :::
 
-In above example, if `.dev.env` file available in `configs` directory, the framework will automatically override defaults and start based on your environment.
+In the example above, if `.dev.env` exists in `configs`, `zero` overrides the
+defaults and starts for that environment.
 
 ## Configuration Per Service
 
-This list highlights the supported configuration available in the `zero`
-framework.
-
-The framework will automatically hook them, and make the service
-available through out its life time.
+This list covers the config `zero` supports. `zero` wires each service
+automatically and keeps it available for the app's lifetime.
 
 ## App
 
@@ -90,8 +88,9 @@ the app's `HTTP_PORT`. See [Observability](./observability.md#metrics-endpoint).
 
 ## HTTP Server
 
-Inbound request protections, read from `configs/.env` and applied before handlers run.
-See [Resilience](./resilience.md) for behavior.
+These protections apply to inbound requests. `zero` reads them from
+`configs/.env` and applies them before your handlers run. See
+[Resilience](./resilience.md) for details.
 
 ::: code-group
 
@@ -171,7 +170,7 @@ backend reads its connection settings from the same env groups used elsewhere:
 - `sqlite` → `SQLITE_*` (see [Database](#database))
 - `memory` → no configuration
 
-The framework registers a default store named `cache` (Redis-backed) which the
+By default `zero` registers a store named `cache` (Redis-backed) that the
 caching middleware consumes.
 
 ::: code-group
@@ -336,9 +335,9 @@ MQTT_RETRIEVE_RETAINED=false
 
 ## Auth
 
-`zero` supports basic and api_key based authentication on the registered routes.
+`zero` supports basic and api_key authentication on the registered routes.
 
-_One can register more than one `keys` using the comma notation._
+_You can register more than one key by separating values with commas._
 
 ::: code-group
 
@@ -390,7 +389,8 @@ endpoint stay protected (require a matching role rule).
 
 ## HTTP Service
 
-Access external services using `custom` service url name and change only configurations if service url changes.
+Access external services under a custom service name. Change only the config
+when the service URL changes.
 
 ::: code-group
 
@@ -508,16 +508,9 @@ and a cron job that periodically fetches the current log level from that
 endpoint and hot-reloads the in-process `LOG_LEVEL`, no restart required.
 
 The remote endpoint must return JSON containing a `level` field, where `level` is
-one of `debug`, `info`, `warn`, `error`, `fatal` or `none`. A `zero` service serves
-this at `GET /remote.log.service?id=<uuid>` (the `level` field is what gets read):
+one of `debug`, `info`, `warn`, `error`, `fatal` or `none`.
 
-```mermaid
-json
-{
-  "id": "service-uuid",
-  "level": "info"
-}
-```
+A `zero` service serves this at `GET /remote.log.service?id=<uuid>` (the `level` field is what gets read)
 
 The feature is opt-in and never exposes an endpoint on this service.
 

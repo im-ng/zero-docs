@@ -1,6 +1,6 @@
 # NATS Publisher
 
-This document demonstrates publishing to a NATS subject using `zero`'s built-in
+This page shows how to publish a message to a NATS subject using `zero`'s built-in
 `pubsub` client.
 
 ```zig [nats]
