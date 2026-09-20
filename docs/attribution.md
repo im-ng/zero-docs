@@ -26,3 +26,4 @@ As the `zero` developer, I thank the owners of all these open-source projects.
 | Dependency    | Protobuf over HTTP (codegen + runtime)            | [zig-protobuf](https://github.com/Arwalk/zig-protobuf)                  | MIT           |
 | Dependency    | GraphQL over HTTP runtime                         | [graphql-zig](https://github.com/im-ng/graphql-zig)                     | MIT           |
 | Depetendecy   | Opentelemetry for zig                             | [opentelemetry-zig](https://github.com/opentelemetry/opentelemetry-zig) | MIT           |
+| Font          | Monospace font used for code blocks              | [Fira Code](https://github.com/tonsky/FiraCode)                        | OFL-1.1      |

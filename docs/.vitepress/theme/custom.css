@@ -7,7 +7,7 @@ html:not(.dark) .dark-only {
 }
 
 :root {
-  --vp-font-family-mono: "Fira Code", ui-monospace, SFMono-Regular, Menlo,
+  --vp-font-family-mono: "Fira Code Variable", "Fira Code", ui-monospace, SFMono-Regular, Menlo,
     Consolas, "Liberation Mono", monospace;
 }
 

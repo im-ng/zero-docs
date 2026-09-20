@@ -12,15 +12,6 @@ const shared = {
     "A simple and opinionated microservice web framework written in Zig",
   head: [
     ["link", { rel: "icon", href: "/favicon.ico" }],
-    ["link", { rel: "preconnect", href: "https://fonts.googleapis.com" }],
-    ["link", { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" }],
-    [
-      "link",
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap",
-      },
-    ],
   ],
   ignoreDeadLinks: true,
   base: "/",
@@ -280,6 +271,16 @@ export default withMermaid(
         { type: "application/ld+json" },
         JSON.stringify(jsonLd),
       ]);
+    },
+    transformHtml: async (html) => {
+      // Prioritize the LCP hero logo so it isn't queued behind the app bundle.
+      return html.replace(
+        /(<img\b[^>]*\bsrc=["']\/zero-logo-(?:light|dark)\.svg["'][^>]*>)/gi,
+        (tag) =>
+          /fetchpriority=/i.test(tag)
+            ? tag
+            : tag.replace(/^<img/i, '<img fetchpriority="high"')
+      );
     },
     locales: {
       root: {
