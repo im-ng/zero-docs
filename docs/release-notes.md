@@ -9,9 +9,33 @@ Docs always track `main`. Pin to a tagged release in your own project — the
 `v0.5.0`).
 :::
 
-## 0.5.1-dev (`main`, unreleased)
+## 0.5.2 (2026-09-27)
 
-Work currently on `main` ahead of the `v0.5.0` tag:
+Work currently on `main` ahead of the `v0.5.2` tag:
+
+### Data sources
+
+- **Cassandra rewired into a generic `ctx.NoSQL` handle** — verbs now take a **full CQL statement** instead of collection+key args. The pure-Zig client speaks the **CQL native binary protocol v4**. Cassandra is now **experimental**; see [Cassandra](/cassandra).
+- **ClickHouse** (experimental) — columnar OLAP over HTTP, on `ctx.SQL`. See [ClickHouse](/clickhouse).
+- **Couchbase** (experimental) — document store over N1QL/HTTP, on `ctx.NoSQL`. See [Couchbase](/couchbase).
+- **MongoDB** (experimental) — `ctx.NoSQL` over the **OP_MSG wire protocol** with SCRAM-SHA-256 auth and optional TLS. See [MongoDB](/mongodb).
+- **DuckGres** (experimental) — DuckDB served over the **PostgreSQL wire protocol** on `ctx.SQL` via `DB_DIALECT=duckgres`. See [DuckGres](/duckgres).
+- **InfluxDB v3** (experimental) — `ctx.Timeseries` now hits `/api/v3/write_lp`, `/api/v3/query_sql`, and `/api/v3/configure/database`. See [InfluxDB](/influxdb).
+
+### Migrations & metrics
+
+- **NoSQL migrations** — new `.nosql` target runs CQL through `ctx.NoSQL`; SQL dialects now cover duckdb (SQLite-shaped DDL), clickhouse (MergeTree), and duckgres. See [Migrations](/migrations).
+- **Unified datasource metrics** — `app_datasource_response` (histogram) and `app_datasource_error_total` (counter), labeled by `backend` / `operation` / `status`. See [Observability](/observability#metrics).
+
+### Auth & runtime
+
+- **Auth header fix** — API Key / Basic auth no longer crashes on a malformed or bare header; the request is rejected with `401` instead. See [Authentication](/authentication).
+- **`zf` resource module** — cross-platform system-info gathering replaces direct `/proc` reads (works on macOS too).
+- **Stability** — memory-leak fixes across the examples and a `metricz` shutdown segfault fix.
+
+## v0.5.1 (2026-09-20)
+
+Highlights of the 0.5.1 release:
 
 - **Automated migration creation** - a new `zero` CLI (`zig build zero`) scaffolds
   migrations with `zero migrator add --name <name>`, generating

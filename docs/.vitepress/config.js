@@ -51,12 +51,13 @@ const zig016Sidebar = [
            { text: "REST handler (Postgres)", link: "/rest-handler" },
           { text: "SQLite", link: "/sqlite" },
           { text: "DuckDB", link: "/duckdb" },
+          { text: "ClickHouse", link: "/clickhouse" },
         ],
       },
       {
         text: "Using NoSQL",
         items: [
-          { text: "Cassandra", link: "/cassandra" },
+          { text: "Couchbase", link: "/couchbase" },
         ],
       },
       {
@@ -103,6 +104,8 @@ const zig016Sidebar = [
   {
     text: "Experimental",
     items: [
+      { text: "Cassandra", link: "/cassandra" },
+      { text: "MongoDB", link: "/mongodb" },
       { text: "OpenTelemetry", link: "/experimental" },
     ],
   },

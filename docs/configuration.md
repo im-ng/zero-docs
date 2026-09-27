@@ -99,6 +99,10 @@ HTTP_PORT=8080
 
 ZERO_REQUEST_TIMEOUT_MS=30000     # per-request timeout (ms); stalled clients can't pin a worker
 INBOUND_MAX_CONCURRENT=0          # bulkhead; 0 = unlimited. Excess returns 503
+ZERO_KEEPALIVE_TIMEOUT_MS=60000   # idle keep-alive connection close (ms)
+ZERO_HTTP_WORKERS=2               # I/O event-loop workers
+ZERO_HTTP_THREAD_POOL_COUNT=32    # handler thread pool size
+ZERO_HTTP_MAX_BODY_SIZE=8388608   # reject bodies above this with 413 (8 MiB)
 ZERO_HTTP_LARGE_BUFFER_SIZE=1048576   # pooled HTTP body-buffer size (bytes)
 ZERO_HTTP_LARGE_BUFFER_COUNT=16       # pooled HTTP body-buffer count (≈ resident pool)
 ```
@@ -131,6 +135,26 @@ SQLITE_THREADING=multi-thread
 ```bash [duckdb]
 DUCKDB_PATH=./data/app.db         # enabled when set; empty path = :memory: (in-process OLAP)
 SQL_CIRCUIT_BREAKER_ENABLE=false  # trip open after 5 consecutive failures (error.CircuitOpen)
+```
+
+```bash [clickhouse]
+CLICKHOUSE_URL=http://localhost:8123   # required; enables ClickHouse as ctx.SQL
+CLICKHOUSE_DB=default                 # optional default database
+CLICKHOUSE_USER=                      # optional; sent as X-ClickHouse-User
+CLICKHOUSE_PASSWORD=                  # optional; sent as X-ClickHouse-Key
+SQL_CIRCUIT_BREAKER_ENABLE=false  # trip open after 5 consecutive failures (error.CircuitOpen)
+```
+
+```bash [duckgres — DuckDB over the Postgres wire protocol]
+DB_DIALECT=duckgres              # selects DuckGres (shares the Postgres-style pool)
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_USER=zero
+DB_PASSWORD=zero
+DB_NAME=zero_demo
+DB_SSL_MODE=disable
+PG_POOL_SIZE=10                  # connection pool size
+PG_POOL_ACQUIRE_TIMEOUT_MS=5000  # pool acquire timeout
 ```
 
 :::
@@ -223,21 +247,43 @@ TBD
 
 ## NoSQL
 
-A type-erased document / wide-column store, auto-wired when `CASSANDRA_CONTACT_POINTS`
-is set.
+A type-erased document / wide-column store, exposed as `ctx.NoSQL`. `zero`
+auto-selects the backend from whichever `*_CONTACT_POINTS` env you set:
 
-The `cassandra` backend is currently implemented; the handle is exposed as
-`ctx.NoSQL`.
+- `CASSANDRA_CONTACT_POINTS` → Cassandra (CQL native protocol v4). See
+  [Cassandra](./cassandra.md) (experimental).
+- `COUCHBASE_CONTACT_POINTS` → Couchbase (N1QL over HTTP). See
+  [Couchbase](./couchbase.md).
+- `MONGODB_CONTACT_POINTS` → MongoDB (OP_MSG wire protocol). See
+  [MongoDB](./mongodb.md) (experimental).
 
-`CASSANDRA_KEYSPACE` is required once the datasource is enabled.
+All three share the same `get` / `put` / `delete` / `query` verbs; you pass a
+full statement (CQL, N1QL, or a MongoDB command document).
 
 ::: code-group
 
 ```bash [cassandra]
-CASSANDRA_CONTACT_POINTS=127.0.0.1:9042   # required; enables the NoSQL datasource
+CASSANDRA_CONTACT_POINTS=127.0.0.1:9042   # required; enables the Cassandra backend
 CASSANDRA_KEYSPACE=my_keyspace            # required when enabled
 CASSANDRA_USER=                           # optional
 CASSANDRA_PASSWORD=                       # optional
+```
+
+```bash [couchbase]
+COUCHBASE_CONTACT_POINTS=127.0.0.1:8091   # required; enables the Couchbase backend
+COUCHBASE_BUCKET=my_bucket                # required when enabled
+COUCHBASE_USER=                           # optional
+COUCHBASE_PASSWORD=                       # optional
+```
+
+```bash [mongodb]
+MONGODB_CONTACT_POINTS=127.0.0.1:27017    # required; enables the MongoDB backend
+MONGODB_DB=my_db                          # required when enabled
+MONGODB_USER=                             # optional (SCRAM-SHA-256)
+MONGODB_PASSWORD=                         # optional
+MONGODB_TLS=false                         # optional; true to enable TLS
+MONGODB_TLS_VERIFY=false                  # optional; verify server cert
+MONGODB_AUTH_SOURCE=admin                 # optional; defaults to admin
 ```
 
 :::
@@ -249,16 +295,16 @@ A type-erased time-series store, auto-wired when `INFLUXDB_URL` is set.
 The `influxdb` backend is currently implemented; the handle is exposed as
 `ctx.Timeseries`.
 
-`INFLUXDB_ORG` and `INFLUXDB_BUCKET` are required once the
-datasource is enabled; `INFLUXDB_TOKEN` is optional (auth disabled / 1.x auth).
+`INFLUXDB_URL`, `INFLUXDB_BUCKET`, and `INFLUXDB_TOKEN` are all required once the
+datasource is enabled (v3 uses a flat database plus token model — there is no
+`INFLUXDB_ORG`).
 
 ::: code-group
 
 ```bash [influxdb]
-INFLUXDB_URL=http://localhost:8086        # required; enables the time-series datasource
-INFLUXDB_ORG=my-org                       # required when enabled
+INFLUXDB_URL=http://localhost:8181        # required; enables the time-series datasource
 INFLUXDB_BUCKET=my-bucket                 # required when enabled
-INFLUXDB_TOKEN=                           # optional
+INFLUXDB_TOKEN=my-super-secret-token      # required; sent as Authorization: Bearer
 ```
 
 :::
@@ -355,6 +401,8 @@ AUTH_API_KEYS="caf208fb-e407-497a-8f03-d636fb689b2e,b12eb288-e7b5-4919-8082-0958
 AUTH_MODE=OAuth
 AUTH_JWKS_URL=http://localhost:8080/.well-known/jwks.json
 AUTH_REFRESH_INTERVAL=10
+OAUTH_AUDIENCE=my-api          # optional; when set, JWT aud claim must match
+OAUTH_ISSUER=https://idp.example.com  # optional; when set, JWT iss claim must match
 ```
 
 :::

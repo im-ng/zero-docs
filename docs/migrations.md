@@ -14,12 +14,20 @@ To cut that pain, `zero` ships a built-in migrations solution.
 You scaffold a migration, fill in the SQL, and `zero` wires it into your app and tracks it for you.
 
 ::: tip
-Each migration runs inside a **database transaction**. If it fails, `zero` rolls it
-back and leaves it **unrecorded**, so it is retried on the next run (it is not silently
-masked as applied). Only migrations that commit successfully are tracked in
-`zero_migrations` and skipped thereafter.
+A migration records itself in the `zero_migrations` table of **whatever backend it
+targets**. `zero` supports two targets:
 
-**Migrations are limited to SQL dialect for now.**
+- **`relational`** — runs through `ctx.SQL`. Covers Postgres, SQLite, DuckDB,
+  ClickHouse, and DuckGres.
+- **`nosql`** — runs through `ctx.NoSQL` (CQL). Covers Cassandra, Couchbase, and
+  MongoDB.
+
+Relational migrations run inside a **database transaction**. If one fails, `zero`
+rolls it back and leaves it **unrecorded**, so it is retried on the next run (it is
+not silently masked as applied). NoSQL migrations have **no transaction** — CQL
+offers none — so a failed NoSQL migration is simply left unrecorded and retried
+next run. Only migrations that complete successfully are tracked and skipped
+thereafter.
 :::
 
 ## Automated migration creation
@@ -90,13 +98,68 @@ pub fn create_users_run(c: *Context) anyerror!void {
 pub const _migrate = &migrate{
     .migrationNumber = migrationNumber,
     .run = create_users_run,
+    .target = .relational, // .relational (ctx.SQL) or .nosql (ctx.NoSQL)
 };
 ```
 
 :::
 
 Edit the `TODO` line with your DDL/DML. Each migration's `run` executes inside a
-transaction, so keep it concise and executable.
+transaction (for relational backends), so keep it concise and executable.
+
+The `.target` field decides which handle the migration runs through. It defaults
+to `.relational`; set it to `.nosql` to run CQL through `ctx.NoSQL` instead.
+
+### SQL dialect support
+
+The relational target adapts its DDL to the configured `DB_DIALECT`:
+
+- **postgres** / **duckgres** → Postgres DDL, with `$1,$2,...` binds and a
+  `pg_advisory_lock` that serializes runs across replicas.
+- **sqlite** / **duckdb** → SQLite-shaped DDL with `?` placeholders (DuckDB
+  reuses SQLite's syntax here).
+- **clickhouse** → `MergeTree` engine (`ENGINE = MergeTree() ORDER BY epoch`),
+  because ClickHouse has no transactions and needs an explicit engine.
+
+### NoSQL target example
+
+For a wide-column store you set `.target = .nosql` and write CQL through
+`ctx.NoSQL`. The migration records itself in a `zero_migrations` table it creates
+for you.
+
+::: code-group
+
+```zig [src/migrations/create_users_nosql.zig]
+const std = @import("std");
+const zero = @import("zero");
+const Context = zero.Context;
+const migrate = zero.migrate;
+
+pub const migrationNumber: i64 = 1760947008;
+
+pub fn create_users_nosql_run(c: *Context) anyerror!void {
+    // query() runs arbitrary CQL and returns the result as a JSON array.
+    // Free it; migrations run on the app allocator, not the request allocator.
+    const result = try c.NoSQL.query(c,
+        \\ CREATE TABLE IF NOT EXISTS zero_migrations (
+        \\   epoch bigint, execution text, start_time text, duration bigint,
+        \\   PRIMARY KEY (epoch)
+        \\ )
+    );
+    c.allocator.free(result);
+}
+
+pub const _migrate = &migrate{
+    .migrationNumber = migrationNumber,
+    .run = create_users_nosql_run,
+    .target = .nosql,
+};
+```
+
+:::
+
+Because CQL has no transactions, a failed NoSQL migration is left unrecorded
+rather than rolled back, and retried on the next run.
 
 The regenerated `src/migrations/all.zig` collects every migration for you:
 
