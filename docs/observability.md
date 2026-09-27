@@ -22,6 +22,8 @@ The following metrics are available:
 | app_http_response                   | histogram |                          The response status and latencies |
 | app_http_response_hits              |  counter  |                           Response counts of HTTP requests |
 | app_sql_response                    | histogram |                     The query type and execution latencies |
+| app_datasource_response             | histogram | Datasource op latency (labels `backend`, `operation`, `status`) |
+| app_datasource_error_total          | counter   | Datasource op errors (labels `backend`, `operation`, `status`) |
 | app_http_service_response           | histogram |  The request status and latencies of the external services |
 | app_pubsub_publish_total_count      |  counter  |                    Total pub/sub publishes (label `topic`) |
 | app_pubsub_publish_success_count    |  counter  |               Successful pub/sub publishes (label `topic`) |
@@ -40,6 +42,17 @@ When a Postgres datasource is configured, the `pgz` driver additionally emits:
 | pg_alloc_params  | counter |  Param buffer allocations |
 | pg_alloc_columns | counter | Column buffer allocations |
 | pg_alloc_reader  | counter | Reader buffer allocations |
+
+Beyond the per-backend counters above, `zero` emits two **unified** datasource
+metrics for every backend it talks to — SQL, NoSQL, time-series, and search:
+
+- `app_datasource_response` (histogram) — operation latency in seconds, labeled
+  by `backend`, `operation` (e.g. `queryRow`, `write`, `get`), and `status`.
+- `app_datasource_error_total` (counter) — operation failures, same labels.
+
+For HTTP-based backends (`status` is the HTTP status code); for SQL/NoSQL
+backends it is `0`. This gives you one consistent series to watch latency and
+error rate across all your data stores.
 
 ![metrics](./public/preview_metrics.webp)
 

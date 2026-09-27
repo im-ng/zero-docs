@@ -208,6 +208,22 @@ AUTH_REFRESH_INTERVAL=10  #in seconds
 
 :::
 
+### Audience and issuer enforcement
+
+Set `OAUTH_AUDIENCE` and/or `OAUTH_ISSUER` to tighten validation. When set,
+`zero` rejects JWTs whose `aud` / `iss` claims don't match. Leave them unset and
+existing deployments are unaffected — the checks only run when the value is
+present.
+
+::: code-group
+
+```bash [config/.env]
+OAUTH_AUDIENCE=my-api
+OAUTH_ISSUER=https://idp.example.com
+```
+
+:::
+
 2. Build and run the app.
 
 ```bash
@@ -331,6 +347,14 @@ RBAC needs a `role` claim in the verified JWT, so it works with `AUTH_MODE=OAuth
 ## Limitations
 
 - The public key refresh interval can be as low as 1 second.
+
+## Stability
+
+API Key and Basic auth no longer crash on a malformed header. `zero` now reads
+the last non-empty token from the `Authorization` header, so a key supplied bare
+(no `ApiKey ` / `Basic ` scheme prefix) matches directly instead of leaking a
+wild pointer. If no token is present, the request is rejected with
+`401 Unauthorized` rather than faulting the process.
 
 ## Recommendation
 
