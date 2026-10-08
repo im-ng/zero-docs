@@ -70,7 +70,7 @@ Instead of wiring up that boilerplate yourself, you can jump straight to your bu
   - ✅ `sqlite`
   - ✅ `duckdb` (in-process OLAP, unified `ctx.SQL`)
   - ✅ `clickhouse` (`ctx.SQL`, HTTP)
-  - ✅ `mysql` (`ctx.SQL`, native wire protocol)
+  - ✅ `mysql` (`ctx.SQL`, native wire protocol, pooled + TLS)
   - ✅ `supabase` (managed Postgres; `DB_DIALECT=supabase`)
   - ✅ `redis`
     - ✅ Authentication enabled

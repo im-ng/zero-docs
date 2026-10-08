@@ -152,6 +152,9 @@ DB_PORT=3306
 DB_USER=zero
 DB_PASSWORD=zero
 DB_NAME=demo
+MYSQL_POOL_SIZE=10            # connection pool size (default 10)
+MYSQL_SSL_MODE=disabled       # disabled | preferred | required
+MYSQL_SSL_CA=                # CA path; required when MYSQL_SSL_MODE=required
 ```
 
 ```bash [supabase — managed Postgres]

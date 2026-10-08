@@ -14,7 +14,7 @@ Docs always track `main`. Pin to a tagged release in your own project — the
 Work currently on `main` ahead of the `v0.5.2` tag:
 
 ### Data sources
-- **MySQL** — `ctx.SQL` over the native MySQL wire protocol (`DB_DIALECT=mysql`); pure-Zig client, `mysql_native_password` auth. See [MySQL](/mysql).
+- **MySQL** — `ctx.SQL` over the native MySQL wire protocol (`DB_DIALECT=mysql`); pure-Zig client, `mysql_native_password` auth. Now runs as a connection pool (`MYSQL_POOL_SIZE`, default 10) with per-request sessions, and supports TLS via `MYSQL_SSL_MODE` (`disabled` / `preferred` / `required`) + `MYSQL_SSL_CA`. See [MySQL](/mysql).
 - **ArangoDB** — `ctx.NoSQL` over AQL (`ARANGO_HOST`); full AQL statements, HTTP Basic. See [ArangoDB](/arangodb).
 - **Dgraph** — new `ctx.Graph` handle (`DGRAPH_URL`); `query` / `mutate` over GraphQL±. See [Graph](/dgraph).
 - **Meilisearch** — `ctx.Search` over HTTP (`MEILI_HOST`); index / query / get / delete. See [Meilisearch](/meilisearch).
