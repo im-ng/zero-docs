@@ -6,7 +6,7 @@ tracing propagation, and redirects.
 ## Rate Limiter
 
 A fixed-window rate limiter runs as the **first** middleware in the chain. It's
-opt-in via config and exempts `/.well-known/*`, so the health endpoint is never
+**on by default** and exempts `/.well-known/*`, so the health endpoint is never
 throttled.
 
 ```bash [configs/.env]
@@ -24,9 +24,21 @@ Buckets are keyed by an `XxHash3` hash of the client address (or the configured
 header). They reset at the start of each window. An internal cap bounds the
 number of tracked clients.
 
-Future options — token bucket, sliding window, per-route limits, Redis-backed
-distributed limiting, and `X-RateLimit-*` / `Retry-After` headers — are tracked
-in [Feature Parity](/parity).
+### Distributed rate limiting
+
+By default the limiter is **in-memory** (per-process). Set `RATE_LIMIT_STORE=redis`
+to back it with Redis, so the counter is shared across all your replicas. Configure
+Redis with the usual `REDIS_*` keys. If Redis is unreachable it fails open — requests
+are allowed rather than blocked.
+
+```bash [configs/.env]
+RATE_LIMIT_STORE=redis      # memory (default) | redis
+# plus REDIS_HOST / REDIS_PORT / REDIS_USER / REDIS_PASSWORD / REDIS_DB
+```
+
+Future options — token bucket, sliding window, per-route limits, and
+`X-RateLimit-*` / `Retry-After` headers — are tracked in
+[Feature Parity](/parity).
 
 ## Correlation ID
 

@@ -51,26 +51,36 @@ const zig016Sidebar = [
            { text: "REST handler (Postgres)", link: "/rest-handler" },
           { text: "SQLite", link: "/sqlite" },
           { text: "DuckDB", link: "/duckdb" },
-          { text: "ClickHouse", link: "/clickhouse" },
-        ],
+           { text: "ClickHouse", link: "/clickhouse" },
+           { text: "MySQL", link: "/mysql" },
+         ],
       },
       {
         text: "Using NoSQL",
         items: [
           { text: "Couchbase", link: "/couchbase" },
+          { text: "ArangoDB", link: "/arangodb" },
         ],
       },
       {
         text: "Using Timeseries",
         items: [
           { text: "InfluxDB", link: "/influxdb"},
+          { text: "OpenTSDB", link: "/opentsdb" },
         ]
       },
       {
         text: "Using Search",
         items: [
           { text: "Solr", link: "/solr"},
+          { text: "Meilisearch", link: "/meilisearch" },
         ]
+      },
+      {
+        text: "Using Graph",
+        items: [
+          { text: "Dgraph", link: "/dgraph" },
+        ],
       },
       { text: "Using Redis", link: "/caching" },
       { text: "Migrations", link: "/migrations" },
@@ -85,6 +95,8 @@ const zig016Sidebar = [
           { text: "MQ Subscriber", link: "/message-queue-subscriber" },
           { text: "NATS Publisher", link: "/nats-publisher" },
           { text: "NATS Subscriber", link: "/nats-subscriber" },
+          { text: "AWS SQS", link: "/sqs" },
+          { text: "GCP Pub/Sub", link: "/gcp-pubsub" },
         ],
       },
       { text: "Websockets", link: "/websocket" },
@@ -97,6 +109,7 @@ const zig016Sidebar = [
       { text: "Protobuf", link: "/protobuf" },
       { text: "KV Store", link: "/kv-store" },
       { text: "File Store", link: "/file-store" },
+      { text: "Supabase", link: "/supabase" },
       { text: "Auto CRUD", link: "/auto-crud" },
       { text: "Rate Limiter", link: "/rate-limiter" },
     ],

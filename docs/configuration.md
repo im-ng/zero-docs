@@ -145,16 +145,24 @@ CLICKHOUSE_PASSWORD=                  # optional; sent as X-ClickHouse-Key
 SQL_CIRCUIT_BREAKER_ENABLE=false  # trip open after 5 consecutive failures (error.CircuitOpen)
 ```
 
-```bash [duckgres — DuckDB over the Postgres wire protocol]
-DB_DIALECT=duckgres              # selects DuckGres (shares the Postgres-style pool)
+```bash [mysql]
+DB_DIALECT=mysql
 DB_HOST=127.0.0.1
-DB_PORT=5432
+DB_PORT=3306
 DB_USER=zero
 DB_PASSWORD=zero
-DB_NAME=zero_demo
-DB_SSL_MODE=disable
-PG_POOL_SIZE=10                  # connection pool size
-PG_POOL_ACQUIRE_TIMEOUT_MS=5000  # pool acquire timeout
+DB_NAME=demo
+```
+
+```bash [supabase — managed Postgres]
+DB_DIALECT=supabase
+SUPABASE_DB_PROJECT=abcdefghijklmno     # -> db.<ref>.supabase.co (set this or HOST)
+SUPABASE_DB_HOST=db.abcdefghijklmno.supabase.co
+SUPABASE_DB_PORT=5432
+SUPABASE_DB_USER=postgres
+SUPABASE_DB_PASSWORD=
+SUPABASE_DB_NAME=postgres
+SUPABASE_DB_SSL_MODE=require
 ```
 
 :::
@@ -218,8 +226,8 @@ SQLITE_WRITE=true
 ## File Store
 
 File stores are registered in code via `App.addFileStore(name, backend, opts)`.
-The `local` and `s3` backends are implemented; `ftp` and `sftp` are declared but
-not yet implemented.
+The `local`, `s3`, `gcs`, and `supabase` backends are implemented; `ftp` and
+`sftp` are declared but not yet implemented.
 
 ::: code-group
 
@@ -233,6 +241,26 @@ S3_REGION=us-east-1            # default us-east-1
 S3_ACCESS_KEY=AKIA...          # required
 S3_SECRET_KEY=...              # required
 S3_ENDPOINT=                   # optional; defaults to https://s3.<region>.amazonaws.com
+```
+
+```bash [gcs backend]
+FILE_STORE_BACKEND=gcs
+GCS_BUCKET=my-bucket              # required
+GCS_ENDPOINT=https://storage.googleapis.com
+GCS_PROJECT=                     # optional
+GCS_CLIENT_ID=                   # optional; OAuth2 client-credentials grant
+GCS_CLIENT_SECRET=               # optional
+GCS_SCOPE=https://www.googleapis.com/auth/devstorage.full_control
+# GCS_ACCESS_TOKEN=               # optional; bypasses the token fetch (sidecar)
+```
+
+```bash [supabase backend]
+FILE_STORE_BACKEND=supabase
+SUPABASE_STORAGE_BUCKET=my-bucket
+SUPABASE_STORAGE_ACCESS_KEY=       # S3 Access Key from Supabase Storage, NOT a JWT
+SUPABASE_STORAGE_SECRET_KEY=
+SUPABASE_STORAGE_REGION=us-east-1  # required for the SigV4 scope
+SUPABASE_STORAGE_PROJECT=abcdefghijklmno   # -> https://<ref>.supabase.co/storage/v1/s3
 ```
 
 ```bash [ftp]
@@ -256,9 +284,11 @@ auto-selects the backend from whichever `*_CONTACT_POINTS` env you set:
   [Couchbase](./couchbase.md).
 - `MONGODB_CONTACT_POINTS` → MongoDB (OP_MSG wire protocol). See
   [MongoDB](./mongodb.md) (experimental).
+- `ARANGO_HOST` → ArangoDB (AQL over HTTP). See
+  [ArangoDB](./arangodb.md).
 
-All three share the same `get` / `put` / `delete` / `query` verbs; you pass a
-full statement (CQL, N1QL, or a MongoDB command document).
+All four share the same `get` / `put` / `delete` / `query` verbs; you pass a
+full statement (CQL, N1QL, AQL, or a MongoDB command document).
 
 ::: code-group
 
@@ -286,13 +316,21 @@ MONGODB_TLS_VERIFY=false                  # optional; verify server cert
 MONGODB_AUTH_SOURCE=admin                 # optional; defaults to admin
 ```
 
+```bash [arangodb]
+ARANGO_HOST=http://localhost:8529   # required; enables the ArangoDB backend
+ARANGO_DB=_system                  # required when enabled
+ARANGO_USER=                       # optional
+ARANGO_PASSWORD=                   # optional
+```
+
 :::
 
 ## Time Series
 
-A type-erased time-series store, auto-wired when `INFLUXDB_URL` is set.
+A type-erased time-series store, auto-wired when `INFLUXDB_URL` (or
+`OPENTSDB_URL`) is set.
 
-The `influxdb` backend is currently implemented; the handle is exposed as
+The `influxdb` and `opentsdb` backends are implemented; the handle is exposed as
 `ctx.Timeseries`.
 
 `INFLUXDB_URL`, `INFLUXDB_BUCKET`, and `INFLUXDB_TOKEN` are all required once the
@@ -307,13 +345,19 @@ INFLUXDB_BUCKET=my-bucket                 # required when enabled
 INFLUXDB_TOKEN=my-super-secret-token      # required; sent as Authorization: Bearer
 ```
 
+```bash [opentsdb]
+OPENTSDB_URL=http://localhost:4242        # required; enables the OpenTSDB backend
+OPENTSDB_TOKEN=                           # optional; sent as Authorization: Bearer
+```
+
 :::
 
 ## Search
 
-A type-erased search store, auto-wired when `SOLR_URL` is set.
+A type-erased search store, auto-wired when `SOLR_URL` (or `MEILI_HOST`) is set.
 
-The `solr` backend is currently implemented; the handle is exposed as `ctx.Search`.
+The `solr` and `meilisearch` backends are implemented; the handle is exposed as
+`ctx.Search`.
 
 `SOLR_DEFAULT_COLLECTION` is required once the datasource is enabled;
 
@@ -325,6 +369,27 @@ The `solr` backend is currently implemented; the handle is exposed as `ctx.Searc
 SOLR_URL=http://localhost:8983/solr       # required; enables the search datasource
 SOLR_DEFAULT_COLLECTION=my_collection     # required when enabled
 SOLR_BASIC_AUTH=                          # optional; "user:password" for HTTP Basic
+```
+
+```bash [meilisearch]
+MEILI_HOST=http://localhost:7700     # required; enables the Meilisearch backend
+MEILI_INDEX=movies                  # required when enabled
+MEILI_API_KEY=                     # optional; sent as Authorization: Bearer
+```
+
+:::
+
+## Graph
+
+A type-erased graph store, auto-wired when `DGRAPH_URL` is set. The `dgraph`
+backend is implemented; the handle is exposed as `ctx.Graph`. See
+[Graph](./dgraph.md).
+
+::: code-group
+
+```bash [dgraph]
+DGRAPH_URL=http://localhost:8080     # required; enables the Dgraph backend
+DGRAPH_API_KEY=                     # optional; sent as X-Dgraph-AccessToken
 ```
 
 :::
@@ -375,6 +440,25 @@ MQTT_CLIENT_ID_SUFFIX=zero-subscriber
 MQTT_QOS=0
 MQTT_KEEP_ALIVE=true
 MQTT_RETRIEVE_RETAINED=false
+```
+
+```bash [SQS]
+PUBSUB_BACKEND=SQS
+SQS_QUEUE_URL=https://sqs.us-east-1.amazonaws.com/123456789012/zero-queue
+AWS_REGION=us-east-1
+AWS_ACCESS_KEY=
+AWS_SECRET_KEY=
+```
+
+```bash [GCP Pub/Sub]
+PUBSUB_BACKEND=GCP          # or GOOGLE
+GCP_PROJECT=my-gcp-project
+GCP_SUBSCRIPTION=zero-sub
+GCP_ENDPOINT=https://pubsub.googleapis.com
+GCP_CLIENT_ID=
+GCP_CLIENT_SECRET=
+GCP_SCOPE=https://www.googleapis.com/auth/pubsub
+# GCP_ACCESS_TOKEN=          # optional; bypasses the token fetch (sidecar)
 ```
 
 :::
@@ -542,6 +626,15 @@ RATE_LIMIT_WINDOW=60       # window length in seconds (0 → default 60)
 ```
 
 :::
+
+The limiter can also run in a **distributed** mode backed by Redis, so the
+counter is shared across all your replicas. Set `RATE_LIMIT_STORE=redis` and
+configure Redis — if Redis is unreachable it fails open (requests are allowed).
+
+```bash [distributed]
+RATE_LIMIT_STORE=redis      # memory (default) | redis
+# plus REDIS_HOST / REDIS_PORT / REDIS_USER / REDIS_PASSWORD / REDIS_DB
+```
 
 Key modes:
 

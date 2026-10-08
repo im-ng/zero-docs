@@ -18,7 +18,7 @@ A migration records itself in the `zero_migrations` table of **whatever backend 
 targets**. `zero` supports two targets:
 
 - **`relational`** — runs through `ctx.SQL`. Covers Postgres, SQLite, DuckDB,
-  ClickHouse, and DuckGres.
+  and ClickHouse.
 - **`nosql`** — runs through `ctx.NoSQL` (CQL). Covers Cassandra, Couchbase, and
   MongoDB.
 
@@ -114,7 +114,7 @@ to `.relational`; set it to `.nosql` to run CQL through `ctx.NoSQL` instead.
 
 The relational target adapts its DDL to the configured `DB_DIALECT`:
 
-- **postgres** / **duckgres** → Postgres DDL, with `$1,$2,...` binds and a
+- **postgres** → Postgres DDL, with `$1,$2,...` binds and a
   `pg_advisory_lock` that serializes runs across replicas.
 - **sqlite** / **duckdb** → SQLite-shaped DDL with `?` placeholders (DuckDB
   reuses SQLite's syntax here).
