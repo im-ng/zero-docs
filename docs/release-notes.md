@@ -9,6 +9,31 @@ Docs always track `main`. Pin to a tagged release in your own project — the
 `v0.5.0`).
 :::
 
+## 0.5.3-dev (`main`, unreleased)
+
+Work currently on `main` ahead of the `v0.5.2` tag:
+
+### Data sources
+- **MySQL** — `ctx.SQL` over the native MySQL wire protocol (`DB_DIALECT=mysql`); pure-Zig client, `mysql_native_password` auth. Now runs as a connection pool (`MYSQL_POOL_SIZE`, default 10) with per-request sessions, and supports TLS via `MYSQL_SSL_MODE` (`disabled` / `preferred` / `required`) + `MYSQL_SSL_CA`. See [MySQL](/mysql).
+- **ArangoDB** — `ctx.NoSQL` over AQL (`ARANGO_HOST`); full AQL statements, HTTP Basic. See [ArangoDB](/arangodb).
+- **Dgraph** — new `ctx.Graph` handle (`DGRAPH_URL`); `query` / `mutate` over GraphQL±. See [Graph](/dgraph).
+- **Meilisearch** — `ctx.Search` over HTTP (`MEILI_HOST`); index / query / get / delete. See [Meilisearch](/meilisearch).
+- **OpenTSDB** — `ctx.Timeseries` (`OPENTSDB_URL`); JSON `/api/put` write, `/api/query`. See [OpenTSDB](/opentsdb).
+
+### Cloud & infra
+- **GCS file store** — `FILE_STORE_BACKEND=gcs`; Google Cloud Storage over REST with OAuth2. See [File Store](/file-store).
+- **Supabase** — managed Postgres via `DB_DIALECT=supabase` and S3-compatible storage via `FILE_STORE_BACKEND=supabase`. See [Supabase](/supabase).
+- **AWS SQS** — `PUBSUB_BACKEND=SQS`; publish/subscribe over SigV4. See [AWS SQS](/sqs).
+- **GCP Pub/Sub** — `PUBSUB_BACKEND=GCP`; publish/subscribe over OAuth2 bearer. See [GCP Pub/Sub](/gcp-pubsub).
+- **Distributed rate limiting** — `RATE_LIMIT_STORE=redis` shares the counter across replicas (fails open if Redis is down). See [Rate Limiter](/rate-limiter).
+
+### Auth & runtime
+- **Service OAuth via Keycloak** — inbound tokens validate against `AUTH_JWKS_URL` (eager key load at startup), and Keycloak tokens (no `nbf`/`jti`) now validate; outbound service OAuth uses client-credentials (`SERVICE_<NAME>_OAUTH_*`). See [Authentication](/authentication) and [Http Services](/http-service#outbound-auth).
+- **Metrics count fix** — `app_http_response_hits` now counts every request (was sampled 1-in-32); the latency histogram stays sampled.
+- **Socket-close retry** — transient keep-alive resets from upstream services auto-retry once instead of tripping the circuit breaker.
+- **CLI app leak** — `App.destroy()` now tears down all subsystems, so the CLI no longer leaks on exit.
+- **Migration leak fix** — explicit `DB_DIALECT=duckdb` skips the Postgres path, and per-migration keys are freed on run.
+
 ## 0.5.2 (2026-09-27)
 
 Work currently on `main` ahead of the `v0.5.2` tag:
@@ -19,12 +44,11 @@ Work currently on `main` ahead of the `v0.5.2` tag:
 - **ClickHouse** (experimental) — columnar OLAP over HTTP, on `ctx.SQL`. See [ClickHouse](/clickhouse).
 - **Couchbase** (experimental) — document store over N1QL/HTTP, on `ctx.NoSQL`. See [Couchbase](/couchbase).
 - **MongoDB** (experimental) — `ctx.NoSQL` over the **OP_MSG wire protocol** with SCRAM-SHA-256 auth and optional TLS. See [MongoDB](/mongodb).
-- **DuckGres** (experimental) — DuckDB served over the **PostgreSQL wire protocol** on `ctx.SQL` via `DB_DIALECT=duckgres`. See [DuckGres](/duckgres).
 - **InfluxDB v3** (experimental) — `ctx.Timeseries` now hits `/api/v3/write_lp`, `/api/v3/query_sql`, and `/api/v3/configure/database`. See [InfluxDB](/influxdb).
 
 ### Migrations & metrics
 
-- **NoSQL migrations** — new `.nosql` target runs CQL through `ctx.NoSQL`; SQL dialects now cover duckdb (SQLite-shaped DDL), clickhouse (MergeTree), and duckgres. See [Migrations](/migrations).
+- **NoSQL migrations** — new `.nosql` target runs CQL through `ctx.NoSQL`; SQL dialects now cover duckdb (SQLite-shaped DDL) and clickhouse (MergeTree). See [Migrations](/migrations).
 - **Unified datasource metrics** — `app_datasource_response` (histogram) and `app_datasource_error_total` (counter), labeled by `backend` / `operation` / `status`. See [Observability](/observability#metrics).
 
 ### Auth & runtime

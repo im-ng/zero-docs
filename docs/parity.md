@@ -57,9 +57,10 @@ Instead of wiring up that boilerplate yourself, you can jump straight to your bu
         - ⬜ Surge and Circuit breaker
       - ✅ Validate claims
   - ✅ RBAC (config-driven roles/permissions from JWT claims)
-  - ✅ Rate Limiter
-    - ✅ IP / header / custom key modes
-    - ✅ Fixed-window (`RATE_LIMIT_*`) (GoFr uses token-bucket)
+- ✅ Rate Limiter
+  - ✅ IP / header / custom key modes
+  - ✅ Fixed-window (`RATE_LIMIT_*`) (GoFr uses token-bucket)
+  - ✅ Distributed (Redis-backed) rate limiting (`RATE_LIMIT_STORE=redis`)
 - ✅ Panic recovery
 - ✅ Handle Error response
   - ✅ Custom Errors
@@ -68,6 +69,9 @@ Instead of wiring up that boilerplate yourself, you can jump straight to your bu
     - ✅ TLS Support (`DB_SSL_MODE`)
   - ✅ `sqlite`
   - ✅ `duckdb` (in-process OLAP, unified `ctx.SQL`)
+  - ✅ `clickhouse` (`ctx.SQL`, HTTP)
+  - ✅ `mysql` (`ctx.SQL`, native wire protocol, pooled + TLS)
+  - ✅ `supabase` (managed Postgres; `DB_DIALECT=supabase`)
   - ✅ `redis`
     - ✅ Authentication enabled
   - ✅ `mqtt`
@@ -79,10 +83,24 @@ Instead of wiring up that boilerplate yourself, you can jump straight to your bu
   - ✅ `redis` (Pub/Sub)
 - ✅ NoSQL (wide-column / document)
   - ✅ `cassandra` (`ctx.NoSQL`)
+  - ✅ `couchbase` (`ctx.NoSQL`, N1QL over HTTP)
+  - ✅ `mongodb` (`ctx.NoSQL`, OP_MSG wire protocol)
+  - ✅ `arangodb` (`ctx.NoSQL`, AQL over HTTP)
 - ✅ Time-series
-  - ✅ `influxdb` (`ctx.Timeseries`, Flux + line protocol)
+  - ✅ `influxdb` (`ctx.Timeseries`, v3 HTTP API)
+  - ✅ `opentsdb` (`ctx.Timeseries`, JSON `/api/put`)
 - ✅ Search
   - ✅ `solr` (`ctx.Search`, index / query / get / delete)
+  - ✅ `meilisearch` (`ctx.Search`)
+- ✅ Graph
+  - ✅ `dgraph` (`ctx.Graph`, query / mutate)
+- ✅ Pub/Sub
+  - ✅ `kafka`
+  - ✅ `nats`
+  - ✅ `mqtt`
+  - ✅ `redis` (Pub/Sub)
+  - ✅ `sqs` (AWS SQS, SigV4)
+  - ✅ `gcppubsub` (Google Pub/Sub, OAuth2 bearer)
 - ✅ KV Store
   - ✅ `redis`
   - ✅ `nats_kv`
@@ -91,6 +109,8 @@ Instead of wiring up that boilerplate yourself, you can jump straight to your bu
 - ✅ File Store
   - ✅ `local`
   - ✅ `s3` (S3-compatible: MinIO / R2 / Spaces / B2)
+  - ✅ `gcs` (Google Cloud Storage, native OAuth2)
+  - ✅ `supabase` (S3-compatible storage)
   - ⬜ `ftp` (deferred)
   - ⬜ `sftp` (deferred)
 - ✅ Database Migrations

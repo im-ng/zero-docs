@@ -224,6 +224,22 @@ OAUTH_ISSUER=https://idp.example.com
 
 :::
 
+### Service-to-service OAuth (Keycloak)
+
+`zero` validates inbound OAuth tokens by fetching the JWKS from `AUTH_JWKS_URL`
+and checking `exp` / `nbf` / `aud` / `iss` against the claims. Point
+`AUTH_JWKS_URL` at your Keycloak realm's JWKS endpoint and the keys are refreshed
+on a cron (`AUTH_REFRESH_INTERVAL`). From `v0.5.3` the first refresh happens
+**eagerly at startup**, so tokens validate on the very first request instead of
+waiting for the first cron tick.
+
+Keycloak tokens omit `nbf` and `jti`, and the claim fields are now optional, so
+those tokens validate without a `TokenInvalidClaims` error. Set `OAUTH_AUDIENCE`
+and `OAUTH_ISSUER` to pin the expected values.
+
+To make **outbound** calls to another service, see the service OAuth client-credentials
+flow in [Http Services](/http-service#outbound-auth).
+
 2. Build and run the app.
 
 ```bash

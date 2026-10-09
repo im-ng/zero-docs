@@ -69,10 +69,12 @@ headers and the outbound HTTP client, so a single id flows across services and b
 | MQTT           | ✅      |
 | NATS           | ✅      |
 | Redis          | ✅      |
+| AWS SQS        | ✅ ([guide](/sqs)) |
+| GCP Pub/Sub    | ✅ ([guide](/gcp-pubsub)) |
 
 ### Configurations
 
-These settings let you choose Kafka, MQTT, NATS, or Redis per instance.
+These settings let you choose Kafka, MQTT, NATS, Redis, **AWS SQS**, or **GCP Pub/Sub** per instance. SQS and GCP Pub/Sub have their own guides: [AWS SQS](/sqs) and [GCP Pub/Sub](/gcp-pubsub).
 
 | kafka config                   | Remarks                                                              | Default\* / Others                            | Required |
 | ------------------------------ | -------------------------------------------------------------------- | --------------------------------------------- | -------- |
@@ -226,4 +228,9 @@ fn subscribeTask(ctx: *Context) !void {
 
 // register at startup
 try app.addSubscription("zero", subscribeTask);
+```
+
+### AWS SQS & GCP Pub/Sub
+
+`zero` can also publish to and subscribe from **Amazon SQS** and **Google Cloud Pub/Sub** through the same unified `ctx.pubsub` interface — no AWS or GCP SDK to link (SQS is signed with SigV4, GCP Pub/Sub uses OAuth2 bearer tokens). See [AWS SQS](/sqs) and [GCP Pub/Sub](/gcp-pubsub) for configuration and examples.
 ```

@@ -1,151 +1,197 @@
-html.dark .light-only {
-  display: none !important;
-}
+/* ============================================================
+   Zero docs — warm "engineer's notebook" theme (VitePress)
+   Reworks the old cool graph-paper theme to match the
+   zero-frontend landing page.
+   ============================================================ */
 
-html:not(.dark) .dark-only {
-  display: none !important;
-}
-
+/* ---------- Light (default) ---------- */
 :root {
-  --vp-font-family-mono: "Fira Code Variable", "Fira Code", ui-monospace, SFMono-Regular, Menlo,
-    Consolas, "Liberation Mono", monospace;
+  --vp-c-bg: #f5efe3;
+  --vp-c-bg-alt: #efe6d4;
+  --vp-c-bg-elv: #efe6d4;
+  --vp-c-bg-soft: #e8dcc4;
+
+  --vp-c-text-1: #1b1916;
+  --vp-c-text-2: #5b5347;
+  --vp-c-text-3: #8a8071;
+
+  --vp-c-brand-1: #d98324;
+  --vp-c-brand-2: #b9691a;
+  --vp-c-brand-3: #b9691a;
+  --vp-c-brand-soft: rgba(217, 131, 36, 0.14);
+
+  --vp-c-divider: rgba(27, 25, 22, 0.13);
+  --vp-c-border: rgba(27, 25, 22, 0.13);
+  --vp-c-gutter: rgba(27, 25, 22, 0.07);
+
+  --vp-c-shadow-1: 0 1px 2px rgba(27, 25, 22, 0.04), 0 8px 24px -16px rgba(27, 25, 22, 0.4);
+  --vp-c-shadow-2: 0 2px 4px rgba(27, 25, 22, 0.05), 0 14px 40px -22px rgba(27, 25, 22, 0.5);
+  --vp-c-shadow-3: 0 4px 8px rgba(27, 25, 22, 0.06), 0 22px 56px -26px rgba(27, 25, 22, 0.55);
+
+  --vp-font-family-base: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --vp-font-family-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --z-grid: rgba(27, 25, 22, 0.05);
+  --z-grain: 0.05;
+
+  --vp-code-block-bg: #100e0b;
+  --vp-code-block-color: #f3ead7;
+  --vp-code-line-height: 1.6;
 }
 
-code,
-pre,
-.vp-code,
-.vp-doc code {
-  font-family: var(--vp-font-family-mono) !important;
+/* ---------- Dark ---------- */
+html.dark {
+  --vp-c-bg: #100e0b;
+  --vp-c-bg-alt: #181410;
+  --vp-c-bg-elv: #211b15;
+  --vp-c-bg-soft: #211b15;
+
+  --vp-c-text-1: #f3ead7;
+  --vp-c-text-2: #b7ab93;
+  --vp-c-text-3: #7e7461;
+
+  --vp-c-brand-1: #eaa647;
+  --vp-c-brand-2: #f3b65f;
+  --vp-c-brand-3: #f3b65f;
+  --vp-c-brand-soft: rgba(234, 166, 71, 0.16);
+
+  --vp-c-divider: rgba(243, 234, 215, 0.13);
+  --vp-c-border: rgba(243, 234, 215, 0.13);
+  --vp-c-gutter: rgba(243, 234, 215, 0.07);
+
+  --vp-c-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.5), 0 8px 26px -16px rgba(0, 0, 0, 0.7);
+  --vp-c-shadow-2: 0 2px 4px rgba(0, 0, 0, 0.5), 0 14px 44px -22px rgba(0, 0, 0, 0.8);
+  --vp-c-shadow-3: 0 4px 8px rgba(0, 0, 0, 0.5), 0 22px 60px -26px rgba(0, 0, 0, 0.85);
+
+  --z-grid: rgba(243, 234, 215, 0.05);
+  --z-grain: 0.07;
+
+  --vp-code-block-bg: #060504;
 }
 
-/* ImgComparisonSlider styling (moved from per-page <style> blocks) */
-img-comparison-slider {
-  --divider-width: 5px;
-  --divider-color: #131212ff;
-  --default-handle-opacity: 0.9;
-}
-
-/* Consistent paragraph alignment & spacing across all docs pages */
-.vp-doc p {
-  text-align: left;
-  margin: 16px 0;
-}
-
-/* Intuitive technical-doc background.
-   Light mode: calm cool gradient + visible "graph-paper" dot grid + faint brand
-   watermark. Dark mode: dark base + subtle light dots (brand hidden for contrast).
-   Both are applied only to the matching theme so toggling stays correct. */
-html:not(.dark) body {
-  background-color: #eaf0f7;
-  background-image:
-    radial-gradient(rgba(15, 23, 42, 0.10) 1.2px, transparent 1.3px),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.80), rgba(238, 242, 248, 0.88));
-  background-size: 24px 24px, cover, cover;
-  background-position: 0 0, center, center;
-  background-repeat: repeat, no-repeat, no-repeat;
-  background-attachment: fixed, fixed, fixed;
-}
-
+/* ---------- Atmosphere: warm blueprint grid + grain ---------- */
+html:not(.dark) body,
 html.dark body {
-  background-color: #0d1117;
-  background-image:
-    radial-gradient(rgba(255, 255, 255, 0.25) 1.3px, transparent 1.4px);
-  background-size: 24px 24px;
-  background-position: 0 0;
-  background-repeat: repeat;
-  background-attachment: fixed;
+  background-color: var(--vp-c-bg);
 }
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-color: var(--z-grid);
+  -webkit-mask: url("/grid.svg") repeat;
+  mask: url("/grid.svg") repeat;
+  -webkit-mask-size: 46px 46px;
+  mask-size: 46px 46px;
+}
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: var(--z-grain);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+html.dark body::after { mix-blend-mode: screen; }
 
-/* Let the sidebar and local nav reveal the dotted background instead of
-   painting their own opaque surface over it. */
+/* Keep sidebar / local-nav / doc surfaces transparent so the grid shows. */
 :root {
   --vp-sidebar-bg-color: transparent;
   --vp-local-nav-bg-color: transparent;
-}
-
-/* Nav bar: transparent while at the very top (dotted background shows through),
-   frosted + blurred once the page is scrolled for readability. */
-html:not(.dark) {
-  --vp-nav-bg-color: rgba(255, 255, 255, 0.72);
+  --vp-nav-bg-color: rgba(245, 239, 227, 0.72);
 }
 html.dark {
-  --vp-nav-bg-color: rgba(13, 17, 23, 0.40);
+  --vp-nav-bg-color: rgba(16, 14, 11, 0.42);
 }
 
+/* Navbar: invisible at rest (top), separator only when scrolled.
+   Base rule also covers the pre-hydration state so the line never flashes on launch. */
+.VPNavBar {
+  background-color: transparent !important;
+  border-bottom-color: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
 .VPNavBar.top {
   background-color: transparent !important;
-  -webkit-backdrop-filter: none !important;
+  border-bottom-color: transparent !important;
   backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
 }
-
 .VPNavBar:not(.top) {
   background-color: var(--vp-nav-bg-color) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid var(--vp-c-divider) !important;
   backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
 }
+.VPSidebar, .VPLocalNav { background-color: transparent !important; }
 
-.VPSidebar,
-.VPLocalNav {
-  background-color: transparent !important;
-}
-
-/* The top-of-sidebar `.curtain` masks items scrolled beneath the transparent
-   navbar. It inherits --vp-sidebar-bg-color (set transparent above, so the dotted
-   page background shows through the sidebar body), which left the curtain see-through
-   and let scrolled items bleed through the navbar. Re-paint the curtain to mirror the
-   page background exactly (dots + tint) so it blends with the navbar region while
-   still hiding content scrolled underneath it. */
+/* Repaint the top-of-sidebar curtain to match the warm page background. */
 html:not(.dark) .VPSidebar .curtain {
-  background-color: #eaf0f7 !important;
-  background-image:
-    radial-gradient(rgba(15, 23, 42, 0.10) 1.2px, transparent 1.3px),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.80), rgba(238, 242, 248, 0.88));
-  background-size: 24px 24px, cover;
-  background-position: 0 0, center;
-  background-repeat: repeat, no-repeat;
-  background-attachment: fixed, fixed;
+  background-color: #f5efe3 !important;
 }
-
 html.dark .VPSidebar .curtain {
-  background-color: #0d1117 !important;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.25) 1.3px, transparent 1.4px);
-  background-size: 24px 24px;
-  background-position: 0 0;
-  background-repeat: repeat;
-  background-attachment: fixed;
+  background-color: #100e0b !important;
+}
+.VPSidebar .curtain {
+  position: relative;
+}
+.VPSidebar .curtain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-color: var(--z-grid);
+  -webkit-mask: url("/grid.svg") repeat;
+  mask: url("/grid.svg") repeat;
+  -webkit-mask-size: 46px 46px;
+  mask-size: 46px 46px;
 }
 
-/* Home hero stays transparent so the dotted background shows through. */
-.VPHero {
-  background: transparent !important;
-}
+/* Nav logo (mascot) — dark-mode aware, mirrors the frontpage. */
+.VPNavBar .logo img { filter: none; }
+html.dark .VPNavBar .logo img { filter: invert(1) brightness(1.07) contrast(0.96); }
 
-/* Custom icon for the Zig version dropdown (replaces the default globe).
-   The version menu button lives in `.VPNavBarTranslations`; its default
-   `.vpi-languages` globe is hidden and a "layers" icon is injected before
-   the chevron. */
-.VPNavBarTranslations .vpi-languages.option-icon {
-  display: none !important;
-}
+/* Home hero stays transparent so the grid shows through. */
+.VPHero { background: transparent !important; }
 
+/* Custom icon for the Zig version dropdown (replaces the default globe). */
+.VPNavBarTranslations .vpi-languages.option-icon { display: none !important; }
 .VPNavBarTranslations .text::before {
   content: "";
   display: inline-block;
-  width: 16px;
-  height: 16px;
-  margin-right: 6px;
-  vertical-align: -3px;
+  width: 16px; height: 16px;
+  margin-right: 6px; vertical-align: -3px;
   background-color: currentColor;
   -webkit-mask: url(/version-icon.svg) no-repeat center / contain;
   mask: url(/version-icon.svg) no-repeat center / contain;
 }
 
-/* Benefit sub-line inside the home hero (smaller, muted) */
-.hero-tagline {
-  display: block;
-  margin-top: 0.5rem;
-  font-size: 1.4rem;
-  font-weight: 500;
-  line-height: 1.5;
-  color: var(--vp-c-text-2);
+/* Benefit sub-line inside the home hero (muted) */
+.hero-tagline { display: block; margin-top: 0.5rem; font-size: 1.4rem; font-weight: 500; line-height: 1.5; color: var(--vp-c-text-2); }
+
+/* Headings use the display face to match the frontpage. */
+.vp-doc h1, .vp-doc h2, .vp-doc h3,
+.VPDoc h1, .VPDoc h2, .VPDoc h3,
+.VPNavBarTitle .title,
+.VPSidebarItem .text {
+  font-family: "Bricolage Grotesque", var(--vp-font-family-base);
 }
+
+/* Markdown code blocks: force the same dark "terminal" palette as the home code
+   window in BOTH themes. Use the Shiki theme variables that are inline-defined on
+   the .shiki element itself (--shiki-dark-bg / --shiki-dark) so the background can
+   never fall back to transparent. */
+.vp-doc div[class*="language-"],
+html:not(.dark) .vp-doc .shiki,
+html.dark .vp-doc .shiki { background-color: var(--shiki-dark-bg) !important; }
+html:not(.dark) .vp-doc .shiki,
+html.dark .vp-doc .shiki { color: var(--shiki-dark) !important; }
+html:not(.dark) .vp-doc .shiki span,
+html.dark .vp-doc .shiki span { color: var(--shiki-dark) !important; }
