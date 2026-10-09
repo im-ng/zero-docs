@@ -12,12 +12,26 @@ const shared = {
     "A simple and opinionated microservice web framework written in Zig",
   head: [
     ["link", { rel: "icon", href: "/favicon.ico" }],
+    ["link", { rel: "preconnect", href: "https://fonts.googleapis.com" }],
+    ["link", { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" }],
+    ["link", {
+      rel: "stylesheet",
+      href: "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&family=Caveat:wght@500;700&display=swap",
+    }],
+    ["script", { id: "zero-theme-boot" },
+      "(function(){try{var k='vitepress-theme-appearance';if(!localStorage.getItem(k))localStorage.setItem(k,'light');}catch(e){}})();"],
   ],
   ignoreDeadLinks: true,
   base: "/",
+  markdown: {
+    code: {
+      theme: "github-dark",
+    },
+  },
   themeConfig: {
-    appearance: "force-light",
+    appearance: true,
     title: "   ",
+    logo: "/zero-logo.svg",
     socialLinks: [{ icon: "github", link: "https://github.com/im-ng/zero" }],
   },
 };
@@ -325,5 +339,24 @@ export default withMermaid(
         },
       },
     },
-  })
+  }),
+  {
+    theme: "base",
+    themeVariables: {
+      fontFamily: "IBM Plex Sans, sans-serif",
+      primaryColor: "#efe6d4",
+      primaryTextColor: "#1b1916",
+      primaryBorderColor: "#d98324",
+      lineColor: "#8a8071",
+      secondaryColor: "#e8dcc4",
+      tertiaryColor: "#f5efe3",
+      background: "transparent",
+      mainBkg: "#efe6d4",
+      textColor: "#1b1916",
+      nodeBorder: "#d98324",
+      clusterBkg: "#e8dcc4",
+      clusterBorder: "#8a8071",
+      edgeLabelBackground: "#f5efe3",
+    },
+  }
 );
