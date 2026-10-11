@@ -7,17 +7,12 @@ const shared = {
       noExternal: ["zeroTheme"],
     },
   },
-  title: "Zero Framework",
+  title: "zero.",
   description:
     "A simple and opinionated microservice web framework written in Zig",
   head: [
     ["link", { rel: "icon", href: "/favicon.ico" }],
-    ["link", { rel: "preconnect", href: "https://fonts.googleapis.com" }],
-    ["link", { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" }],
-    ["link", {
-      rel: "stylesheet",
-      href: "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&family=Caveat:wght@500;700&display=swap",
-    }],
+    ["link", { rel: "stylesheet", href: "/fonts/fonts.css" }],
     ["script", { id: "zero-theme-boot" },
       "(function(){try{var k='vitepress-theme-appearance';if(!localStorage.getItem(k))localStorage.setItem(k,'light');}catch(e){}})();"],
   ],
@@ -253,7 +248,7 @@ export default withMermaid(
         fmDesc ||
         deriveFromHtml(content) ||
         "A simple and opinionated microservice web framework written in Zig";
-      const title = pageData.title || "zero framework";
+      const title = pageData.title || "zero.";
 
       setMeta("description", desc);
       setProp("og:title", title);

@@ -18,10 +18,10 @@
           Full walkthrough
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
         </a>
-        <span class="note">~15 lines → running API</span>
       </div>
 
       <div class="code-window card" id="code-window">
+        <span class="note mono">~15 lines → running API</span>
         <div class="term-bar">
           <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
           <span class="term-title mono">src/main.zig</span>

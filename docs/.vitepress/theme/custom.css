@@ -37,6 +37,17 @@
   --vp-code-block-bg: #100e0b;
   --vp-code-block-color: #f3ead7;
   --vp-code-line-height: 1.6;
+
+  /* Code-block chrome sits on the dark block in both themes, so keep it light. */
+  --vp-code-lang-color: #b7ab93;
+  --vp-code-tab-bg: var(--vp-code-block-bg);
+  --vp-code-tab-text-color: #b7ab93;
+  --vp-code-tab-hover-text-color: #f3ead7;
+  --vp-code-tab-active-text-color: #f3ead7;
+  --vp-code-tab-active-bar-color: var(--vp-c-brand-1);
+  --vp-code-tab-divider: rgba(243, 234, 215, 0.13);
+  --vp-code-copy-code-color: #b7ab93;
+  --vp-code-copy-code-hover-color: #f3ead7;
 }
 
 /* ---------- Dark ---------- */
@@ -102,10 +113,10 @@ html.dark body::after { mix-blend-mode: screen; }
 :root {
   --vp-sidebar-bg-color: transparent;
   --vp-local-nav-bg-color: transparent;
-  --vp-nav-bg-color: rgba(245, 239, 227, 0.72);
+  --vp-nav-bg-color: #f5efe3;
 }
 html.dark {
-  --vp-nav-bg-color: rgba(16, 14, 11, 0.42);
+  --vp-nav-bg-color: #100e0b;
 }
 
 /* Navbar: invisible at rest (top), separator only when scrolled.
@@ -195,3 +206,34 @@ html:not(.dark) .vp-doc .shiki,
 html.dark .vp-doc .shiki { color: var(--shiki-dark) !important; }
 html:not(.dark) .vp-doc .shiki span,
 html.dark .vp-doc .shiki span { color: var(--shiki-dark) !important; }
+
+/* Brand wordmark "zero." — color the trailing dot. */
+.VPNavBarTitle .title .nav-dot { color: #55d400; }
+
+/* Align the navbar wordmark with the footer wordmark (Bricolage Grotesque 800). */
+.VPNavBarTitle .title { font-weight: 800; font-size: 1.2rem; }
+
+/* Floating "back to top" — visible in both themes (solid bg, readable icon). */
+.zt-totop {
+  position: fixed;
+  right: clamp(16px, 3vw, 32px);
+  bottom: clamp(16px, 3vw, 32px);
+  z-index: 60;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  border: 1.5px solid var(--vp-c-divider);
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-1);
+  cursor: pointer;
+  box-shadow: var(--vp-c-shadow-2);
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity .25s, transform .25s, background-color .25s, color .25s, border-color .25s;
+}
+.zt-totop.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.zt-totop:hover { color: var(--vp-c-brand-1); border-color: var(--vp-c-brand-1); }
+.zt-totop svg { width: 20px; height: 20px; }
