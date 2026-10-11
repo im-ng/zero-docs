@@ -173,8 +173,7 @@ html.dark .zt-home .hero-mascot img { filter: invert(1) brightness(1.07) contras
 .zt-home .steps li::before { content: ""; position: absolute; left: 0; top: .5em; width: 14px; height: 14px; border-radius: 4px; border: 1.5px solid var(--accent); background: var(--live-soft); }
 .zt-home .steps code { font-family: "JetBrains Mono", monospace; background: var(--paper-3); padding: .05em .38em; border-radius: 5px; font-size: .88em; color: var(--ink); }
 .zt-home .code-copy .btn { margin-top: 24px; }
-.zt-home .code-copy .note { display: inline-block; margin-top: 18px; font-family: "Caveat", cursive; font-size: 1.25rem; color: var(--accent-ink); transform: rotate(-2deg); }
-.zt-home .code-window { position: relative; overflow: hidden; padding: 0; background: var(--terminal-bg) !important; }
+.zt-home .code-window { position: relative; overflow: visible; padding: 0; background: var(--terminal-bg) !important; }
 .zt-home .code-window .term-bar { padding: 11px 14px; }
 .zt-home .code-window .term-title { margin-left: 8px; }
 .zt-home .code-copy-btn { margin-left: auto; border: 1px solid var(--terminal-line); background: transparent; color: #b9b09a; width: 30px; height: 28px; border-radius: 7px; cursor: pointer; display: grid; place-items: center; transition: color .2s, background-color .2s; }
@@ -242,7 +241,7 @@ html.dark .zt-home .hero-mascot img { filter: invert(1) brightness(1.07) contras
 .zt-home .site-foot { margin-top: clamp(40px, 6vw, 72px); border-top: 1px solid var(--line); padding: 26px 0; }
 .zt-home .foot-grid { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
 .zt-home .foot-brand { font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 1.3rem; }
-.zt-home .foot-brand .dot { color: var(--accent); }
+.zt-home .foot-brand .dot { color: #55d400; }
 .zt-home .foot-meta { font-size: .76rem; color: var(--ink-faint); margin-left: auto; }
 .zt-home .foot-links { display: flex; gap: 16px; }
 .zt-home .foot-links a { font-family: "JetBrains Mono", monospace; font-size: .8rem; color: var(--ink-soft); }
@@ -262,6 +261,7 @@ html.dark .zt-home .hero-mascot img { filter: invert(1) brightness(1.07) contras
   .zt-home .cmp-slider { aspect-ratio: auto; min-height: 0; }
   .zt-home .cmp-panel { position: relative; }
   .zt-home .cmp-zero { position: absolute; }
+  .zt-home .hero-mascot { display: none; }
 }
 @media (max-width: 520px) {
   .zt-home .why-grid { grid-template-columns: 1fr; }
@@ -269,7 +269,6 @@ html.dark .zt-home .hero-mascot img { filter: invert(1) brightness(1.07) contras
 @media (max-width: 480px) {
   .zt-home .stats { grid-template-columns: 1fr; }
   .zt-home .term-body { min-height: 250px; font-size: 0.76rem; }
-  .zt-home .hero-mascot { display: none; }
   .zt-home .bench-stats { grid-template-columns: 1fr; }
   .zt-home .bar-row { grid-template-columns: 76px 1fr 64px; }
   .zt-home .foot-meta { margin-left: 0; width: 100%; order: 3; }

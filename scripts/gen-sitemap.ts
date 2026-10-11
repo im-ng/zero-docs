@@ -15,7 +15,11 @@ function walk(dir: string, out: string[] = []): string[] {
   return out;
 }
 
-const files = walk(DIST).filter((f) => !f.endsWith("404.html"));
+const files = walk(DIST).filter(
+  (f) =>
+    !f.endsWith("404.html") &&
+    !f.slice(DIST.length).replace(/\\/g, "/").startsWith("/0.15.2"),
+);
 const urls = files.map((f) => {
   let rel = f.slice(DIST.length).replace(/\\/g, "/");
   if (rel === "/index.html") return HOST + "/";

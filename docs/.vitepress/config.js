@@ -7,17 +7,14 @@ const shared = {
       noExternal: ["zeroTheme"],
     },
   },
-  title: "Zero Framework",
+  title: "zero.",
   description:
     "A simple and opinionated microservice web framework written in Zig",
   head: [
     ["link", { rel: "icon", href: "/favicon.ico" }],
-    ["link", { rel: "preconnect", href: "https://fonts.googleapis.com" }],
-    ["link", { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" }],
-    ["link", {
-      rel: "stylesheet",
-      href: "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&family=Caveat:wght@500;700&display=swap",
-    }],
+    ["link", { rel: "stylesheet", href: "/fonts/fonts.css" }],
+    ["meta", { name: "theme-color", content: "#f5efe3" }],
+    ["meta", { name: "theme-color", content: "#100e0b", media: "(prefers-color-scheme: dark)" }],
     ["script", { id: "zero-theme-boot" },
       "(function(){try{var k='vitepress-theme-appearance';if(!localStorage.getItem(k))localStorage.setItem(k,'light');}catch(e){}})();"],
   ],
@@ -248,12 +245,18 @@ export default withMermaid(
         else head.push(["meta", { property, content }]);
       };
 
+      // The 0.15.2 docs are a frozen historical snapshot — omit from SEO.
+      if (rel.startsWith("/0.15.2")) {
+        setMeta("robots", "noindex");
+        return;
+      }
+
       const fmDesc = pageData.frontmatter?.description || pageData.description;
       const desc =
         fmDesc ||
         deriveFromHtml(content) ||
         "A simple and opinionated microservice web framework written in Zig";
-      const title = pageData.title || "zero framework";
+      const title = pageData.title || "zero.";
 
       setMeta("description", desc);
       setProp("og:title", title);
@@ -262,10 +265,16 @@ export default withMermaid(
       setProp("og:site_name", "zero framework");
       setProp("og:url", canonical);
       setProp("og:image", SITE + "/og-image.jpg");
-      setProp("twitter:card", "summary_large_image");
-      setProp("twitter:title", title);
-      setProp("twitter:description", desc);
-      setProp("twitter:image", SITE + "/og-image.jpg");
+      setProp("og:image:width", "1200");
+      setProp("og:image:height", "630");
+      setProp("og:image:type", "image/jpeg");
+      setProp("og:image:alt", "zero — a simple, opinionated Zig microservice framework");
+      setProp("og:locale", "en_US");
+      setMeta("twitter:card", "summary_large_image");
+      setMeta("twitter:title", title);
+      setMeta("twitter:description", desc);
+      setMeta("twitter:image", SITE + "/og-image.jpg");
+      setMeta("twitter:image:alt", "zero — a simple, opinionated Zig microservice framework");
 
       const ci = head.findIndex(
         (h) => h[0] === "link" && h[1] && h[1].rel === "canonical"

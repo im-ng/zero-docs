@@ -3,7 +3,7 @@ layout: home
 
 hero:
   name: "Zero Framework"
-  text: 'Simple, opinionated web framework written in <span style="color:#f7a41d;">Zig</span>'
+  text: 'Simple, opinionated web framework written in <span style="color:#55d400;">Zig</span>'
   actions:
     - theme: brand
       text: Getting Started
