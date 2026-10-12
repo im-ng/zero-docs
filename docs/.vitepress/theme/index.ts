@@ -1,5 +1,6 @@
-import { h, defineComponent, onMounted } from "vue";
+import { h, defineComponent, onMounted, watch } from "vue";
 import DefaultTheme from "vitepress/theme";
+import { useRoute } from "vitepress";
 import "./custom.css";
 import "./landing.css";
 import HomeLanding from "./components/HomeLanding.vue";
@@ -12,6 +13,11 @@ export default {
   },
   Layout: defineComponent({
     setup() {
+      const route = useRoute();
+      const syncHome = () =>
+        document.documentElement.classList.toggle("is-home", route.path === "/");
+      syncHome();
+      watch(() => route.path, syncHome);
       onMounted(() => {
         const el = document.querySelector(".VPNavBarTitle .title");
         const span = el && el.querySelector("span");
