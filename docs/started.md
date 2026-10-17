@@ -118,6 +118,20 @@ That's the full loop: configure, register routes, then call `app.run()`.
 
 Everything else — databases, queues, auth, tracing — is opt-in through `.env`.
 
+## Install the `zero` CLI
+
+Prefer a prebuilt binary over building from source? The installer fetches the latest `zero` release for your platform and drops it in `/usr/local/bin`:
+
+```bash
+curl -fsSL https://im-ng.github.io/zero/install.sh | sh
+# pin a version:
+sh install.sh v0.5.3
+# preview without downloading:
+ZERO_DRY_RUN=1 sh install.sh
+```
+
+It detects your OS/arch (Linux/macOS, x86_64/aarch64), verifies the download against a SHA-256 checksum, and strips the macOS quarantine flag. The prebuilt binary dynamically links `librdkafka` and OpenSSL — install them first (`apt install librdkafka-dev libssl-dev` on Linux, `brew install rdkafka openssl` on macOS). DuckDB is only needed for the `zero migrator` subcommand.
+
 ## Run the official examples
 
 The framework ships complete, runnable example apps in its

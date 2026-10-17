@@ -9,9 +9,9 @@ Docs always track `main`. Pin to a tagged release in your own project — the
 `v0.5.0`).
 :::
 
-## 0.5.3-dev (`main`, unreleased)
+## 0.5.3 (unreleased)
 
-Work currently on `main` ahead of the `v0.5.2` tag:
+Work on the `release-0.5.3-targets` branch, ahead of the `v0.5.2` tag:
 
 ### Data sources
 - **MySQL** — `ctx.SQL` over the native MySQL wire protocol (`DB_DIALECT=mysql`); pure-Zig client, `mysql_native_password` auth. Now runs as a connection pool (`MYSQL_POOL_SIZE`, default 10) with per-request sessions, and supports TLS via `MYSQL_SSL_MODE` (`disabled` / `preferred` / `required`) + `MYSQL_SSL_CA`. See [MySQL](/mysql).
@@ -34,9 +34,20 @@ Work currently on `main` ahead of the `v0.5.2` tag:
 - **CLI app leak** — `App.destroy()` now tears down all subsystems, so the CLI no longer leaks on exit.
 - **Migration leak fix** — explicit `DB_DIALECT=duckdb` skips the Postgres path, and per-migration keys are freed on run.
 
+### Outbound clients & tooling
+- **Outbound WebSocket client** — `app.addWebsocketClient(name, url, opts)` holds a long-lived client on its own background thread: it reconnects with backoff and dispatches each frame to an `on_message` callback with a datasource-wired `Context`. Use a `wss://` URL for automatic TLS; attach auth via `opts.auth` or `SERVICE_<NAME>_*` env, and gate reconnection with a circuit breaker. See [WebSocket Client](/websocket-client).
+- **Installer script** — `curl -fsSL https://im-ng.github.io/zero/install.sh | sh` fetches the latest prebuilt `zero` binary (verified by SHA-256) for Linux/macOS, x86_64/aarch64. Pin with `sh install.sh v0.5.3`; preview with `ZERO_DRY_RUN=1`. See [Getting Started](/started#install-the-zero-cli).
+- **NoSQL TLS** — Cassandra and MongoDB now support TLS (and optional mTLS) on the wire. Cassandra: `CASSANDRA_TLS_ENABLED` / `TLS_VERIFY` / `TLS_CA` / `TLS_SERVER_NAME` / `TLS_CERT_FILE` / `TLS_KEY_FILE`. MongoDB: `MONGODB_TLS=true` plus `MONGODB_TLS_VERIFY` / `TLS_CA` / `TLS_SERVER_NAME` / `TLS_CERT_FILE` / `TLS_KEY_FILE`. See [Cassandra](/cassandra) and [MongoDB](/mongodb).
+
+### Fixes
+- **Structured vs normal log mix** — the structured logger no longer bleeds into the normal log stream (and vice versa).
+- **Unavailable switch case** — a missing `unavailable` match arm that could trip a handler is now covered.
+- **MySQL integration fix** — connection-pool/SSL integration stabilized.
+- **macOS TLS link** — the TLS client's OpenSSL dependency is correctly linked on macOS builds.
+
 ## 0.5.2 (2026-09-27)
 
-Work currently on `main` ahead of the `v0.5.2` tag:
+Released as the `v0.5.2` tag:
 
 ### Data sources
 

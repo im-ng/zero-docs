@@ -2,6 +2,10 @@
 
 `zero` exposes **Dgraph** through a new `ctx.Graph` handle. Dgraph is a distributed graph database that speaks GraphQL± over HTTP, and `zero` reaches it with a small pure-Zig client.
 
+::: tip Experimental
+This backend passes burst and benchmark loads, but has not been soak-tested at large production scale. Use it with caution — if we find leaks or other stability issues, the API or config keys may change.
+:::
+
 ## Configuration
 
 ```bash [configs/.env]

@@ -110,7 +110,13 @@ const zig016Sidebar = [
           { text: "GCP Pub/Sub", link: "/gcp-pubsub" },
         ],
       },
-      { text: "Websockets", link: "/websocket" },
+      {
+        text: "Websockets",
+        items: [
+          { text: "Websocket", link: "/websocket" },
+          { text: "WebSocket Client", link: "/websocket-client" },
+        ],
+      },
       { text: "Http Services", link: "/http-service" },
       { text: "Authentication", link: "/authentication" },
       { text: "HTMX CRUD", link: "/htmx-crud" },

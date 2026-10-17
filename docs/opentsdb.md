@@ -4,6 +4,10 @@
 
 InfluxDB takes priority when `INFLUXDB_URL` is set; set `OPENTSDB_URL` on its own to use OpenTSDB.
 
+::: tip Experimental
+This backend passes burst and benchmark loads, but has not been soak-tested at large production scale. Use it with caution — if we find leaks or other stability issues, the API or config keys may change.
+:::
+
 ## Configuration
 
 ```bash [configs/.env]

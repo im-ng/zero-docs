@@ -8,6 +8,10 @@ handle you use for Cassandra. Couchbase is a distributed document store. With
 `COUCHBASE_CONTACT_POINTS`. Always guard with
 `if (ctx.NoSQL) |n| { ... } else { notConfigured }`.
 
+::: tip Experimental
+This backend passes burst and benchmark loads, but has not been soak-tested at large production scale. Use it with caution — if we find leaks or other stability issues, the API or config keys may change.
+:::
+
 ## Configuration
 
 ::: code-group

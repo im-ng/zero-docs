@@ -10,6 +10,10 @@ extra library. The SQL surface is the one you already know.
 `ctx.SQL` is **optional**. It stays `null` until you set `CLICKHOUSE_URL`. Always
 guard with `if (ctx.SQL) |sql| { ... } else { notConfigured }`.
 
+::: tip Experimental
+This backend passes burst and benchmark loads, but has not been soak-tested at large production scale. Use it with caution — if we find leaks or other stability issues, the API or config keys may change.
+:::
+
 ## Configuration
 
 ::: code-group
