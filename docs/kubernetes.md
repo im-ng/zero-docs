@@ -6,9 +6,9 @@ The framework ships a production-oriented Helm chart called **Bee**.
 
 The chart `version: 0.2.0` targets Zero `appVersion: 0.16.0`. You'll find it in the [`helm/`](https://github.com/im-ng/zero/tree/experimental/helm) directory.
 
-You containerize your app once and push the image. Then you drive the whole deployment from `values.yaml` — config, secrets, probes, ingress, autoscaling, and observability.
+You containerize your app once and push the image. Then you drive the whole deployment from `values.yaml`: config, secrets, probes, ingress, autoscaling, and observability.
 
-Object names come from `app.name` or `nameOverride`. There's no Helm release prefix. A release named `zero` produces objects literally named `payment` — payment-deployment, payment-service and so on.
+Object names come from `app.name` or `nameOverride`. There's no Helm release prefix. A release named `zero` produces objects literally named `payment`: payment-deployment, payment-service and so on.
 
 ## Prerequisites
 
@@ -16,7 +16,7 @@ Object names come from `app.name` or `nameOverride`. There's no Helm release pre
 - Helm 3 (`helm version --short`).
 - A built container image of your `zero` app in a registry you can pull from (see
   [Containerize the app](#containerize-the-app-podman) below).
-- (Optional) Prometheus — either the Prometheus Operator (for `ServiceMonitor`) or a
+- (Optional) Prometheus: either the Prometheus Operator (for `ServiceMonitor`) or a
   standalone Prometheus (for the alerts ConfigMap).
 
 ## Containerize the app (Podman)
@@ -55,7 +55,7 @@ The runtime image expects:
 | Path           | Purpose                                                             |
 | -------------- | ------------------------------------------------------------------- |
 | `/app/basic`   | The compiled `zero` binary (entrypoint).                            |
-| `/app/configs` | Loaded as `./configs/.env` at startup — mount your config dir here. |
+| `/app/configs` | Loaded as `./configs/.env` at startup. Mount your config dir here. |
 | `/app/static`  | Static files served by the app.                                     |
 | `/app/data`    | Local data (e.g. SQLite files, file-store).                         |
 
@@ -265,7 +265,7 @@ The scrape path falls back to `app.metricsPath` (default `/metrics`) when `servi
 
 ### Alerts (standalone Prometheus)
 
-It renders a `v1 ConfigMap` named `prometheus-rules-<app>` in `monitoring`. It's not a `PrometheusRule` CR — this cluster runs standalone Prometheus, not the operator.
+It renders a `v1 ConfigMap` named `prometheus-rules-<app>` in `monitoring`. It's not a `PrometheusRule` CR. This cluster runs standalone Prometheus, not the operator.
 
 Mount it as a volume in your Prometheus deployment:
 

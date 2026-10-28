@@ -2,8 +2,8 @@
 
 This page walks you through standing up a running HTTP service in about five minutes. The full step-by-step tutorial lives in [Hello world](/hello-zero).
 
-::: danger Requires Zig 0.16.0
-`zero` main targets **Zig 0.16.0**. Install it first (see [ziglang.org](https://ziglang.org/learn/getting-started/))
+::: danger Requires Zig 0.17.0
+`zero` main targets **Zig 0.17.0**. Install it first (see [ziglang.org](https://ziglang.org/learn/getting-started/))
 , an older toolchain will fail to build.
 :::
 
@@ -116,7 +116,7 @@ curl localhost:2121/.well-known/health   # liveness probe
 
 That's the full loop: configure, register routes, then call `app.run()`.
 
-Everything else — databases, queues, auth, tracing — is opt-in through `.env`.
+Everything else, databases, queues, auth, tracing, is opt-in through `.env`.
 
 ## Install the `zero` CLI
 
@@ -130,7 +130,7 @@ sh install.sh v0.5.3
 ZERO_DRY_RUN=1 sh install.sh
 ```
 
-It detects your OS/arch (Linux/macOS, x86_64/aarch64), verifies the download against a SHA-256 checksum, and strips the macOS quarantine flag. The prebuilt binary dynamically links `librdkafka` and OpenSSL — install them first (`apt install librdkafka-dev libssl-dev` on Linux, `brew install rdkafka openssl` on macOS). DuckDB is only needed for the `zero migrator` subcommand.
+It detects your OS/arch (Linux/macOS, x86_64/aarch64), verifies the download against a SHA-256 checksum, and strips the macOS quarantine flag. The prebuilt binary dynamically links `librdkafka` and OpenSSL. Install them first (`apt install librdkafka-dev libssl-dev` on Linux, `brew install rdkafka openssl` on macOS). DuckDB is only needed for the `zero migrator` subcommand.
 
 ## Run the official examples
 
@@ -164,15 +164,15 @@ It targets zero-allocation hot paths while keeping development ergonomic.
 
 - `.env` based configuration to boot the app
 - Drop-in support for well-known technologies
-  - `Postgres` / `SQLite` / `DuckDB` — seed data on startup, manage migrations with ease
+  - `Postgres` / `SQLite` / `DuckDB`: seed data on startup, manage migrations with ease
   - NoSQL through `Cassandra`
   - Timeseries `InfluxDB`
   - Search through `Solr`
-  - KV Store — `Redis`, `NATS KV`, `Memory`, `SQLite`
-  - Cache — `Redis` (with `nats_kv` / `sqlite` / `memory` backends)
-  - Pub/Sub — `MQTT`, `NATS`, `Kafka`
-  - File Store — `Local`, `S3`, `FTP`, `SFTP`
-  - `Authentication` — OAuth, API Key, Basic, Role-Based Access Control (RBAC)
+  - KV Store: `Redis`, `NATS KV`, `Memory`, `SQLite`
+  - Cache: `Redis` (with `nats_kv` / `sqlite` / `memory` backends)
+  - Pub/Sub: `MQTT`, `NATS`, `Kafka`
+  - File Store: `Local`, `S3`, `FTP`, `SFTP`
+  - `Authentication`: OAuth, API Key, Basic, Role-Based Access Control (RBAC)
 - REST standard out of the box, including Auto CRUD resource handlers
 - GraphQL-over-HTTP and Protobuf-over-HTTP
 - Structured logging with remote log-level hot reload

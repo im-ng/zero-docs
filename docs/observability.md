@@ -6,8 +6,8 @@
 
 This is an industry standard, so `zero` follows it and exposes a few basic, necessary metrics.
 
-The metrics are exposed on a **separate listener** (`METRICS_PORT`, default `2121`) — not
-on the app's `HTTP_PORT` — and are kept outside of the authentication route.
+The metrics are exposed on a **separate listener** (`METRICS_PORT`, default `2121`), not
+on the app's `HTTP_PORT`, and are kept outside of the authentication route.
 
 Scrape `http://<host>:2121/metrics` with Prometheus.
 
@@ -44,11 +44,11 @@ When a Postgres datasource is configured, the `pgz` driver additionally emits:
 | pg_alloc_reader  | counter | Reader buffer allocations |
 
 Beyond the per-backend counters above, `zero` emits two **unified** datasource
-metrics for every backend it talks to — SQL, NoSQL, time-series, and search:
+metrics for every backend it talks to: SQL, NoSQL, time-series, and search:
 
-- `app_datasource_response` (histogram) — operation latency in seconds, labeled
+- `app_datasource_response` (histogram): operation latency in seconds, labeled
   by `backend`, `operation` (e.g. `queryRow`, `write`, `get`), and `status`.
-- `app_datasource_error_total` (counter) — operation failures, same labels.
+- `app_datasource_error_total` (counter): operation failures, same labels.
 
 For HTTP-based backends (`status` is the HTTP status code); for SQL/NoSQL
 backends it is `0`. This gives you one consistent series to watch latency and

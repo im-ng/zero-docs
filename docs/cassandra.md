@@ -7,10 +7,27 @@ This page focuses on the **wire protocol**: how `zero` actually talks to
 Cassandra, and what that means for the API you write against.
 
 ::: tip Experimental
-This backend passes burst and benchmark loads, but has not been soak-tested at large production scale. Use it with caution — if we find leaks or other stability issues, the API or config keys may change.
+This backend passes burst and benchmark loads, but has not been soak-tested at large production scale. Use it with caution: if we find leaks or other stability issues, the API or config keys may change.
 
-It auto-wires whenever `CASSANDRA_CONTACT_POINTS` is set — there's no separate feature flag.
+It auto-wires whenever `CASSANDRA_CONTACT_POINTS` is set. There's no separate feature flag.
 :::
+
+## Quickstart
+
+Spin up a local Cassandra for testing:
+
+```bash
+podman run -d \
+  --name cassandra-tls \
+  -p 9042:9042 \
+  -e MAX_HEAP_SIZE=700M \
+  -e HEAP_NEWSIZE=200M \
+  -e CASSANDRA_CLUSTER_NAME=zerotest \
+  -e CASSANDRA_DC=dc1 \
+  -e CASSANDRA_RACK=rack1 \
+  -v cassandra-conf:/etc/cassandra:Z \
+  docker.io/library/cassandra:latest
+```
 
 ## The wire protocol
 
@@ -78,7 +95,7 @@ CASSANDRA_TLS_KEY_FILE=
 `if (ctx.NoSQL) |n| { ... } else { notConfigured }`.
 
 ::: info TLS out of the box
-Cassandra supports TLS on the CQL connection. Set `CASSANDRA_TLS_ENABLED=true`; with `CASSANDRA_TLS_VERIFY=true` the server certificate is verified against `CASSANDRA_TLS_CA`. For mutual TLS, also set `CASSANDRA_TLS_CERT_FILE` / `CASSANDRA_TLS_KEY_FILE`. On macOS, the TLS client links OpenSSL — `brew install openssl` if the linker can't find it.
+Cassandra supports TLS on the CQL connection. Set `CASSANDRA_TLS_ENABLED=true`; with `CASSANDRA_TLS_VERIFY=true` the server certificate is verified against `CASSANDRA_TLS_CA`. For mutual TLS, also set `CASSANDRA_TLS_CERT_FILE` / `CASSANDRA_TLS_KEY_FILE`. On macOS, the TLS client links OpenSSL. `brew install openssl` if the linker can't find it.
 :::
 
 ## API

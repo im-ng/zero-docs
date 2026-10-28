@@ -1,8 +1,8 @@
 # WebSocket Client
 
-`zero` can hold **outbound** websocket connections — long-lived clients that subscribe to an external stream (an exchange, a broker, another service) and feed frames back into your app. Each client runs on its own background thread, reconnects with backoff, and dispatches every frame to a callback with a datasource-wired `Context`.
+`zero` can hold **outbound** websocket connections: long-lived clients that subscribe to an external stream (an exchange, a broker, another service) and feed frames back into your app. Each client runs on its own background thread, reconnects with backoff, and dispatches every frame to a callback with a datasource-wired `Context`.
 
-This is the client side of `zero`'s websocket support. For the inbound (server) side — accepting websocket connections from browsers — see [Websocket](/websocket).
+This is the client side of `zero`'s websocket support. For the inbound (server) side, accepting websocket connections from browsers, see [Websocket](/websocket).
 
 ## Register a client
 
@@ -36,14 +36,14 @@ fn onMessage(ctx: *zero.Context, frame: []const u8, _: ?*anyopaque) !void {
 
 `app.addWebsocketClient(name, url, opts)` takes:
 
-- `name` — a stable handle; also the prefix for `SERVICE_<NAME>_*` env resolution (see below).
-- `url` — the server URL. A `wss://` URL enables TLS automatically.
-- `opts` — `wsclient.Options`: `on_message` (required callback), `on_open` (optional, fired once after the handshake), `headers`, `auth`, `circuitBreaker`, and `userdata`.
+- `name`: a stable handle; also the prefix for `SERVICE_<NAME>_*` env resolution (see below).
+- `url`: the server URL. A `wss://` URL enables TLS automatically.
+- `opts`: `wsclient.Options`: `on_message` (required callback), `on_open` (optional, fired once after the handshake), `headers`, `auth`, `circuitBreaker`, and `userdata`.
 
 Each client owns its own background thread, so the connection and reconnect logic never block request handling.
 
 ::: info TLS out of the box
-Use a `wss://` URL and TLS is handled for you automatically — no extra config. A `ws://` URL is plain text.
+Use a `wss://` URL and TLS is handled for you automatically. No extra config. A `ws://` URL is plain text.
 :::
 
 ## Auth and connection tuning

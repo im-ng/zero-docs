@@ -119,6 +119,7 @@ const zig016Sidebar = [
       },
       { text: "Http Services", link: "/http-service" },
       { text: "Authentication", link: "/authentication" },
+      { text: "Vault", link: "/vault" },
       { text: "HTMX CRUD", link: "/htmx-crud" },
       { text: "Warmup hooks", link: "/warmup" },
       { text: "Swagger Rendering", link: "/swagger" },

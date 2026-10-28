@@ -5,8 +5,21 @@
 InfluxDB takes priority when `INFLUXDB_URL` is set; set `OPENTSDB_URL` on its own to use OpenTSDB.
 
 ::: tip Experimental
-This backend passes burst and benchmark loads, but has not been soak-tested at large production scale. Use it with caution — if we find leaks or other stability issues, the API or config keys may change.
+This backend passes burst and benchmark loads, but has not been soak-tested at large production scale. Use it with caution. If we find leaks or other stability issues, the API or config keys may change.
 :::
+
+## Quickstart
+
+OpenTSDB needs HBase underneath; this image bundles it:
+
+```bash
+podman run -d \
+  --name opentsdb \
+  -p 4242:4242 \
+  docker.io/harisekhon/opentsdb:latest
+```
+
+`zero` authenticates with OpenTSDB via `OPENTSDB_TOKEN` (sent as `Authorization: Bearer`).
 
 ## Configuration
 
@@ -33,16 +46,16 @@ pub fn readMetric(ctx: *Context) !void {
 }
 ```
 
-- `write(ctx, json)` — POSTs the body to `/api/put`. Pass a single point object or an array of points.
-- `query(ctx, json)` — POSTs the body to `/api/query`; returns the response.
-- `createDatabase(ctx, name)` — a no-op. OpenTSDB is schema-less; metrics are created on first write.
-- `lastError()` — surfaces the upstream status.
+- `write(ctx, json)`: POSTs the body to `/api/put`. Pass a single point object or an array of points.
+- `query(ctx, json)`: POSTs the body to `/api/query`; returns the response.
+- `createDatabase(ctx, name)`: a no-op. OpenTSDB is schema-less; metrics are created on first write.
+- `lastError()`: surfaces the upstream status.
 
-`ctx.Timeseries` is optional — guard with `if (ctx.Timeseries) |ts| { ... }`. Free returned slices with `ctx.allocator`.
+`ctx.Timeseries` is optional: guard with `if (ctx.Timeseries) |ts| { ... }`. Free returned slices with `ctx.allocator`.
 
 ## Caveats
 
-- `write` expects the exact OpenTSDB `/api/put` JSON payload — it is not line protocol like InfluxDB.
+- `write` expects the exact OpenTSDB `/api/put` JSON payload. It is not line protocol like InfluxDB.
 - There is no database provisioning; `createDatabase` is a documented no-op.
 - No circuit breaker is wired yet.
 

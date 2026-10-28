@@ -178,7 +178,7 @@ try app.addPubSubSubscription("zero", onMessage);
 
 Select Kafka with `PUBSUB_BACKEND=KAFKA`.
 
-Publish through the `ctx.KF` interface — resolve the topic handler once with
+Publish through the `ctx.KF` interface: resolve the topic handler once with
 `ctx.KF.getTopicHandler(ctx, topic)`, then `ctx.KF.publish(ctx, topic, key, payload)`;
 subscribe with `app.addKafkaSubscription(...)`.
 
@@ -232,5 +232,5 @@ try app.addSubscription("zero", subscribeTask);
 
 ### AWS SQS & GCP Pub/Sub
 
-`zero` can also publish to and subscribe from **Amazon SQS** and **Google Cloud Pub/Sub** through the same unified `ctx.pubsub` interface — no AWS or GCP SDK to link (SQS is signed with SigV4, GCP Pub/Sub uses OAuth2 bearer tokens). See [AWS SQS](/sqs) and [GCP Pub/Sub](/gcp-pubsub) for configuration and examples.
+`zero` can also publish to and subscribe from **Amazon SQS** and **Google Cloud Pub/Sub** through the same unified `ctx.pubsub` interface. No AWS or GCP SDK to link (SQS is signed with SigV4, GCP Pub/Sub uses OAuth2 bearer tokens). See [AWS SQS](/sqs) and [GCP Pub/Sub](/gcp-pubsub) for configuration and examples.
 ```

@@ -12,9 +12,9 @@ Zig picks the optimization level with `--release=`:
 
 | Mode  | Flag              | Use                                                                                        |
 | ----- | ----------------- | ------------------------------------------------------------------------------------------ |
-| Debug | _(none)_          | Default. Symbols kept, safety checks on, fast compile — use while developing.              |
+| Debug | _(none)_          | Default. Symbols kept, safety checks on, fast compile. Use while developing.              |
 | Fast  | `--release=fast`  | Speed-optimized, some safety checks off. Good for day-to-day runs.                         |
-| Safe  | `--release=safe`  | Optimized but keeps runtime safety checks — preferred for baselined/production-ish builds. |
+| Safe  | `--release=safe`  | Optimized but keeps runtime safety checks: preferred for baselined/production-ish builds. |
 | Small | `--release=small` | Size-optimized (best binary footprint). Used for the smallest deployable image.            |
 
 ## Building the examples
@@ -172,7 +172,7 @@ When the process runs but behaves oddly:
   for machine parsing) to surface framework internals. See [Logging](/logging).
 - **Known-leak caveat** — the unit test run uses `std.testing.allocator`. A few paths
   leak, and the build exits non-zero even when every assertion passes. That's a known
-  issue, not a logic bug — see [Testing](/testing#known-leak-caveat).
+  issue, not a logic bug: see [Testing](/testing#known-leak-caveat).
 - **Resource watch** — `make top` / `make usage` (or plain `top`/`ps`) track CPU and
   RSS while the app serves traffic. `make trace` summarizes syscalls during a build.
 

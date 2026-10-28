@@ -9,8 +9,22 @@ handle you use for Cassandra. Couchbase is a distributed document store. With
 `if (ctx.NoSQL) |n| { ... } else { notConfigured }`.
 
 ::: tip Experimental
-This backend passes burst and benchmark loads, but has not been soak-tested at large production scale. Use it with caution — if we find leaks or other stability issues, the API or config keys may change.
+This backend passes burst and benchmark loads, but has not been soak-tested at large production scale. Use it with caution: if we find leaks or other stability issues, the API or config keys may change.
 :::
+
+## Quickstart
+
+Spin up a local Couchbase with an admin account:
+
+```bash
+podman run -d \
+  --name couchbase \
+  -p 8091-8097:8091-8097 -p 11210:11210 \
+  -v couchbase-data:/opt/couchbase/var \
+  -e COUCHBASE_ADMINISTRATOR_USERNAME=admin \
+  -e COUCHBASE_ADMINISTRATOR_PASSWORD=password \
+  docker.io/library/couchbase:latest
+```
 
 ## Configuration
 

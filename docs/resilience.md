@@ -44,7 +44,7 @@ While open, calls return `error.CircuitOpen`.
 | Cache / KV            | `CACHE_CIRCUIT_BREAKER_ENABLE` | off     | Same threshold/cooldown as above. See [KV Store](/kv-store).                           |
 | Outbound HTTP service | `SERVICE_<NAME>_CB_*`          | off     | Per-service breaker + OAuth token-endpoint breaker. See [Http Service](/http-service). |
 
-When a breaker opens, `zero` increments the `app_circuit_open_total` counter (label `name`) — see [Observability](/observability).
+When a breaker opens, `zero` increments the `app_circuit_open_total` counter (label `name`): see [Observability](/observability).
 
 ## PubSub resilience
 

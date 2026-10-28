@@ -16,6 +16,19 @@ is configured.
 
 Always guard with `if (ctx.Search) |s| { ... } else { notConfigured }`.
 
+## Quickstart
+
+Spin up a local Solr with basic auth enabled via a mounted `security.json`:
+
+```bash
+podman run -d \
+  --name solr \
+  -p 8983:8983 \
+  -v solr-data:/var/solr \
+  -v ./security.json:/var/solr/data/security.json:Z \
+  docker.io/library/solr:9.8
+```
+
 ## Configuration
 
 ::: code-group

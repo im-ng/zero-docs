@@ -11,8 +11,21 @@ extra library. The SQL surface is the one you already know.
 guard with `if (ctx.SQL) |sql| { ... } else { notConfigured }`.
 
 ::: tip Experimental
-This backend passes burst and benchmark loads, but has not been soak-tested at large production scale. Use it with caution — if we find leaks or other stability issues, the API or config keys may change.
+This backend passes burst and benchmark loads, but has not been soak-tested at large production scale. Use it with caution: if we find leaks or other stability issues, the API or config keys may change.
 :::
+
+## Quickstart
+
+Spin up a local ClickHouse (configure users via a mounted `users.xml` for auth):
+
+```bash
+podman run -d \
+  --name clickhouse \
+  -p 8123:8123 -p 9000:9000 \
+  -v clickhouse-data:/var/lib/clickhouse \
+  -v ./users.xml:/etc/clickhouse-server/users.xml:Z \
+  docker.io/clickhouse/clickhouse-server:latest
+```
 
 ## Configuration
 

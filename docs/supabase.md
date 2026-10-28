@@ -6,7 +6,7 @@
 - **Storage** — Supabase object storage is S3-compatible. Use the `supabase` file-store backend and the same `ctx.FileStore` handle.
 
 ::: tip Experimental
-This backend passes burst and benchmark loads, but has not been soak-tested at large production scale. Use it with caution — if we find leaks or other stability issues, the API or config keys may change.
+This backend passes burst and benchmark loads, but has not been soak-tested at large production scale. Use it with caution. If we find leaks or other stability issues, the API or config keys may change.
 :::
 
 ## Database
@@ -22,7 +22,7 @@ SUPABASE_DB_NAME=postgres
 SUPABASE_DB_SSL_MODE=require
 ```
 
-Everything you can do with Postgres works — migrations, `ctx.SQL` queries, Auto CRUD. See [Using Postgres](/rest-handler).
+Everything you can do with Postgres works: migrations, `ctx.SQL` queries, Auto CRUD. See [Using Postgres](/rest-handler).
 
 ## Storage
 
@@ -35,7 +35,7 @@ SUPABASE_STORAGE_REGION=us-east-1  # required for the SigV4 scope
 SUPABASE_STORAGE_PROJECT=abcdefghijklmno   # -> https://<ref>.supabase.co/storage/v1/s3
 ```
 
-`ctx.FileStore` is unchanged — `create` / `get` / `delete` / `list` all work. See [File Store](/file-store).
+`ctx.FileStore` is unchanged. `create` / `get` / `delete` / `list` all work. See [File Store](/file-store).
 
 ## Caveats
 

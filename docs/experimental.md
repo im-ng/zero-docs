@@ -6,7 +6,7 @@ nothing when you leave it disabled.
 
 ::: tip
 Every experimental feature here is **inert by default**. When its flag is off,
-`zero` creates no objects and runs no background threads — your existing
+`zero` creates no objects and runs no background threads. Your existing
 runtime behavior is completely unchanged.
 :::
 
@@ -32,7 +32,7 @@ Set `OTEL_EXPERIMENTAL=true` in your `configs/.env`, then configure the OTLP exp
 | `OTEL_EXPORTER_OTLP_PROTOCOL`    | Must be `http/protobuf`                                                    | `http/protobuf`         |
 | `OTEL_SERVICE_NAME`              | Service name in telemetry (defaults to `APP_NAME`, else `zero`)            | `otel-demo`             |
 | `OTEL_EXPORTER_OTLP_AUTH_HEADER` | Bare credential → `Authorization` header (e.g. rootPrint `Bearer <token>`) | `"Bearer rp_..."`       |
-| `OTEL_EXPORTER_OTLP_HEADERS`     | Extra non-auth headers (`Key=Value,...`) — env var only                    | `""`                    |
+| `OTEL_EXPORTER_OTLP_HEADERS`     | Extra non-auth headers (`Key=Value,...`): env var only                    | `""`                    |
 | `OTEL_EXPORTER_OTLP_COMPRESSION` | Payload compression                                                        | `gzip`                  |
 | `LOG_FORMAT`                     | Console log shape (`json` for JSON lines)                                  | `json`                  |
 | `OTEL_LOG_JSON`                  | OTel log body shape: `true` → JSON line, unset → clean `LEVEL message`     | `true`                  |

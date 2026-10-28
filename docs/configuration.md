@@ -157,7 +157,7 @@ MYSQL_SSL_MODE=disabled       # disabled | preferred | required
 MYSQL_SSL_CA=                # CA path; required when MYSQL_SSL_MODE=required
 ```
 
-```bash [supabase — managed Postgres]
+```bash [supabase - managed Postgres]
 DB_DIALECT=supabase
 SUPABASE_DB_PROJECT=abcdefghijklmno     # -> db.<ref>.supabase.co (set this or HOST)
 SUPABASE_DB_HOST=db.abcdefghijklmno.supabase.co
@@ -337,7 +337,7 @@ The `influxdb` and `opentsdb` backends are implemented; the handle is exposed as
 `ctx.Timeseries`.
 
 `INFLUXDB_URL`, `INFLUXDB_BUCKET`, and `INFLUXDB_TOKEN` are all required once the
-datasource is enabled (v3 uses a flat database plus token model — there is no
+datasource is enabled (v3 uses a flat database plus token model. There is no
 `INFLUXDB_ORG`).
 
 ::: code-group
@@ -498,7 +498,7 @@ OAUTH_ISSUER=https://idp.example.com  # optional; when set, JWT iss claim must m
 
 Role-based access control rules are loaded by `app.rbacFromEnv()` (call it in
 `main`), which reads the `RBAC_CONFIG` env var. There is no code-based `app.rbac(...)`
-API and no `RBAC_ROLE_*` env-var form — `RBAC_CONFIG` is the sole supported schema.
+API and no `RBAC_ROLE_*` env-var form. `RBAC_CONFIG` is the sole supported schema.
 
 Routes with a rule are protected; routes without one stay public.
 
@@ -513,7 +513,7 @@ The caller's role is taken from the JWT `role` claim, so RBAC pairs with
 
 ::: code-group
 
-```bash [RBAC_CONFIG — endpoint-rule JSON]
+```bash [RBAC_CONFIG - endpoint-rule JSON]
 RBAC_CONFIG=[{"permissions":["ADMIN"],"endpoint":"/api/admin/*","methods":["GET","POST"],"exempt":true},{"permissions":["USER"],"endpoint":"/api/resource","methods":["GET"]}]
 ```
 
@@ -632,7 +632,7 @@ RATE_LIMIT_WINDOW=60       # window length in seconds (0 → default 60)
 
 The limiter can also run in a **distributed** mode backed by Redis, so the
 counter is shared across all your replicas. Set `RATE_LIMIT_STORE=redis` and
-configure Redis — if Redis is unreachable it fails open (requests are allowed).
+configure Redis: if Redis is unreachable it fails open (requests are allowed).
 
 ```bash [distributed]
 RATE_LIMIT_STORE=redis      # memory (default) | redis
@@ -641,9 +641,9 @@ RATE_LIMIT_STORE=redis      # memory (default) | redis
 
 Key modes:
 
-- `ip` — bucket by client address.
-- `header` — bucket by the `X-Forwarded-For` header (custom header name set in code).
-- `custom` — application-defined key computed in code.
+- `ip`: bucket by client address.
+- `header`: bucket by the `X-Forwarded-For` header (custom header name set in code).
+- `custom`: application-defined key computed in code.
 
 ## Remote Log
 

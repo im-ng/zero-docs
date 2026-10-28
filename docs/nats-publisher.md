@@ -11,7 +11,7 @@ try ctx.pubsub.Publish("subject", "payload");
 ## Broker selection
 
 NATS is selected through the unified PubSub backend. Unlike Kafka (which links the
-`librdkafka` C library), the NATS client is a pure-Zig dependency — no extra system
+`librdkafka` C library), the NATS client is a pure-Zig dependency. No extra system
 package is required.
 
 ```bash [configs/.env]

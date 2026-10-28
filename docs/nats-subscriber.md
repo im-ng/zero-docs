@@ -13,7 +13,7 @@ app.addPubSubSubscription("subject", subscriberHandler);
 
 ## Broker selection
 
-Use the same setup as the publisher — set `PUBSUB_BACKEND=NATS` and `PUBSUB_BROKER`.
+Use the same setup as the publisher: set `PUBSUB_BACKEND=NATS` and `PUBSUB_BROKER`.
 
 ```bash [configs/.env]
 PUBSUB_BACKEND=NATS

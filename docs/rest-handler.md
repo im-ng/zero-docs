@@ -31,6 +31,20 @@ We'll connect to a database and pull up the container we need as follows:
 ```bash [postgres container]
 ❯ podman pull docker.io/library/postgres:17-alpine3.21
 ❯ podman run -d --name pg17 -e POSTGRES_USER=user1 -e POSTGRES_PASSWORD=password1 -v podman:/var/lib/postgresql/data -p 5432:5432 postgres:17-alpine3.21
+
+For a TLS-enabled instance, use the `-tls` image and turn SSL on:
+
+```bash
+podman run -d \
+  --name pg-tls \
+  -e POSTGRES_USER=user1 \
+  -e POSTGRES_PASSWORD=password1 \
+  -p 5432:5432 \
+  postgres:17-alpine3.21-tls \
+  -c ssl=on \
+  -c ssl_cert_file=/var/lib/postgresql/certs/server.crt \
+  -c ssl_key_file=/var/lib/postgresql/certs/server.key
+```
 ```
 
 :::
@@ -160,12 +174,12 @@ DEBUG [03:27:09] pubsub is disabled, as pubsub mode is not provided.
 
 _Use this slider to compare the server status and the handler response._
 
-In this demo we created a database, added basic data, connected from a `zero` app, and retrieved the data as intended. This is just the beginning — you can do more, as shown in the [HTMX](./htmx-crud.md) example.
+In this demo we created a database, added basic data, connected from a `zero` app, and retrieved the data as intended. This is just the beginning. You can do more, as shown in the [HTMX](./htmx-crud.md) example.
 
 ## Transactions
 
 `ctx.SQL` exposes `begin()` / `commit()` / `rollback()` so you can group statements on a
-single pinned connection. Begin a transaction, run your statements, then commit — and
+single pinned connection. Begin a transaction, run your statements, then commit: and
 roll back on error:
 
 ```zig [src/main.zig]

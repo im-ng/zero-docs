@@ -212,7 +212,7 @@ AUTH_REFRESH_INTERVAL=10  #in seconds
 
 Set `OAUTH_AUDIENCE` and/or `OAUTH_ISSUER` to tighten validation. When set,
 `zero` rejects JWTs whose `aud` / `iss` claims don't match. Leave them unset and
-existing deployments are unaffected — the checks only run when the value is
+existing deployments are unaffected. The checks only run when the value is
 present.
 
 ::: code-group
@@ -223,6 +223,14 @@ OAUTH_ISSUER=https://idp.example.com
 ```
 
 :::
+
+## Quickstart
+
+Spin up a local Keycloak for testing:
+
+```bash
+podman run -p 127.0.0.1:9990:8080 -e KC_BOOTSTRAP_ADMIN_USERNAME=admin -e KC_BOOTSTRAP_ADMIN_PASSWORD=password quay.io/keycloak/keycloak:latest start-dev
+```
 
 ### Service-to-service OAuth (Keycloak)
 
@@ -342,13 +350,13 @@ RBAC is config-driven only. Load rules by calling `app.rbacFromEnv()` in `main` 
 
 ::: code-group
 
-```bash [config/.env — endpoint-rule JSON]
+```bash [config/.env: endpoint-rule JSON]
 # GET  /api/resource -> requires the USER role
 # POST /api/resource -> requires the ADMIN role
 RBAC_CONFIG=[{"permissions":["USER"],"endpoint":"/api/resource","methods":["GET"]},{"permissions":["ADMIN"],"endpoint":"/api/resource","methods":["POST"]}]
 ```
 
-```bash [config/.env — exempt rule]
+```bash [config/.env: exempt rule]
 # bypasses RBAC for GET/POST on /api/admin/* for any role,
 # but other methods (e.g. DELETE) stay protected
 RBAC_CONFIG=[{"permissions":["ADMIN"],"endpoint":"/api/admin/*","methods":["GET","POST"],"exempt":true}]
