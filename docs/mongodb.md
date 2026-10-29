@@ -7,11 +7,28 @@ not N1QL or CQL.
 This page focuses on the **wire protocol**: how `zero` actually speaks to
 MongoDB on the wire, and what that means for you.
 
-::: warning
-MongoDB support is **experimental**. The API and config keys may change between
-releases. It auto-wires whenever `MONGODB_CONTACT_POINTS` is set — there is no
-separate feature flag.
+::: tip Experimental
+This backend passes burst and benchmark loads, but has not been soak-tested at large production scale. Use it with caution. If we find leaks or other stability issues, the API or config keys may change.
+
+It auto-wires whenever `MONGODB_CONTACT_POINTS` is set. There's no separate feature flag.
 :::
+
+## Quickstart
+
+Spin up a local MongoDB with auth and TLS:
+
+```bash
+podman run -d \
+  --name mongodb-tls \
+  -p 27017:27017 \
+  -e MONGO_INITDB_ROOT_USERNAME=admin \
+  -e MONGO_INITDB_ROOT_PASSWORD=password \
+  -v mongo_data:/data/db \
+  -v ./mongod.conf:/etc/mongod.conf:Z \
+  -v ./certs:/etc/ssl/mongodb:Z,ro \
+  docker.io/mongo:latest \
+  mongod --config /etc/mongod.conf
+```
 
 ## The wire protocol
 
@@ -54,6 +71,10 @@ MONGODB_PASSWORD=
 MONGODB_TLS=false
 MONGODB_TLS_VERIFY=false
 MONGODB_TLS_CA=
+# Optional mTLS
+MONGODB_TLS_SERVER_NAME=
+MONGODB_TLS_CERT_FILE=
+MONGODB_TLS_KEY_FILE=
 # Auth source (defaults to admin)
 MONGODB_AUTH_SOURCE=admin
 ```
@@ -69,7 +90,17 @@ MONGODB_AUTH_SOURCE=admin
 | `MONGODB_TLS`           | no       | `true` to enable TLS.                            |
 | `MONGODB_TLS_VERIFY`    | no       | `true` to verify the server certificate.         |
 | `MONGODB_TLS_CA`        | no       | CA cert path for verification.                   |
+| `MONGODB_TLS_SERVER_NAME`| no      | SNI / expected certificate name.                 |
+| `MONGODB_TLS_CERT_FILE` | no       | Client cert for mTLS.                            |
+| `MONGODB_TLS_KEY_FILE`  | no       | Client key for mTLS.                             |
 | `MONGODB_AUTH_SOURCE`   | no       | Auth source DB (defaults to `admin`).            |
+| `MONGODB_TLS_SERVER_NAME`| no      | SNI / expected certificate name.                 |
+| `MONGODB_TLS_CERT_FILE` | no       | Client cert for mTLS.                            |
+| `MONGODB_TLS_KEY_FILE`  | no       | Client key for mTLS.                             |
+
+::: info TLS out of the box
+MongoDB supports TLS. Set `MONGODB_TLS=true`, and with `MONGODB_TLS_VERIFY=true` the server certificate is verified against `MONGODB_TLS_CA`. For mutual TLS, also set `MONGODB_TLS_CERT_FILE` / `MONGODB_TLS_KEY_FILE`. On macOS, the TLS client links OpenSSL. `brew install openssl` if the linker can't find it.
+:::
 
 ## API
 
@@ -125,6 +156,8 @@ pub fn putUser(ctx: *Context) !void {
   the same way you would against the wire protocol directly.
 - **No feature flag.** Set `MONGODB_CONTACT_POINTS` and it's live; leave it unset
   and `zero` creates nothing.
+- **`dropCollection(name)`.** Drops a collection. Implemented for MongoDB; other
+  NoSQL backends return `NoSQLBackendNotImplemented`.
 
 See the runnable
 [`zero-mongodb`](https://github.com/im-ng/zero/tree/experimental/examples/zero-mongodb)

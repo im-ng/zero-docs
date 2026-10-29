@@ -24,7 +24,7 @@ json
 }
 ```
 
-The feature is opt-in — leave `REMOTE_LOG_URL` empty to disable it.
+The feature is opt-in. Leave `REMOTE_LOG_URL` empty to disable it.
 
 See [Configuration → Remote Log](./configuration.md#remote-log) for the keys.
 

@@ -1,6 +1,23 @@
 # ArangoDB
 
-`zero` reaches ArangoDB over its HTTP API and exposes it through the `ctx.NoSQL` handle. You write full **AQL** statements — there is no document-level convenience wrapper.
+`zero` reaches ArangoDB over its HTTP API and exposes it through the `ctx.NoSQL` handle. You write full **AQL** statements. There is no document-level convenience wrapper.
+
+::: tip Experimental
+This backend passes burst and benchmark loads, but has not been soak-tested at large production scale. Use it with caution: if we find leaks or other stability issues, the API or config keys may change.
+:::
+
+## Quickstart
+
+Spin up a local ArangoDB with a root password:
+
+```bash
+podman run -d \
+  --name arangodb \
+  -p 8529:8529 \
+  -v arangodb-data:/var/lib/arangodb3 \
+  -e ARANGO_ROOT_PASSWORD=password \
+  docker.io/library/arangodb:latest
+```
 
 ## Configuration
 
@@ -31,11 +48,11 @@ pub fn topMovies(ctx: *Context) !void {
 }
 ```
 
-- `put(ctx, aql)` — write (INSERT / REMOVE) via `/_api/cursor`.
-- `get(ctx, aql)` — read; returns the first cursor result, `null` on empty.
-- `delete(ctx, aql)` — REMOVE.
-- `query(ctx, aql)` — arbitrary AQL; returns the `result` array as JSON.
-- `lastError()` — surfaces the upstream status.
+- `put(ctx, aql)`: write (INSERT / REMOVE) via `/_api/cursor`.
+- `get(ctx, aql)`: read; returns the first cursor result, `null` on empty.
+- `delete(ctx, aql)`: REMOVE.
+- `query(ctx, aql)`: arbitrary AQL; returns the `result` array as JSON.
+- `lastError()`: surfaces the upstream status.
 
 The result is raw JSON; `zero` does not type-decode AQL responses, so parse it yourself. Free the returned slice with `ctx.allocator`.
 

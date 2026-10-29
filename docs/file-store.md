@@ -101,7 +101,7 @@ Register it with `app.addFileStore("assets", .s3, .{})`. The bucket, region, and
 
 ## GCS backend
 
-The `gcs` backend targets Google Cloud Storage over its REST API. It authenticates with an OAuth2 bearer token (fetched via the client-credentials grant) — there is no S3 SigV4 involved.
+The `gcs` backend targets Google Cloud Storage over its REST API. It authenticates with an OAuth2 bearer token (fetched via the client-credentials grant). There is no S3 SigV4 involved.
 
 ::: code-group
 

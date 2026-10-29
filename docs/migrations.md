@@ -25,7 +25,7 @@ targets**. `zero` supports two targets:
 Relational migrations run inside a **database transaction**. If one fails, `zero`
 rolls it back and leaves it **unrecorded**, so it is retried on the next run (it is
 not silently masked as applied). NoSQL migrations have **no transaction** — CQL
-offers none — so a failed NoSQL migration is simply left unrecorded and retried
+offers none, so a failed NoSQL migration is simply left unrecorded and retried
 next run. Only migrations that complete successfully are tracked and skipped
 thereafter.
 :::
@@ -60,8 +60,8 @@ zero migrator add --name create-users
 
 This writes two things under `src/migrations/`:
 
-- `create_users.zig` — the migration itself (edit the `TODO` SQL).
-- `all.zig` — regenerated automatically; it registers **every** migration in
+- `create_users.zig`: the migration itself (edit the `TODO` SQL).
+- `all.zig`: regenerated automatically; it registers **every** migration in
   `src/migrations/`. You never edit this file by hand.
 
 The generated `create_users.zig` looks like:

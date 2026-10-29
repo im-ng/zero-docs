@@ -8,9 +8,24 @@ You write points and run queries through the same calls, whatever the backend. S
 
 It's `null` until you set `INFLUXDB_URL` (with `INFLUXDB_BUCKET` and `INFLUXDB_TOKEN`). So always guard with `if (ctx.Timeseries) |ts| { ... } else { notConfigured }`.
 
+## Quickstart
+
+Spin up a local InfluxDB v3 with an admin token:
+
+```bash
+podman run -d \
+  --name influxdb \
+  -p 8181:8181 \
+  -v influxdb-data:/var/lib/influxdb3 \
+  -e INFLUXDB_ADMIN_TOKEN=super-secret-admin-token \
+  -e INFLUXDB_ADMIN_USER=admin \
+  -e INFLUXDB_ADMIN_PASSWORD=password \
+  docker.io/library/influxdb:3.0
+```
+
 ## Configuration
 
-`zero` targets the **InfluxDB v3** HTTP API. There is no `INFLUXDB_ORG` — v3 uses a flat database plus token model.
+`zero` targets the **InfluxDB v3** HTTP API. There is no `INFLUXDB_ORG`. v3 uses a flat database plus token model.
 
 ::: code-group
 

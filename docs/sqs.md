@@ -18,7 +18,7 @@ AWS_SECRET_KEY=
 try ctx.getPublisher().Publish("orders", "{\"id\":1}");
 ```
 
-The `subject` is ignored for SQS — the queue URL is the channel.
+The `subject` is ignored for SQS. The queue URL is the channel.
 
 ## Subscribe
 

@@ -55,18 +55,18 @@ sequenceDiagram
 
 The `container` aggregates component health behind two well-known endpoints:
 
-- `GET /.well-known/health` — returns the aggregated status as JSON
+- `GET /.well-known/health`: returns the aggregated status as JSON
   (`{ "<name>": "up" }`). If any check fails the response body reports the failing
   component as `down` and the endpoint returns a non-200 status.
 
-- `GET /.well-known/live` — liveness probe, always returns `200` (the process is up).
+- `GET /.well-known/live`: liveness probe, always returns `200` (the process is up).
 
 Two probes are registered **automatically** when the corresponding datasource is
 configured:
 
-- `sql` — acquires and releases a pooled connection (Postgres); SQLite is reported
+- `sql`: acquires and releases a pooled connection (Postgres); SQLite is reported
   healthy once loaded.
-- `redis` — a `PING` round-trip.
+- `redis`: a `PING` round-trip.
 
 Register your own check with `app.addHealthCheck`:
 

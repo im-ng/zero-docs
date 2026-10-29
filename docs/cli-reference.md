@@ -50,13 +50,13 @@ Print the CLI usage and exit.
 To run your own app as a command instead of an HTTP server, use the app-level
 CLI API in [CLI Apps](./cli.md):
 
-- `App.newCmd(allocator, io, em)` — like `App.new` but does not start the HTTP or metrics servers.
-- `app.SubCommand(name, handler, opts)` — register a subcommand (`handler: fn(*Context) anyerror!void`).
-- `app.runCmd(args)` — parse argv, dispatch to a subcommand, and build a CLI `Context`.
-- `ctx.Param("name")` — read a `--flag value` / `--flag=value` / `-f value` argument.
+- `App.newCmd(allocator, io, em)`: like `App.new` but does not start the HTTP or metrics servers.
+- `app.SubCommand(name, handler, opts)`: register a subcommand (`handler: fn(*Context) anyerror!void`).
+- `app.runCmd(args)`: parse argv, dispatch to a subcommand, and build a CLI `Context`.
+- `ctx.Param("name")`: read a `--flag value` / `--flag=value` / `-f value` argument.
 
 ## Related
 
-- [Migrations](./migrations.md) — the `migrator add` workflow end to end.
-- [CLI Apps](./cli.md) — running your app as a CLI / one-shot job.
-- [Benchmark](./benchmark.md) — the `zig build bench` harness (a separate binary).
+- [Migrations](./migrations.md): the `migrator add` workflow end to end.
+- [CLI Apps](./cli.md): running your app as a CLI / one-shot job.
+- [Benchmark](./benchmark.md): the `zig build bench` harness (a separate binary).

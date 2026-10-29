@@ -51,7 +51,7 @@ classDiagram
     }
 ```
 
-## Enum-tagged interface — `KVStore`
+## Enum-tagged interface: `KVStore`
 
 The handle stores the opaque pointer and the backend tag. `init` wraps any
 concrete `*T`. Every method re-casts `ptr` to the right type based on `backend`.
@@ -88,10 +88,10 @@ connect also becomes the default.
 `FileStore` (backends `local` / `ftp` / `sftp`) and `Datasource` (dialects
 `postgres` / `sqlite`) use the identical pattern.
 
-## VTable interface — `PubSub`
+## VTable interface: `PubSub`
 
-Instead of a tag, the handle carries a table of function pointers. Each backend —
-MQTT, Kafka, or NATS — supplies a `VTable`. `Publish` and `subscribe` forward to
+Instead of a tag, the handle carries a table of function pointers. Each backend,
+MQTT, Kafka, or NATS, supplies a `VTable`. `Publish` and `subscribe` forward to
 it after casting `ptr` back to the concrete client.
 
 ```zig
@@ -142,7 +142,7 @@ fn onMessage(ctx: *Context) !void {
 The concrete type is erased, so your handler code only ever touches `ctx.KV`,
 `ctx.FileStore`, `ctx.SQL` and `ctx.pubsub`.
 
-Swapping a backend — Redis to NATS KV, or Postgres to SQLite — is a
+Swapping a backend, Redis to NATS KV, or Postgres to SQLite, is a
 configuration change. You set `PUBSUB_BACKEND`, `DB_DIALECT`, or call
 `app.addKVStore(...)`. You don't change handler code.
 

@@ -16,7 +16,7 @@
 
 1. Check the [Getting Started](/started) quickstart and the relevant
    [Built-in solutions](/) page.
-2. Search [Discussions](https://github.com/im-ng/zero/discussions) — your question may
+2. Search [Discussions](https://github.com/im-ng/zero/discussions). Your question may
    already be answered.
 3. When reporting a bug, include your `zig version`, the `zero` revision, and the
    relevant `configs/.env` (redact secrets) plus the failing route/handler.

@@ -28,7 +28,7 @@ number of tracked clients.
 
 By default the limiter is **in-memory** (per-process). Set `RATE_LIMIT_STORE=redis`
 to back it with Redis, so the counter is shared across all your replicas. Configure
-Redis with the usual `REDIS_*` keys. If Redis is unreachable it fails open — requests
+Redis with the usual `REDIS_*` keys. If Redis is unreachable it fails open. Requests
 are allowed rather than blocked.
 
 ```bash [configs/.env]
@@ -36,8 +36,8 @@ RATE_LIMIT_STORE=redis      # memory (default) | redis
 # plus REDIS_HOST / REDIS_PORT / REDIS_USER / REDIS_PASSWORD / REDIS_DB
 ```
 
-Future options — token bucket, sliding window, per-route limits, and
-`X-RateLimit-*` / `Retry-After` headers — are tracked in
+Future options, token bucket, sliding window, per-route limits, and
+`X-RateLimit-*` / `Retry-After` headers, are tracked in
 [Feature Parity](/parity).
 
 ## Correlation ID

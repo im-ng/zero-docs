@@ -20,7 +20,7 @@ These methods run through the handler `Context`. You get your results without wr
 
 ## REST Handlers
 
-This example runs a small app on SQLite. There's no container to pull — just set `DB_DIALECT=sqlite` to a local file.
+This example runs a small app on SQLite. There's no container to pull. Just set `DB_DIALECT=sqlite` to a local file.
 
 1. Create the database file and a table.
 
@@ -51,7 +51,7 @@ APP_VERSION=1.0.0
 LOG_LEVEL=info
 HTTP_PORT=8080
 
-# Database configs (SQLite — a local file, no server)
+# Database configs (SQLite: a local file, no server)
 DB_DIALECT=sqlite
 SQLITE_PATH=./data/app.db
 SQLITE_CREATE=true
@@ -141,11 +141,11 @@ zero/examples/zero-sqlite on experimental via ↯ v0.16.0
 
 _Use this slider to compare the server status and the handler response._
 
-This is just a start. The full CRUD lifecycle — insert with `?` placeholders, `ctx.SQL.lastInsertRowID()`, and `ctx.SQL.rowsAffected()` — is in the [`zero-sqlite`](https://github.com/im-ng/zero/tree/experimental/examples/zero-sqlite) example. See [HTMX](./htmx-crud.md) for more.
+This is just a start. The full CRUD lifecycle, insert with `?` placeholders, `ctx.SQL.lastInsertRowID()`, and `ctx.SQL.rowsAffected(), is in the [`zero-sqlite`](https://github.com/im-ng/zero/tree/experimental/examples/zero-sqlite) example. See [HTMX](./htmx-crud.md) for more.
 
 ## Transactions
 
-`ctx.SQL` exposes `begin()`, `commit()`, and `rollback()`. They group statements on one pinned connection. Begin, run your statements, commit — and roll back if something errors:
+`ctx.SQL` exposes `begin()`, `commit()`, and `rollback()`. They group statements on one pinned connection. Begin, run your statements, commit, and roll back if something errors:
 
 ```zig [src/main.zig]
 pub fn transfer(ctx: *Context) !void {

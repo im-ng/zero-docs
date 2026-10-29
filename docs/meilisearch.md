@@ -2,6 +2,19 @@
 
 `zero` exposes **Meilisearch** through the unified `ctx.Search` handle (the same handle used for Solr). Meilisearch is a fast, HTTP-based search engine; `zero` talks to it with a small pure-Zig client.
 
+## Quickstart
+
+Spin up a local Meilisearch with a master key:
+
+```bash
+podman run -d \
+  --name meilisearch \
+  -p 7700:7700 \
+  -v meili-data:/meili_data \
+  -e MEILI_MASTER_KEY='a_secure_master_key_at_least_32_chars_long' \
+  docker.io/getmeili/meilisearch:v1.12
+```
+
 ## Configuration
 
 ```bash [configs/.env]
@@ -12,7 +25,7 @@ MEILI_API_KEY=             # optional; sent as Authorization: Bearer
 
 ## API
 
-`ctx.Search` is unchanged — index, fetch, delete, and query documents regardless of backend:
+`ctx.Search` is unchanged: index, fetch, delete, and query documents regardless of backend:
 
 ```zig [src/main.zig]
 pub fn addDoc(ctx: *Context) !void {
@@ -27,13 +40,13 @@ pub fn search(ctx: *Context) !void {
 }
 ```
 
-- `index(ctx, collection, doc_json)` — upsert a JSON doc.
-- `query(ctx, collection, q)` — search.
-- `get(ctx, collection, id)` — fetch a doc by id (`null` on 404).
-- `delete(ctx, collection, id)` — delete a doc by id.
-- `lastError()` — surfaces the upstream status.
+- `index(ctx, collection, doc_json)`: upsert a JSON doc.
+- `query(ctx, collection, q)`: search.
+- `get(ctx, collection, id)`: fetch a doc by id (`null` on 404).
+- `delete(ctx, collection, id)`: delete a doc by id.
+- `lastError()`: surfaces the upstream status.
 
-`ctx.Search` is optional — guard with `if (ctx.Search) |s| { ... }`. Free returned slices with `ctx.allocator`.
+`ctx.Search` is optional. Guard with `if (ctx.Search) |s| { ... }`. Free returned slices with `ctx.allocator`.
 
 ## Caveats
 

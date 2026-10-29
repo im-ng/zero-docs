@@ -32,7 +32,7 @@ SQL_CIRCUIT_BREAKER_ENABLE=true
 ```
 :::
 
-> You do **not** set `DB_DIALECT` for DuckDB — the dialect is chosen automatically when
+> You do **not** set `DB_DIALECT` for DuckDB: the dialect is chosen automatically when
 > `DUCKDB_PATH` is present. If you also set `DB_DIALECT=postgres`/`sqlite`, start only one
 > SQL backend per process.
 

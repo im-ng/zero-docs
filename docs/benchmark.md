@@ -1,7 +1,7 @@
 # Benchmark
 
 `zero` ships a self-contained HTTP load-test harness. You measure throughput, latency,
-and memory of a real running app with it — no third-party load generator needed.
+and memory of a real running app with it: no third-party load generator needed.
 
 It boots the real `zero.App` in a background thread (via `App.run()`). It drives the app
 with a fixed concurrency ramp using the `zul` HTTP client, then reports throughput and
@@ -29,8 +29,8 @@ explicitly. The harness writes `report.json` on every run (see
 [JSON report](#json-report--leak-heuristic)); `--json` is still accepted for CI parity.
 
 ::: tip
-Run the binary directly (`./zig-out/bin/bench`). Do **not** use `zig build run bench`
-— the harness uses `pub fn main(init: std.process.Init)` and
+Run the binary directly (`./zig-out/bin/bench`). Do **not** use `zig build run bench`.
+The harness uses `pub fn main(init: std.process.Init)` and
 the `--listen=-` stdout protocol would interfere.
 :::
 
@@ -97,7 +97,7 @@ peak RSS over run: 38.1 MiB
   (`dRss(KiB)` = level end − start).
 - **Memory** is sampled from `/proc/self/status` `VmRSS` (Linux) at the start and end
   of each level. The run-wide high-water mark prints as `peak RSS`. This captures the
-  _whole process_ — framework server plus all benchmark clients — without instrumenting
+  _whole process_, framework server plus all benchmark clients, without instrumenting
   allocators. A `dRss` that climbs steadily across levels, or a `peak RSS` that never
   plateaus, signals a leak. On non-Linux platforms `readRss()` returns 0 and the
   columns read `0.0`.
@@ -106,7 +106,7 @@ Latencies are measured end-to-end on the client (request issue → response rece
 
 ::: warning
 The framework's liveness endpoint is `/.well-known/health` (and `/.well-known/live`),
-**not** `/health`. Hitting `/health` returns 404 — that is expected, not a bug.
+**not** `/health`. Hitting `/health` returns 404. That is expected, not a bug.
 :::
 
 ## JSON report & leak heuristic
@@ -161,7 +161,7 @@ The in-repo harness covers most capacity checks. For higher-fidelity distributed
 start the app separately (e.g. `zig build && ./zig-out/bin/zero`) and point an external
 generator at it.
 
-The repo ships k6 helpers under `bench/k6/` — `baseline.js`, plus `report.html` and
+The repo ships k6 helpers under `bench/k6/`: `baseline.js`, plus `report.html` and
 `report.json` from a sample run.
 
 ### wrk
@@ -186,9 +186,9 @@ k6 run script.js
 
 ## Implementation notes
 
-- `src/bench/main.zig` — the harness (standalone exe, `pub fn main(init: std.process.Init)`).
+- `src/bench/main.zig`: the harness (standalone exe, `pub fn main(init: std.process.Init)`).
 
-- `build.zig` — `bench_module` + `bench_exe` + `bench_step` ("bench").
+- `build.zig`: `bench_module` + `bench_exe` + `bench_step` ("bench").
 
 - Timing uses `clock_gettime(CLOCK_MONOTONIC)`. The latency histogram uses fixed
   upper-bound buckets, so memory is `O(buckets)` regardless of request count.

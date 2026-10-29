@@ -10,9 +10,9 @@ for runnable examples.
 
 | Backend    | Notes                                                                          |
 | ---------- | ------------------------------------------------------------------------------ |
-| `.redis`   | okredis — the default store when Redis is configured                           |
+| `.redis`   | okredis, the default store when Redis is configured                           |
 | `.nats_kv` | NATS JetStream KV (reuses the `nats` dependency; needs a JetStream connection) |
-| `.memory`  | in-memory, zero dependencies — handy for tests                                 |
+| `.memory`  | in-memory, zero dependencies, handy for tests                                 |
 | `.sqlite`  | reuses the SQLite datasource (`kv(k,v,exp)` table)                             |
 
 ## Register stores
