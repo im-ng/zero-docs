@@ -1,5 +1,10 @@
 # Migrating to Zig 0.16
 
+::: tip
+This guide is for the 0.16 line. The current release targets **Zig 0.17.0**. For
+the build changes in 0.17, see [Release Notes](/release-notes#_0-5-4-unreleased).
+:::
+
 The `experimental` branch of `zero` adds support for **Zig 0.16.0**. The `main`
 branch stays on **0.15.2**, which is the production baseline. This page lists what
 changes when you move an app to 0.16.

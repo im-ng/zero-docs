@@ -16,7 +16,7 @@
             </ul>
           </div>
           <div class="cmp-panel cmp-zero">
-            <div class="cmp-banner">Zero <span>zig 0.16</span></div>
+            <div class="cmp-banner">Zero <span>{{ zigVersion }}</span></div>
             <ul class="cmp-rows">
               <li v-for="m in metrics" :key="'z' + m.k"><span class="cmp-k">{{ m.k }}</span><span class="cmp-v">{{ m.zero }}</span></li>
             </ul>
@@ -32,7 +32,16 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { onMounted, computed } from "vue";
+import { useRoute } from "vitepress";
+
+const route = useRoute();
+const zigVersion = computed(() => {
+  const path = route.path;
+  if (path.startsWith("/0.16")) return "zig 0.16";
+  if (path.startsWith("/0.15.2")) return "zig 0.15.2";
+  return "zig 0.17";
+});
 
 const metrics = [
   { k: "Output", zero: "1 static binary", typ: "runtime + deps" },

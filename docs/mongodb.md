@@ -18,6 +18,8 @@ It auto-wires whenever `MONGODB_CONTACT_POINTS` is set. There's no separate feat
 Spin up a local MongoDB with auth and TLS:
 
 ```bash
+podman pull docker.io/mongo:latest
+
 podman run -d \
   --name mongodb-tls \
   -p 27017:27017 \

@@ -207,18 +207,19 @@ try app.addHttpService("downstream", "http://downstream.internal", .{
 
 ## Resilience: timeouts & retries
 
-Outbound calls can be hardened with a per-request timeout and automatic retries. Pass `opts.timeout_ms`, `opts.max_retries`, and `opts.retry_base_ms`:
+Outbound calls can be hardened with a request deadline and automatic retries. Pass `opts.timeout_ms`, `opts.max_retries`, and `opts.retry_base_ms`:
 
 ```zig [main.zig]
 try app.addHttpService("downstream", "http://downstream.internal", .{
-    .timeout_ms = 2000,     // connect/read timeout per request
-    .max_retries = 3,       // retries on transport errors and 5xx
-    .retry_base_ms = 100,   // linear backoff: delay = base * attempt
+    .timeout_ms = 2000,     // whole-request deadline, connect + headers + body
+    .max_retries = 3,       // extra attempts on transport errors, 429 and 5xx
+    .retry_base_ms = 100,   // fallback backoff: delay = base * attempt
 });
 ```
 
-- Retries apply to **transport errors and `5xx` responses**; `404` is **not** retried (it returns `error.EntityNotFound`).
-- Backoff is linear: the delay before attempt `n` is `retry_base_ms * n`.
+- `timeout_ms` covers the whole request. From 0.5.4 a late response returns `error.RequestTimeout`. Leave it unset for no deadline.
+- Retries apply to **transport errors, `429`, and `5xx` responses**. `404` is **not** retried (it returns `error.EntityNotFound`).
+- A `429` or `5xx` with an integer `Retry-After` (seconds) uses that wait, capped at 60 seconds. Without a usable header, backoff is linear: the delay before attempt `n` is `retry_base_ms * n`.
 - For OAuth services, a `401` triggers a single token-refresh and replay before the call is treated as failed.
 
 ### OAuth token-endpoint circuit breaker
@@ -252,8 +253,8 @@ SERVICE_AUTH_SERVICE_CB_COOLDOWN_MS=30000
 SERVICE_AUTH_SERVICE_CB_HALF_OPEN_TRIALS=1
 
 # outbound timeouts & retries
-SERVICE_AUTH_SERVICE_TIMEOUT_MS=        # per-request connect/read timeout (ms); unset = framework default
-SERVICE_AUTH_SERVICE_MAX_RETRIES=3      # retries on transport errors + 5xx (not 404)
+SERVICE_AUTH_SERVICE_TIMEOUT_MS=        # whole-request deadline (ms); unset = no deadline
+SERVICE_AUTH_SERVICE_MAX_RETRIES=3      # extra attempts on transport errors, 429 and 5xx
 SERVICE_AUTH_SERVICE_RETRY_BASE_MS=100  # linear backoff: delay = base * attempt
 
 # rate limiting

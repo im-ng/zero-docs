@@ -1,13 +1,12 @@
 # Experimental
 
 This section documents `zero`'s **experimental** features. They're opt-in and may
-change between releases. Each one is gated behind a config flag, so it costs
-nothing when you leave it disabled.
+change between releases. Leave the config keys unset and they cost nothing.
 
 ::: tip
-Every experimental feature here is **inert by default**. When its flag is off,
-`zero` creates no objects and runs no background threads. Your existing
-runtime behavior is completely unchanged.
+OpenTelemetry is no longer experimental. It starts when you set an OTLP endpoint.
+With no endpoint, `zero` creates no OTel objects and runs no OTel threads. Your
+runtime behavior stays unchanged.
 :::
 
 ## OpenTelemetry
@@ -23,12 +22,14 @@ transport, so only HTTP/protobuf is supported.
 
 ### Enable
 
-Set `OTEL_EXPERIMENTAL=true` in your `configs/.env`, then configure the OTLP exporter:
+Set an OTLP endpoint in your `configs/.env`. That's the switch. You can also set
+a traces-only or logs-only endpoint.
 
 | Config key                       | Purpose                                                                    | Example                 |
 | -------------------------------- | -------------------------------------------------------------------------- | ----------------------- |
-| `OTEL_EXPERIMENTAL`              | Master switch                                                              | `true`                  |
-| `OTEL_EXPORTER_OTLP_ENDPOINT`    | Collector URL (HTTP/protobuf)                                              | `http://localhost:4318` |
+| `OTEL_EXPORTER_OTLP_ENDPOINT`    | Collector URL for traces and logs (HTTP/protobuf)                          | `http://localhost:4318` |
+| `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` | Traces-only collector URL                                               | `http://localhost:4318` |
+| `OTEL_EXPORTER_OTLP_LOGS_ENDPOINT` | Logs-only collector URL                                                 | `http://localhost:4318` |
 | `OTEL_EXPORTER_OTLP_PROTOCOL`    | Must be `http/protobuf`                                                    | `http/protobuf`         |
 | `OTEL_SERVICE_NAME`              | Service name in telemetry (defaults to `APP_NAME`, else `zero`)            | `otel-demo`             |
 | `OTEL_EXPORTER_OTLP_AUTH_HEADER` | Bare credential → `Authorization` header (e.g. rootPrint `Bearer <token>`) | `"Bearer rp_..."`       |
@@ -48,8 +49,7 @@ A ready-to-paste `configs/.env` snippet:
 ::: code-group
 
 ```bash [configs/.env]
-# --- OpenTelemetry (experimental) ---
-OTEL_EXPERIMENTAL=true
+# --- OpenTelemetry ---
 OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:8282
 OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 OTEL_SERVICE_NAME=otel-demo
@@ -64,7 +64,7 @@ OTEL_LOG_JSON=true
 
 ### Automatic instrumentation
 
-With `OTEL_EXPERIMENTAL=true`, `zero` instruments your app without code changes:
+With an OTLP endpoint set, `zero` instruments your app without code changes:
 
 - **Server spans** — the `tracz` middleware wraps every HTTP request in a span.
   It injects a `traceparent` response header and continues the trace when an
@@ -188,7 +188,7 @@ A collector must be listening on the configured `OTEL_EXPORTER_OTLP_ENDPOINT` to
 
 ### Caveats
 
-- **Experimental / alpha.** The API and config keys may change between releases.
+- **Stable since 0.5.4.** `OTEL_EXPERIMENTAL` is gone. Set an OTLP endpoint instead.
 - **HTTP/protobuf only** — the SDK has no gRPC transport.
 - **Memory** is bounded by a per-span reclaiming arena inside the SDK,
   so runtime RSS plateaus under load.

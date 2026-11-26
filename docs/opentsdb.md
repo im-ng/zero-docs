@@ -13,6 +13,8 @@ This backend passes burst and benchmark loads, but has not been soak-tested at l
 OpenTSDB needs HBase underneath; this image bundles it:
 
 ```bash
+podman pull docker.io/harisekhon/opentsdb:latest
+
 podman run -d \
   --name opentsdb \
   -p 4242:4242 \

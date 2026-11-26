@@ -57,9 +57,15 @@ SQLITE_PATH=./data/app.db
 SQLITE_CREATE=true
 SQLITE_WRITE=true
 SQLITE_THREADING=multi-thread
+SQLITE_POOL_SIZE=4
 ```
 
 :::
+
+For writable databases, `zero` opens each pooled connection in WAL mode and sets
+a 5-second busy timeout. Readers keep working while a writer is active. Pool
+size defaults to 4 and caps at 64. When all connections are busy, a request
+waits for one instead of failing.
 
 3. A `GET` handler that reads from SQLite.
 
@@ -106,7 +112,7 @@ pub fn dbResponse(ctx: *Context) !void {
 4. Build and run.
 
 ```bash
-zero/examples/zero-sqlite on experimental via ↯ v0.16.0
+zero/examples/zero-sqlite on main via ↯ v0.17.0
 ❯
 ❯ zig build sqlite
  INFO Loaded config from file: ./configs/.env

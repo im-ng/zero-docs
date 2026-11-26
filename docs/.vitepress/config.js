@@ -33,8 +33,8 @@ const shared = {
   },
 };
 
-// zig 0.16 (latest) — root locale, served at site root.
-const zig016Sidebar = [
+// zig 0.17 (latest) — root locale, served at site root.
+const zig017Sidebar = [
   { text: "Home", link: "/" },
   { text: "Getting Started", link: "/started" },
   { text: "Attribution", link: "/attribution" },
@@ -152,10 +152,24 @@ const zig016Sidebar = [
           { text: "Resilience", link: "/resilience" },
           { text: "Roadmap", link: "/timeline" },
           { text: "X-Ray", link: "/x-ray" },
-          { text: "Migrating to 0.16", link: "/migrating-0-16" },
+          { text: "Migrating to 0.16", link: "/migrating-0.16" },
         ],
       },
 ];
+
+// zig 0.16 — frozen snapshot of the 0.5.3 docs, served under /0.16/.
+function prefixLinks(items) {
+  return items.map((item) => {
+    if (item.link)
+      return {
+        ...item,
+        link: item.link === "/" ? "/0.16/" : "/0.16" + item.link,
+      };
+    if (item.items) return { ...item, items: prefixLinks(item.items) };
+    return item;
+  });
+}
+const zig016Sidebar = prefixLinks(zig017Sidebar);
 
 // zig 0.15.2 — frozen snapshot, served under /0.15.2/.
 const zig0152Sidebar = [
@@ -252,8 +266,8 @@ export default withMermaid(
         else head.push(["meta", { property, content }]);
       };
 
-      // The 0.15.2 docs are a frozen historical snapshot — omit from SEO.
-      if (rel.startsWith("/0.15.2")) {
+      // Frozen historical snapshots — omit from SEO.
+      if (rel.startsWith("/0.15.2") || rel.startsWith("/0.16")) {
         setMeta("robots", "noindex");
         return;
       }
@@ -330,7 +344,7 @@ export default withMermaid(
     },
     locales: {
       root: {
-        label: "zig 0.16.0",
+        label: "zig 0.17.0 (latest)",
         lang: "en-US",
         themeConfig: {
           nav: [
@@ -339,6 +353,17 @@ export default withMermaid(
             { text: "Benchmarks", link: "/benchmark" },
             { text: "Examples", link: "/examples" },
             { text: "Community", link: "/community" },
+          ],
+          sidebar: zig017Sidebar,
+        },
+      },
+      "0.16": {
+        label: "zig 0.16.0",
+        lang: "en-US",
+        themeConfig: {
+          nav: [
+            { text: "Home", link: "/0.16/" },
+            { text: "Getting Started", link: "/0.16/started" },
           ],
           sidebar: zig016Sidebar,
         },

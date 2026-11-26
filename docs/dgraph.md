@@ -11,6 +11,8 @@ This backend passes burst and benchmark loads, but has not been soak-tested at l
 Spin up a Dgraph alpha with ACLs enabled (also run a `dgraph zero` node):
 
 ```bash
+podman pull docker.io/dgraph/dgraph:latest
+
 podman run -d \
   --name dgraph-alpha \
   -p 8080:8080 -p 9080:9080 \

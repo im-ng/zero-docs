@@ -21,6 +21,8 @@ Always guard with `if (ctx.Search) |s| { ... } else { notConfigured }`.
 Spin up a local Solr with basic auth enabled via a mounted `security.json`:
 
 ```bash
+podman pull docker.io/library/solr:9.8
+
 podman run -d \
   --name solr \
   -p 8983:8983 \

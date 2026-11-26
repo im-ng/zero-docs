@@ -81,3 +81,17 @@ fn myDepCheck(c: *zero.container) anyerror!void {
 
 The handler receives the `*container`, so it can reach any registered resource
 (`c.SQL`, `c.kv`, `c.pubsub`, …) to validate it.
+
+From 0.5.4, a background thread runs these checks and publishes a snapshot. The
+health endpoint reads the last published result instead of probing on every
+request. `HEALTH_SNAPSHOT_REFRESH_MS` sets the interval (default `5000`). Set it
+to `0` to probe inline again. A hung check stays `down` without blocking the
+other checks.
+
+The Redis probe also heals the shared connection: a failed `PING` triggers one
+reconnect before the component is marked down. The KV store and the Redis-backed
+rate limiter share that connection, so they recover with it.
+
+At shutdown, the signal handler only sets a flag. The main thread then stops
+accepting requests, stops cron jobs, and drains in-flight requests for up to
+`SHUTDOWN_DRAIN_TIMEOUT_MS` (default `10000`).

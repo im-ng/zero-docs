@@ -17,6 +17,8 @@ It auto-wires whenever `CASSANDRA_CONTACT_POINTS` is set. There's no separate fe
 Spin up a local Cassandra for testing:
 
 ```bash
+podman pull docker.io/library/cassandra:latest
+
 podman run -d \
   --name cassandra-tls \
   -p 9042:9042 \

@@ -1,0 +1,168 @@
+# Feature Parity
+
+The `zero` framework ships with the following features out of the box, so you can start building quickly.
+
+Instead of wiring up that boilerplate yourself, you can jump straight to your business logic.
+
+---
+
+#### Features
+
+- ✅ 12 factor app methodology
+  - ✅ Load default `.env` for app startup
+  - ✅ Override them per environment
+- ✅ REST Standard
+  - ✅ Build CRUD endpoints
+- ✅ Health and Service check
+  - ✅ Live
+  - ✅ Status
+- ✅ Serve static files
+  - ✅ Serve static files from registered directory
+  - ✅ Serve swagger and openapi spec
+- ✅ Metrics tracking
+  - ✅ Default metrics
+    - ✅ App Status
+    - ✅ Http Status
+    - ✅ SQL Status
+    - ✅ KV Status
+    - ✅ Pub/Sub Status (publish / subscribe / DLQ)
+  - ✅ Register custom metrics (Counter / Gauge / Histogram)
+  - ✅ Process stats
+  - ✅ Memory stats
+- ✅ Traceability
+  - ✅ Basic (X-Correlation-ID)
+  - ✅ Downstream propagation (outbound HTTP + Kafka/NATS headers)
+  - ✅ Open Telemetry (experimental)
+- ✅ Well structured logging mechanism
+  - ✅ UTC Timezone
+  - ✅ Custom Timezone (`ZERO_LOG_TIMEZONE`: local / utc / IANA)
+  - ✅ JSON structured logging (`LOG_FORMAT=json`)
+  - ✅ Remote log-level pull (`REMOTE_LOG_URL`)
+- ✅ Middleware
+  - ✅ CORS
+  - ✅ TraceID
+  - ✅ Logging
+  - ✅ Auth
+    - ✅ Basic credentials
+      - ✅ Config Mode
+      - ⬜ KV mode
+    - ✅ API Key
+      - ✅ Config Mode
+      - ⬜ KV mode
+    - ✅ OAuth Key
+      - ✅ Register OAuth Provider
+      - ✅ Refresh Public Keys
+        - ⬜ Client became unresponsive if the external service down
+        - ⬜ Health check
+        - ⬜ Surge and Circuit breaker
+      - ✅ Validate claims
+  - ✅ RBAC (config-driven roles/permissions from JWT claims)
+- ✅ Rate Limiter
+  - ✅ IP / header / custom key modes
+  - ✅ Fixed-window (`RATE_LIMIT_*`) (GoFr uses token-bucket)
+  - ✅ Distributed (Redis-backed) rate limiting (`RATE_LIMIT_STORE=redis`)
+- ✅ Panic recovery
+- ✅ Handle Error response
+  - ✅ Custom Errors
+- ✅ Database support
+  - ✅ `postgres`
+    - ✅ TLS Support (`DB_SSL_MODE`)
+  - ✅ `sqlite`
+  - ✅ `duckdb` (in-process OLAP, unified `ctx.SQL`)
+  - ✅ `clickhouse` (`ctx.SQL`, HTTP)
+  - ✅ `mysql` (`ctx.SQL`, native wire protocol, pooled + TLS)
+  - ✅ `supabase` (managed Postgres; `DB_DIALECT=supabase`)
+  - ✅ `redis`
+    - ✅ Authentication enabled
+  - ✅ `mqtt`
+  - ✅ `kafka`
+    - ✅ `rdkafka` driver integrated
+    - ✅ Support for metrics (publish / subscribe / DLQ)
+    - ✅ Reconnect + resubscribe, retry, dead-letter (DLQ)
+    - ⬜ Support for multiple topics subscription
+  - ✅ `redis` (Pub/Sub)
+- ✅ NoSQL (wide-column / document)
+  - ✅ `cassandra` (`ctx.NoSQL`)
+  - ✅ `couchbase` (`ctx.NoSQL`, N1QL over HTTP)
+  - ✅ `mongodb` (`ctx.NoSQL`, OP_MSG wire protocol)
+  - ✅ `arangodb` (`ctx.NoSQL`, AQL over HTTP)
+- ✅ Time-series
+  - ✅ `influxdb` (`ctx.Timeseries`, v3 HTTP API)
+  - ✅ `opentsdb` (`ctx.Timeseries`, JSON `/api/put`)
+- ✅ Search
+  - ✅ `solr` (`ctx.Search`, index / query / get / delete)
+  - ✅ `meilisearch` (`ctx.Search`)
+- ✅ Graph
+  - ✅ `dgraph` (`ctx.Graph`, query / mutate)
+- ✅ Pub/Sub
+  - ✅ `kafka`
+  - ✅ `nats`
+  - ✅ `mqtt`
+  - ✅ `redis` (Pub/Sub)
+  - ✅ `sqs` (AWS SQS, SigV4)
+  - ✅ `gcppubsub` (Google Pub/Sub, OAuth2 bearer)
+- ✅ KV Store
+  - ✅ `redis`
+  - ✅ `nats_kv`
+  - ✅ `memory`
+  - ✅ `sqlite`
+- ✅ File Store
+  - ✅ `local`
+  - ✅ `s3` (S3-compatible: MinIO / R2 / Spaces / B2)
+  - ✅ `gcs` (Google Cloud Storage, native OAuth2)
+  - ✅ `supabase` (S3-compatible storage)
+  - ⬜ `ftp` (deferred)
+  - ⬜ `sftp` (deferred)
+- ✅ Database Migrations
+- ✅ Seed data on App startup
+- ✅ Auto CRUD
+  - ✅ Register resource handlers (`addRestHandlers`)
+  - ✅ ID / UUID / custom key modes
+- ✅ HTTP Client
+  - ✅ Register one or more external http/https client
+  - ✅ Handle redirection
+  - ✅ Handle CRUD operations
+  - ✅ Handle on-fly response transformation
+  - ✅ Outbound authentication (Basic, API Key, OAuth 2.0 bearer)
+  - ✅ Circuit Breaker (closed → open → half-open)
+  - ✅ Per-service Rate Limiting
+  - ✅ Retry (transport + 5xx; OAuth 401 token-refresh replay)
+- ✅ Cron Jobs
+  - ✅ `* * * * *` format support
+  - ✅ Enable second-level executions `* * * * * *`
+  - ✅ `*/2` split support
+  - ✅ `1-31` ranges support (day/hour/minute)
+  - ✅ Support for multiple task executions
+- ✅ Websocket
+- ✅ GraphQL-over-HTTP
+  - ✅ POST with JSON body (`query`, `variables`, `operationName`)
+  - ✅ GET with URL query params (`?query=...&variables=...&operationName=...`)
+  - ✅ Schema-less resolver graph execution
+  - ✅ Mutations / CRUD operations
+  - ✅ Constant field values
+  - ✅ Function resolvers (`fn (*Context, Args) anyerror!T`)
+  - ✅ Argument coercion (Int, Float, String, Boolean, Enum, Object)
+  - ✅ Nested objects & lists
+  - ✅ Fragments & inline fragments
+  - ✅ Per-field error collection (`data` + `errors`)
+  - ⬜ SDL schema definition & validation
+  - ⬜ Introspection (`__schema` / `__type`)
+  - ⬜ Subscriptions (WebSocket)
+- ✅ NATS
+  - ✅ Publisher
+  - ✅ Subscriber
+- ✅ Protobuf support
+  - ✅ Decode request bodies (`ctx.bindProto(T)` for `application/x-protobuf`)
+  - ✅ Encode responses (`ctx.protobuf(data)`)
+  - ✅ Codegen from `.proto` via `zig build gen-proto` (protoc)
+- ✅ Protocol Buffers over HTTP
+- ✅ CLI Application
+- ✅ Memory leaks
+  - ✅ Cronz
+  - ✅ Context
+  - ✅ Container
+- ✅ Interface (type-erased)
+  - ✅ Pubsub
+  - ✅ SQL
+  - ✅ Cache (redis / nats-kv / memory / sqlite)
+- ⬜ TLS

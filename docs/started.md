@@ -14,12 +14,12 @@ This page walks you through standing up a running HTTP service in about five min
 ```bash
 mkdir hello-zero && cd hello-zero
 zig init
-zig fetch --save https://github.com/im-ng/zero/archive/refs/tags/v0.5.0.zip
+zig fetch --save https://github.com/im-ng/zero/archive/refs/heads/main.zip
 ```
 
 ::: tip
-`v0.5.0.zip` is the pinned `v0.5.0` release archive. Swap the tag for a newer
-release (or use `refs/heads/main.zip`) to track `main`.
+`main` tracks the 0.5.4 line on Zig 0.17. To pin a release, use a tag such as
+`refs/tags/v0.5.3.zip`. That one targets Zig 0.16, so install Zig 0.16 for it.
 :::
 
 ### 2. Wire up the dependency
@@ -30,16 +30,19 @@ In `build.zig.zon`, declare the `zero` dependency. Note the `minimum_zig_version
 .{
     .name = .hello_zero,
     .version = "0.0.1",
-    .minimum_zig_version = "0.16.0",
+    .minimum_zig_version = "0.17.0",
     .dependencies = .{
         .zero = .{
-            .url = "https://github.com/im-ng/zero/archive/refs/tags/v0.5.0.zip",
-            .hash = "zero-0.0.2-y0Q7wJorLADrWl4pwN9WqETmTqMm1YC_3Dkq2zWHodIR",
+            .url = "https://github.com/im-ng/zero/archive/refs/heads/main.zip",
+            .hash = "PASTE_THE_HASH_ZIG_FETCH_PRINTS",
         },
     },
     .paths = .{ "build.zig", "build.zig.zon", "src" },
 }
 ```
+
+`zig fetch --save` writes the URL and the hash for you. Paste the hash it prints
+if you fill the manifest by hand.
 
 In `build.zig`, expose `zero` as a module to your executable:
 
@@ -135,7 +138,7 @@ It detects your OS/arch (Linux/macOS, x86_64/aarch64), verifies the download aga
 ## Run the official examples
 
 The framework ships complete, runnable example apps in its
-[`examples/`](https://github.com/im-ng/zero/tree/v0.5.0/examples) directory:
+[`examples/`](https://github.com/im-ng/zero/tree/main/examples) directory:
 
 - **`zero-basic`** — a full HTTP microservice with REST, Postgres/SQLite, Redis, GraphQL and observability. It ships a multi-stage `Dockerfile.multi-stage` ready for Kubernetes.
 

@@ -2,12 +2,20 @@
 
 `zero` lets you schedule one or more tasks to run automatically in your app.
 
-`zero` uses `crontab` notation. The schedule stays clear and readable, and it can repeat down to the level of `seconds`.
+`zero` uses `crontab` notation. A five-field schedule is the usual one: minute, hour, day of month, month, day of week. Add a sixth field in front when you need seconds.
 
 ```bash
+minute(s) hours(s) dayOfMonth(s) month(s) dayOfWeek(s)
+    *        *          *            *         *
+
 second(s) minute(s) hours(s) dayOfMonth(s) month(s) dayOfWeek(s)
-    *       *          *          *           *         *
+    *         *          *          *           *         *
 ```
+
+::: warning From 0.5.4
+A five-field schedule no longer runs every second. It runs once a minute at
+second 0. If you meant "every second", use `* * * * * *` with six fields.
+:::
 
 ### Cronz
 
@@ -90,7 +98,7 @@ fn task2(ctx: *Context) !void {
 2. Let's build and run the app.
 
 ```bash
-zero/examples/zero-cronz on  main [✘!?] via ↯ v0.15.1
+zero/examples/zero-cronz on  main via ↯ v0.17.0
 ❯ zig build cronz
  INFO [10:11:16] Loaded config from file: ./configs/.env
  INFO [10:11:16] config overriden ./configs/.dev.env file not found.

@@ -17,6 +17,8 @@ This backend passes burst and benchmark loads, but has not been soak-tested at l
 Spin up a local Couchbase with an admin account:
 
 ```bash
+podman pull docker.io/library/couchbase:latest
+
 podman run -d \
   --name couchbase \
   -p 8091-8097:8091-8097 -p 11210:11210 \

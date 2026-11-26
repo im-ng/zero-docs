@@ -1,0 +1,102 @@
+# Metrics
+
+`LOG_LEVEL` gives you a visual cue about the system's current status. But you can't scroll through logs all the time. That's where `metrics` come in handy.
+
+`zero` exposes some default metrics in the `prometheus` format. You can attach them to a `prometheus` scraper and preview the state in `Grafana` dashboards.
+
+This is an industry standard, so `zero` follows it and exposes a few basic, necessary metrics.
+
+The metrics are exposed on a **separate listener** (`METRICS_PORT`, default `2121`), not
+on the app's `HTTP_PORT`, and are kept outside of the authentication route.
+
+Scrape `http://<host>:2121/metrics` with Prometheus.
+
+The following metrics are available:
+
+| metric_name                         |  Export   |                                                Description |
+| :---------------------------------- | :-------: | ---------------------------------------------------------: |
+| app_info                            |  counter  |                              The app and framework version |
+| app_threads                         |   gauge   |                           Overall app thread count (Linux) |
+| app_memory_usage                    |   gauge   |                           Overall app memory usage (Linux) |
+| app_memory_total                    |   gauge   |                           Overall app memory total (Linux) |
+| app_http_response                   | histogram |                          The response status and latencies |
+| app_http_response_hits              |  counter  |                           Response counts of HTTP requests |
+| app_sql_response                    | histogram |                     The query type and execution latencies |
+| app_datasource_response             | histogram | Datasource op latency (labels `backend`, `operation`, `status`) |
+| app_datasource_error_total          | counter   | Datasource op errors (labels `backend`, `operation`, `status`) |
+| app_http_service_response           | histogram |  The request status and latencies of the external services |
+| app_pubsub_publish_total_count      |  counter  |                    Total pub/sub publishes (label `topic`) |
+| app_pubsub_publish_success_count    |  counter  |               Successful pub/sub publishes (label `topic`) |
+| app_pubsub_subscriber_total_count   |  counter  |      Total pub/sub deliveries (labels `topic`, `consumer`) |
+| app_pubsub_subscriber_success_count |  counter  | Successful pub/sub deliveries (labels `topic`, `consumer`) |
+| app_circuit_open_total              |  counter  |                 Circuit-breaker open events (label `name`) |
+| app_pubsub_dlq_total                |  counter  |        Dead-lettered messages (labels `topic`, `consumer`) |
+
+When a Postgres datasource is configured, the `pgz` driver additionally emits:
+
+| metric_name      | Export  |               Description |
+| :--------------- | :-----: | ------------------------: |
+| pg_query         | counter |          Queries executed |
+| pg_pool_empty    | counter |   Pool empty acquisitions |
+| pg_pool_dirty    | counter |   Pool dirty acquisitions |
+| pg_alloc_params  | counter |  Param buffer allocations |
+| pg_alloc_columns | counter | Column buffer allocations |
+| pg_alloc_reader  | counter | Reader buffer allocations |
+
+Beyond the per-backend counters above, `zero` emits two **unified** datasource
+metrics for every backend it talks to: SQL, NoSQL, time-series, and search:
+
+- `app_datasource_response` (histogram): operation latency in seconds, labeled
+  by `backend`, `operation` (e.g. `queryRow`, `write`, `get`), and `status`.
+- `app_datasource_error_total` (counter): operation failures, same labels.
+
+For HTTP-based backends (`status` is the HTTP status code); for SQL/NoSQL
+backends it is `0`. This gives you one consistent series to watch latency and
+error rate across all your data stores.
+
+![metrics](/preview_metrics.webp)
+
+## Tracing
+
+By default, `zero` injects a trace id into every incoming request. You can propagate it to run your own logic.
+
+The trace id is injected as `x-correlation-id`. With it, you can see how requests are carried forward across services and spot any bottleneck.
+
+![tracing](/preview_tracing.webp)
+
+## Custom metrics
+
+Beyond the built-in metrics, register your own counters, gauges, and histograms from
+any handler via the container's `metricz`. Registered metrics are exported on
+`/metrics` automatically.
+
+```zig [src/main.zig]
+// a counter keyed by a label enum
+const CounterLabels = enum { orders, signups };
+
+pub fn handler(ctx: *Context) !void {
+    const orders = try ctx.container.metricz.Counter(CounterLabels, ctx.allocator, "app_events_total", "business events");
+    try orders.incr(.orders);                 // +1
+    try orders.incrBy(.signups, 2);           // +n
+
+    const in_flight = try ctx.container.metricz.Gauge(CounterLabels, ctx.allocator, "app_in_flight", null);
+    try in_flight.incr(.orders);
+    try in_flight.set(.signups, 10);
+
+    const buckets = [_]f64{ 1, 5, 10, 50, 100 };
+    const lat = try ctx.container.metricz.Histogram(CounterLabels, ctx.allocator, "app_latency_ms", &buckets, "request latency");
+    try lat.observe(.orders, 12.3);
+}
+```
+
+- `Counter(L, allocator, name, help)` → `incr(label)` / `incrBy(label, n)`.
+- `Gauge(L, allocator, name, help)` → `incr` / `decr` / `set(label, value)`.
+- `Histogram(L, allocator, name, buckets, help)` → `observe(label, value)`.
+
+`L` is an `enum` whose variants become the metric's labels. Labels and `help` show up
+in the Prometheus output alongside the built-in metrics.
+
+::: tip
+Looking for distributed **traces** and a logs bridge to OpenTelemetry? Those are
+experimental and documented under [OpenTelemetry](/0.16/experimental)).
+:::
