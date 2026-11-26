@@ -27,7 +27,7 @@
     <footer class="site-foot">
       <div class="container foot-grid">
         <span class="foot-brand">zero<span class="dot">.</span></span>
-        <span class="foot-meta mono">Apache-2.0 · zig 0.16.0 · built with VitePress</span>
+        <span class="foot-meta mono">Apache-2.0 · {{ zigVersion }} · built with VitePress</span>
         <span class="foot-links">
           <a href="https://zerofmk.in" target="_blank" rel="noopener">docs</a>
           <a href="https://github.com/im-ng/zero" target="_blank" rel="noopener">github</a>
@@ -39,7 +39,16 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { onMounted, computed } from "vue";
+import { useRoute } from "vitepress";
+
+const route = useRoute();
+const zigVersion = computed(() => {
+  const path = route.path;
+  if (path.startsWith("/0.16")) return "zig 0.16.0";
+  if (path.startsWith("/0.15.2")) return "zig 0.15.2";
+  return "zig 0.17.0";
+});
 
 const cmd = "zig fetch --save https://github.com/im-ng/zero/archive/refs/heads/main.zip";
 

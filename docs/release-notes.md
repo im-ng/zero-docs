@@ -4,9 +4,9 @@ A running log of what shipped in each `zero` release, newest first. The planned
 work lives on the [Roadmap](/timeline) page.
 
 ::: tip
-Docs always track `main`. Pin to a tagged release in your own project. The
-[Getting Started](/started) guide shows how to fetch a specific version (e.g.
-`v0.5.0`).
+These pages track `main` and Zig 0.17. Use the version menu at the top to read
+the frozen Zig 0.16 docs. Pin a tagged release in your own project. The
+[Getting Started](/started) guide shows how.
 :::
 
 ## Release & Zig support
@@ -19,20 +19,92 @@ Docs always track `main`. Pin to a tagged release in your own project. The
 
 ## 0.5.4 (unreleased)
 
-Zero 0.5.4 targets **Zig 0.17.0**. It continues from 0.5.3 and moves the whole framework, and all of its examples, onto the Zig 0.17 toolchain.
+Zero 0.5.4 is the **Zig 0.17** line. It starts from 0.5.3 and moves the framework
+and every example onto Zig 0.17.0. It also hardens security, makes startup fail
+fast, and promotes OpenTelemetry out of experimental.
 
-This line tracks the [`experimental-0.17`](https://github.com/im-ng/zero/tree/experimental-0.17) branch. Recent activities:
+This section tracks the [`experimental-0.17`](https://github.com/im-ng/zero/tree/experimental-0.17)
+branch. It covers every change from the `v0.5.3` tag up to the 0.5.4 release tag.
 
-### Zig 0.17.0 support
-- The framework and all examples are migrated to **Zig 0.17** (`112e5dc`).
-- CI toolchain images are bumped to the Zig 0.17 build (`1c5b56d`).
-- Dependencies updated for 0.17 compatibility: SQLite (`4d202f3`) and the `zbench` benchmark harness (`0a4c9e7`).
+### Before you upgrade
 
-### Examples & tooling
-- **`zero-vault-pg` example** — combines Vault secret injection with Postgres. The Vault loader gained KV v2 `data/` auto-insert on a `404`, input trimming, and an owned `vault_overrides` map so secrets never land in an empty env map (`dbbe1d7`).
-- **Dockerize steps** added to the Dockerfiles for a quick local look (`117c89a`).
+Read these first. They can change how your app builds or behaves.
 
-> Work is tracked on the `experimental-0.17` branch; this section is updated as the release firms up.
+- **Zig 0.17.0 is required.** `build.zig.zon` sets `minimum_zig_version = "0.17.0"`. Zig 0.16 will not build this line.
+- **Rewrite the run step in `build.zig`.** Replace `if (b.args) |args| run_cmd.addArgs(args);` with `run_cmd.addPassthruArgs();`. A protobuf step becomes `gen_proto.dependOn(protoc_step.step);`. See [Hello world](/hello-zero).
+- **Dependencies moved to 0.17-ready forks.** httpz, dotenv, zul, okredis, mqttz, nats, protobuf (5 → 7), and regexp changed. The `jwt` dependency is now `zig_jwt`.
+- **API keys stored in KV must contain the token.** A key under `auth:apikey:<token>` whose stored value is anything else is now rejected. Metadata-only values break.
+- **Five-field cron schedules changed.** They now mean minute, hour, day, month, weekday and run at second 0. Use six fields when you meant every second.
+- **Message slices are short-lived.** The per-message arena is freed when the hook returns. Copy `m.payload` if you need it later.
+- **Custom pub/sub backends need a new argument.** The `publish` vtable method takes `key: ?[]const u8`. `Publish(subject, payload)` still works from app code.
+- **`HEALTH_CHECK_TIMEOUT_MS` is gone.** The key is no longer read. Health checks use the snapshot interval instead.
+- **Vault values live in the config map.** Code that reads `std.process.environ` directly won't see them. Use `config.get*()`.
+
+### Zig 0.17 migration
+
+- The framework and all examples were ported to Zig 0.17. CI images followed.
+- SQLite and the `zbench` harness were updated for 0.17.
+- Zig 0.17 changed struct reflection. The code now uses `field_names` / `field_types` / `field_attrs` instead of `@typeInfo(T).@"struct".fields`.
+- Kafka and DuckDB are weak-linked and on by default. Build a smaller binary with `zig build -Dkafka=false -Dduckdb=false`. Examples forward the flags.
+- The `experimental-0.17` branch also reverts a vault overrides removal, so `vault_overrides` stays as an owned config map.
+
+### Observability
+
+- **OpenTelemetry is stable.** It starts when you set `OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`, or `OTEL_EXPORTER_OTLP_LOGS_ENDPOINT`. `OTEL_EXPERIMENTAL` is no longer read. See [OpenTelemetry](/experimental).
+- **A cardinality cap is on by default.** Each metric keeps at most 4096 label sets. Extra sets are dropped and counted in `otel_metric_overflow`. Set `METRICS_CARDINALITY_LIMIT=0` to turn it off. The earlier code read the cap from the raw environment and left it off.
+- **Label hashing no longer collides.** `{"ab","c"}` and `{"a","bc"}` now hash differently. Error-path HTTP metrics use fixed labels such as `/_error`, so a URL scanner can't create unbounded series.
+- `app_sql_response` now uses the real query type for its `operation` label.
+- **Health checks run in the background.** A refresher thread publishes a snapshot, and the probe reads it. `HEALTH_SNAPSHOT_REFRESH_MS` sets the interval, default `5000` ms. Set it to `0` to probe inline. A hung check stays down without blocking the others, and the thread is joined at shutdown. See [Container](/container#health-checks).
+- **A service timeout is now enforced.** `SERVICE_<NAME>_TIMEOUT_MS` covers connect, headers, and body. It returns `error.RequestTimeout` on a late response. It used to be a warning only.
+
+### Reliability and resilience
+
+- **SQLite uses a connection pool and WAL.** `SQLITE_POOL_SIZE` defaults to 4 and caps at 64. Writable connections enable WAL and a 5-second busy timeout. A request waits for a free connection rather than failing. See [SQLite](/sqlite).
+- **Outbound calls retry `429` as well as `5xx`.** They honor an integer `Retry-After` header, capped at 60 seconds, and fall back to `base × attempt`. See [Http Service](/http-service#resilience-timeouts--retries).
+- **Redis heals its shared connection.** A failed health `PING` calls `reconnect()` once. The KV store and the Redis rate limiter use that same connection, so they recover with it.
+- **Shutdown is signal-safe.** The signal handler only sets a flag. The main thread stops accepting requests and cron jobs, then drains in-flight requests for up to `SHUTDOWN_DRAIN_TIMEOUT_MS`, default 10000 ms.
+- **Startup fails fast.** A failed SQL or pub/sub backend registration returns an error instead of dropping the backend. Postgres and DuckGres connect errors no longer call `std.process.exit(1)`.
+- **The per-message arena leak is fixed.** Hook functions now free their arena on success. Payloads kept past the hook are no longer valid.
+- SQS and GCP consumer threads are joined before their state is freed. Context cleanup runs per request, though the SQL rollback in it is currently commented out.
+
+### Security and audit fixes
+
+- **Basic auth parses safely.** Credentials split on the first colon, so passwords can contain colons. A colon-less credential returns `InvalidCredentials`. `AUTH_KEYS` entries are trimmed and allocated at their exact length.
+- **API keys in KV are compared in constant time**, and only an exact value match authenticates.
+- **JWT claims are copied into the request allocator**, and an error path no longer destroys the wrong object.
+- **MySQL sets `NO_BACKSLASH_ESCAPES` on every connection** before the first query. The client escapes single quotes only, so a backslash stays ordinary data.
+- **SigV4 signs without silent fallbacks.** Signing-key allocation errors propagate, the payload hash is copied instead of pointing at a stack buffer, and SQS builds JSON bodies with `std.json`.
+- **`Retry-After` math is fixed.** It reports the time left in the window, with a minimum of one second. The old calculation always reported one.
+- **`RATE_LIMIT_TRUSTED_PROXIES` is wired up.** List the proxy IPs or CIDRs allowed to set `X-Forwarded-For`. An empty list means never trust it. See [Rate Limiter](/rate-limiter).
+- **Cron schedules are validated.** Schedules need exactly five or six fields. A zero step and inverted ranges are rejected.
+
+### Architecture additions
+
+- **Named SQL and pub/sub handles.** `app.addSQL(name, ds)`, `app.addPubSub(name, ps)`, `ctx.GetSQL(name)`, and `ctx.GetPubSub(name)` are additive. `ctx.SQL` and `ctx.pubsub` still point at the default, registered under `"default"`. See [Architecture](/architecture#named-sql-and-pubsub-handles).
+- **`addOutbox` is available as a preview.** `app.addOutbox(.{ ... })` registers a poll job that publishes pending rows from an outbox table. It needs a SQL datasource and a pub/sub backend. Check the branch before using it; see the caveat below.
+- **Health checks can be registered with `app.addHealthCheck`** and now run against a published snapshot.
+
+### Configuration and tooling
+
+- **`configs/.env.example` is new.** It lists every supported key in one place, including the new health, metrics, rate-limit, and TLS keys.
+- **SBOMs are generated for tagged releases.** `scripts/gen-sbom.sh` writes CycloneDX JSON, and a workflow runs it on pushes, PRs, and manual triggers.
+- **Dockerize steps were added** for a quick local look, and a minimal `zero-starter` example ships a multi-stage Dockerfile.
+- **New examples:** `zero-starter`, `zero-rate-limit`, `zero-gcs`, `zero-supabase`, and `zero-vault-pg`. The Vault loader now trims inputs and retries a missing path with `data/` inserted for KV v2.
+- **A broken migration example was fixed** in `zero-otel`, and CI now runs `zig fmt --check`, `test-validation`, and a tighter release gate.
+
+### Known discrepancies on the branch
+
+These are places where the changelog disagrees with the code. Check the branch before you rely on them.
+
+- **Kafka TLS is not on by default.** `KAFKA_SECURITY_PROTOCOL` still defaults to `PLAINTEXT`. `KAFKA_TLS_INSECURE_SKIP_VERIFY` changed from `true` to `false`, and the code passes it to `enable.ssl.certificate.verification`. So verification is now off by default, even though the changelog says otherwise. Set the keys explicitly.
+- **The 0.5.4 release file is missing.** `CHANGELOG.md` links `RELEASE_NOTES_0.5.4.md`, but that file is not in the branch.
+- **`addOutbox` won't build when an app registers it.** The poll path in `src/outbox.zig` has three problems:
+  - `ctx.SQL.queryRows(OutboxRow, sel, args)` leaves out the `ctx` argument. The method needs `queryRows(self, ctx, Type, stmt, args)`.
+  - `pubsub.PublishRetrying(topic, payload, opts)` leaves out the `io` argument. The method needs `PublishRetrying(self, io, subject, payload, opts)` because backoff sleeps need an I/O handle.
+  - `queryRows` and `exec` both take `comptime stmt`, but the outbox builds `sel`, `ddl`, and `upd` at runtime with `std.fmt.allocPrint`. Zig won't accept a runtime slice in a comptime parameter.
+
+  The framework still builds, because Zig analyzes those function bodies only when the outbox cron hook is used. Treat `addOutbox` as preview until the poll path is rewritten.
+- **The v0.5.4 Dockerfile still pins Zig 0.16.0** in `examples/zero-basic/Dockerfile.multi-stage`, and the Helm chart now reports `appVersion: 1.0.0`.
 
 ## 0.5.3 (2026-10-24)
 

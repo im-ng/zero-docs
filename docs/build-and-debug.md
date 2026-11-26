@@ -3,8 +3,8 @@
 This page shows how to build `zero` and its examples for different targets and CPU
 baselines, plus how to debug when something goes wrong.
 
-All commands assume you're using the **Zig 0.16.0** toolchain (`zero` sets
-`minimum_zig_version = "0.16.0"`).
+All commands assume you're using the **Zig 0.17.0** toolchain (`zero` sets
+`minimum_zig_version = "0.17.0"`).
 
 ## Build modes
 
@@ -31,6 +31,10 @@ zig build                 # compiles to examples/zero-basic/zig-out/bin/basic
 make small | fast | base  # complies to above mentioned modes
 ./zig-out/bin/basic       # run it directly
 ```
+
+Kafka and DuckDB are weak-linked and on by default. Drop either one from the
+binary with `zig build -Dkafka=false -Dduckdb=false`. Examples forward the same
+flags.
 
 Most examples also expose a `run` step. For example, `zig build basic` runs the
 server. To start clean, the framework `Makefile` ships a `clean` target. It wipes
@@ -124,13 +128,13 @@ make usage       # ps … -o %cpu,%mem           — quick CPU/mem snapshot
 
 ## Debugging with VS Code + LLDB
 
-`zero` is plain Zig, so it debugs with the standard LLDB flow. Zig 0.16.0 ships a
+`zero` is plain Zig, so it debugs with the standard LLDB flow. Zig 0.17.0 ships a
 Python pretty-printer (`lldb_pretty_printers.py`) in its install directory. It renders
 Zig values (slices, strings, optionals, errors, structs) in readable form instead of
 raw bytes.
 
 Add this launch configuration to `.vscode/launch.json` (adjust the `program` path
-and the pretty-printer path to your Zig 0.16.0 install location):
+and the pretty-printer path to your Zig 0.17.0 install location):
 
 ```json
 {
@@ -144,7 +148,7 @@ and the pretty-printer path to your Zig 0.16.0 install location):
       "args": ["-Ddebug"],
       "cwd": "${workspaceFolder}",
       "initCommands": [
-        "command script import /usr/local/zig-x86_64-linux-0.16.0/lldb_pretty_printers.py",
+        "command script import /usr/local/zig-x86_64-linux-0.17.0/lldb_pretty_printers.py",
         "type category enable zig.lang zig.std zig"
       ]
     }
@@ -183,5 +187,5 @@ When the process runs but behaves oddly:
 | Link error: cannot find `librdkafka` / `libduckdb`              | These are **weak-linked** native libs.                            | `apt install librdkafka-dev` / `brew install librdkafka` (Kafka) and provide `libduckdb.so` on the library path; or set `LD_LIBRARY_PATH` / rpath. macOS needs the Cellar include/lib paths (already wired in `build.zig`). |
 | Stale / confusing compile errors after a Zig or dependency bump | Cached artifacts from a previous toolchain.                       | `make clean` (or `rm -rf .zig-cache zig-out zig-pkg`), then rebuild.                                                                                                                                                        |
 | `illegal instruction` on the deploy host                        | Built for `native` CPU on a newer dev box, run on older hardware. | Rebuild with `make release-base` (`-Dcpu=baseline`).                                                                                                                                                                        |
-| `minimum_zig_version` / language mismatch                       | Wrong Zig version.                                                | Install Zig **0.16.0**; the framework requires it.                                                                                                                                                                          |
-| Examples fail to fetch `zero`                                   | Missing/incorrect `zig fetch` of the `experimental` branch.       | Re-run the install from `refs/heads/main` (see [Migrating to 0.16](/migrating-0-16)).                                                                                                                                       |
+| `minimum_zig_version` / language mismatch                       | Wrong Zig version.                                                | Install Zig **0.17.0**; the framework requires it.                                                                                                                                                                          |
+| Examples fail to fetch `zero`                                   | Missing/incorrect `zig fetch` of the `main` branch.                | Re-run the install from `refs/heads/main` (see [Getting Started](/started)).                                                                                                                                              |

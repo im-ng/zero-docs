@@ -77,6 +77,7 @@ METRICS_PORT=2121               # separate listener for /metrics (not the app po
 LOG_FORMAT=text                 # text | json — emit one JSON object per log line
 ZERO_LOG_TIMEZONE=local        # local | utc | IANA name (e.g. America/New_York)
 REQUIRED_CONFIG_KEYS=          # comma-separated; app exits at startup if any are unset/empty
+METRICS_CARDINALITY_LIMIT=     # 4096 label sets per metric by default; 0 = no cap
 ```
 
 :::
@@ -105,6 +106,10 @@ ZERO_HTTP_THREAD_POOL_COUNT=32    # handler thread pool size
 ZERO_HTTP_MAX_BODY_SIZE=8388608   # reject bodies above this with 413 (8 MiB)
 ZERO_HTTP_LARGE_BUFFER_SIZE=1048576   # pooled HTTP body-buffer size (bytes)
 ZERO_HTTP_LARGE_BUFFER_COUNT=16       # pooled HTTP body-buffer count (≈ resident pool)
+
+HEALTH_SNAPSHOT_REFRESH_MS=5000   # background health check interval; 0 = probe inline
+SHUTDOWN_DRAIN_TIMEOUT_MS=10000   # wait for in-flight requests after a signal
+HEALTH_CHECK_SERVICE_PATH=/.well-known/health   # path used to ping downstream services
 ```
 
 :::
@@ -130,6 +135,7 @@ SQLITE_PATH=./data/app.db
 SQLITE_CREATE=true
 SQLITE_WRITE=true
 SQLITE_THREADING=multi-thread
+SQLITE_POOL_SIZE=4            # pooled connections (default 4, max 64); WAL for writes
 ```
 
 ```bash [duckdb]
@@ -420,6 +426,15 @@ KAFKA_TLS_KEY_FILE=
 KAFKA_TLS_INSECURE_SKIP_VERIFY=false
 ```
 
+::: warning Kafka TLS
+`KAFKA_SECURITY_PROTOCOL` still defaults to `PLAINTEXT`. TLS is only used when
+you set it to `SSL` or `SASL_SSL`. From 0.5.4,
+`KAFKA_TLS_INSECURE_SKIP_VERIFY` defaults to `false`. That value goes to
+librdkafka as `enable.ssl.certificate.verification`, so certificate
+verification is off unless you set the key to `true`. Set it explicitly if you
+relied on the old default.
+:::
+
 ```bash [NATS]
 PUBSUB_BACKEND=NATS
 PUBSUB_BROKER=nats://localhost:4222
@@ -626,6 +641,7 @@ RATE_LIMIT_ENABLE=true     # enabled by default; set false to disable
 RATE_LIMIT_KEY=ip          # ip | header | custom
 RATE_LIMIT_MAX=100         # max requests per window (0 → default 100)
 RATE_LIMIT_WINDOW=60       # window length in seconds (0 → default 60)
+RATE_LIMIT_TRUSTED_PROXIES=  # IPs/CIDRs allowed to set X-Forwarded-For; empty = ignore it
 ```
 
 :::

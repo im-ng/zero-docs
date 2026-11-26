@@ -1,8 +1,12 @@
 # Feature Parity
 
-The `zero` framework ships with the following features out of the box, so you can start building quickly.
+`zero` ships the features below. You wire them through config instead of writing
+the boilerplate yourself.
 
-Instead of wiring up that boilerplate yourself, you can jump straight to your business logic.
+::: tip
+This page tracks the Zig 0.17 / 0.5.4 line. Use the version menu for older
+releases.
+:::
 
 ---
 
@@ -14,25 +18,28 @@ Instead of wiring up that boilerplate yourself, you can jump straight to your bu
 - ✅ REST Standard
   - ✅ Build CRUD endpoints
 - ✅ Health and Service check
-  - ✅ Live
-  - ✅ Status
+  - ✅ Live (`/.well-known/live`)
+  - ✅ Health (`/.well-known/health`)
+  - ✅ Startup (`/.well-known/startup`)
+  - ✅ Downstream services pinged as part of health (`addHttpService`)
+  - ✅ Background health snapshots (`HEALTH_SNAPSHOT_REFRESH_MS`)
 - ✅ Serve static files
   - ✅ Serve static files from registered directory
   - ✅ Serve swagger and openapi spec
 - ✅ Metrics tracking
   - ✅ Default metrics
-    - ✅ App Status
-    - ✅ Http Status
-    - ✅ SQL Status
-    - ✅ KV Status
-    - ✅ Pub/Sub Status (publish / subscribe / DLQ)
+    - ✅ App / HTTP / SQL / KV / Pub/Sub (publish / subscribe / DLQ)
+    - ✅ Circuit breaker and retry
   - ✅ Register custom metrics (Counter / Gauge / Histogram)
   - ✅ Process stats
   - ✅ Memory stats
+  - ✅ Label cardinality cap (`METRICS_CARDINALITY_LIMIT`, default 4096; `0` disables)
+  - ✅ Overflow counter (`otel_metric_overflow`)
 - ✅ Traceability
   - ✅ Basic (X-Correlation-ID)
   - ✅ Downstream propagation (outbound HTTP + Kafka/NATS headers)
-  - ✅ Open Telemetry (experimental)
+  - ✅ W3C Baggage propagation
+  - ✅ OpenTelemetry traces and logs over OTLP (stable since 0.5.4; enabled by an OTLP endpoint)
 - ✅ Well structured logging mechanism
   - ✅ UTC Timezone
   - ✅ Custom Timezone (`ZERO_LOG_TIMEZONE`: local / utc / IANA)
@@ -44,33 +51,37 @@ Instead of wiring up that boilerplate yourself, you can jump straight to your bu
   - ✅ Logging
   - ✅ Auth
     - ✅ Basic credentials
-      - ✅ Config Mode
-      - ⬜ KV mode
+      - ✅ Config mode
+      - ✅ KV mode (`auth:basic:*`)
     - ✅ API Key
-      - ✅ Config Mode
-      - ⬜ KV mode
+      - ✅ Config mode
+      - ✅ KV mode (`auth:apikey:*`; stored value must equal the token)
     - ✅ OAuth Key
       - ✅ Register OAuth Provider
-      - ✅ Refresh Public Keys
+      - ✅ Refresh Public Keys (`AUTH_REFRESH_INTERVAL`)
         - ⬜ Client became unresponsive if the external service down
         - ⬜ Health check
         - ⬜ Surge and Circuit breaker
       - ✅ Validate claims
+      - ✅ Claims copied into the request allocator (0.5.4)
   - ✅ RBAC (config-driven roles/permissions from JWT claims)
 - ✅ Rate Limiter
   - ✅ IP / header / custom key modes
   - ✅ Fixed-window (`RATE_LIMIT_*`) (GoFr uses token-bucket)
   - ✅ Distributed (Redis-backed) rate limiting (`RATE_LIMIT_STORE=redis`)
+  - ✅ Trusted proxies for `X-Forwarded-For` (`RATE_LIMIT_TRUSTED_PROXIES`)
+  - ✅ `Retry-After` on `429` (real time left in the window)
+- ✅ Graceful shutdown (signal-safe, bounded drain via `SHUTDOWN_DRAIN_TIMEOUT_MS`)
 - ✅ Panic recovery
 - ✅ Handle Error response
   - ✅ Custom Errors
 - ✅ Database support
   - ✅ `postgres`
     - ✅ TLS Support (`DB_SSL_MODE`)
-  - ✅ `sqlite`
+  - ✅ `sqlite` (WAL, connection pool via `SQLITE_POOL_SIZE`)
   - ✅ `duckdb` (in-process OLAP, unified `ctx.SQL`)
   - ✅ `clickhouse` (`ctx.SQL`, HTTP)
-  - ✅ `mysql` (`ctx.SQL`, native wire protocol, pooled + TLS)
+  - ✅ `mysql` (`ctx.SQL`, native wire protocol, pooled + TLS, `NO_BACKSLASH_ESCAPES`)
   - ✅ `supabase` (managed Postgres; `DB_DIALECT=supabase`)
   - ✅ `redis`
     - ✅ Authentication enabled
@@ -101,8 +112,11 @@ Instead of wiring up that boilerplate yourself, you can jump straight to your bu
   - ✅ `redis` (Pub/Sub)
   - ✅ `sqs` (AWS SQS, SigV4)
   - ✅ `gcppubsub` (Google Pub/Sub, OAuth2 bearer)
+  - ✅ Named backends (`addPubSub` / `GetPubSub`), default stays `ctx.pubsub`
+  - ✅ Publish with key (`PublishWithKey`)
+  - ✅ Per-message arena freed after the hook returns
 - ✅ KV Store
-  - ✅ `redis`
+  - ✅ `redis` (shared connection heals on health probe)
   - ✅ `nats_kv`
   - ✅ `memory`
   - ✅ `sqlite`
@@ -126,13 +140,15 @@ Instead of wiring up that boilerplate yourself, you can jump straight to your bu
   - ✅ Outbound authentication (Basic, API Key, OAuth 2.0 bearer)
   - ✅ Circuit Breaker (closed → open → half-open)
   - ✅ Per-service Rate Limiting
-  - ✅ Retry (transport + 5xx; OAuth 401 token-refresh replay)
+  - ✅ Whole-request deadline (`SERVICE_<NAME>_TIMEOUT_MS`)
+  - ✅ Retry (transport, `429`, `5xx`; honors `Retry-After` up to 60s; OAuth 401 token-refresh replay)
 - ✅ Cron Jobs
-  - ✅ `* * * * *` format support
-  - ✅ Enable second-level executions `* * * * * *`
+  - ✅ Five-field schedules (minute, hour, day, month, weekday) at second 0
+  - ✅ Six-field schedules with leading seconds (`* * * * * *`)
   - ✅ `*/2` split support
   - ✅ `1-31` ranges support (day/hour/minute)
   - ✅ Support for multiple task executions
+  - ✅ Step 0 and inverted ranges rejected
 - ✅ Websocket
 - ✅ GraphQL-over-HTTP
   - ✅ POST with JSON body (`query`, `variables`, `operationName`)
@@ -145,6 +161,7 @@ Instead of wiring up that boilerplate yourself, you can jump straight to your bu
   - ✅ Nested objects & lists
   - ✅ Fragments & inline fragments
   - ✅ Per-field error collection (`data` + `errors`)
+  - ✅ Operation metrics (`app_graphql_operation_*`)
   - ⬜ SDL schema definition & validation
   - ⬜ Introspection (`__schema` / `__type`)
   - ⬜ Subscriptions (WebSocket)
@@ -157,12 +174,22 @@ Instead of wiring up that boilerplate yourself, you can jump straight to your bu
   - ✅ Codegen from `.proto` via `zig build gen-proto` (protoc)
 - ✅ Protocol Buffers over HTTP
 - ✅ CLI Application
-- ✅ Memory leaks
+- ✅ Memory-leak hardening
   - ✅ Cronz
   - ✅ Context
   - ✅ Container
+  - ✅ Pub/sub message arena (freed after each hook)
 - ✅ Interface (type-erased)
-  - ✅ Pubsub
-  - ✅ SQL
+  - ✅ Pubsub (named backends via `addPubSub` / `GetPubSub`)
+  - ✅ SQL (named handles via `addSQL` / `GetSQL`)
   - ✅ Cache (redis / nats-kv / memory / sqlite)
-- ⬜ TLS
+- ✅ Release tooling
+  - ✅ CycloneDX SBOM for tagged releases
+- ⬜ HTTPS / TLS termination (run behind a proxy)
+
+::: warning Outbox is still a preview
+`addOutbox` is on the `experimental-0.17` branch, but its poll path has missing
+arguments and passes runtime SQL to `comptime` parameters. Don't count
+transactional outbox as shipped until it compiles cleanly in the 0.5.4 tag. See
+[Release Notes](/release-notes#_0-5-4-unreleased).
+:::

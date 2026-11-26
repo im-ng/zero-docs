@@ -104,6 +104,12 @@ AUTH_API_KEYS="caf208fb-e407-497a-8f03-d636fb689b2e,b12eb288-e7b5-4919-8082-0958
 
 :::
 
+::: warning API keys in KV
+From 0.5.4, a key stored under `auth:apikey:<token>` must contain the token
+itself, not just any metadata. A key whose stored value differs is rejected.
+If you stored extra JSON or labels there, update those values before upgrading.
+:::
+
 ```bash
 ❯ zig build auth
  INFO [02:50:42] server shutting down
@@ -374,11 +380,12 @@ RBAC needs a `role` claim in the verified JWT, so it works with `AUTH_MODE=OAuth
 
 ## Stability
 
-API Key and Basic auth no longer crash on a malformed header. `zero` now reads
-the last non-empty token from the `Authorization` header, so a key supplied bare
-(no `ApiKey ` / `Basic ` scheme prefix) matches directly instead of leaking a
-wild pointer. If no token is present, the request is rejected with
-`401 Unauthorized` rather than faulting the process.
+Malformed credentials now fail cleanly. `AUTH_KEYS` entries are trimmed, and a
+Basic credential splits on the first colon only, so a password can contain
+colons. A credential with no colon is rejected instead of reading past the
+buffer. API keys found in KV are compared in constant time against their stored
+value. JWT claims are copied into the request allocator, so they stay valid
+after token parsing.
 
 ## Recommendation
 

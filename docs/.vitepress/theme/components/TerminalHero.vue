@@ -2,7 +2,7 @@
   <section class="hero">
     <div class="container hero-grid">
       <div class="hero-copy">
-        <span class="eyebrow">zig 0.16 · v0.5.3</span>
+        <span class="eyebrow">{{ versionLabel }}</span>
         <h1 class="hero-title">
           Build microservices<br />in <span class="hl">Zig</span>.<br />
           <span class="sub">One binary. No GC.</span>
@@ -130,7 +130,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
+import { useRoute } from "vitepress";
+
+const route = useRoute();
+const versionLabel = computed(() => {
+  const path = route.path;
+  if (path.startsWith("/0.16")) return "zig 0.16 · v0.5.3";
+  if (path.startsWith("/0.15.2")) return "zig 0.15.2 · v0.0.3";
+  return "zig 0.17 · v0.5.4 · latest";
+});
 
 interface Seg {
   t: string;

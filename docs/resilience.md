@@ -61,7 +61,16 @@ Each dead-lettered message increments `app_pubsub_dlq_total` (labels `topic`, `c
 
 ## Outbound resilience (HTTP services)
 
-Registered services get per-request timeouts, retries, and an OAuth token-endpoint breaker.
+Registered services get an OAuth token-endpoint breaker. From 0.5.4,
+`SERVICE_<NAME>_TIMEOUT_MS` is a real deadline for the whole request: connect,
+headers, and body. A late response returns `error.RequestTimeout`. It was only a
+warning in 0.5.3.
+
+The client now retries `429` as well as `5xx`. It reads an integer
+`Retry-After` header, caps the wait at 60 seconds, and falls back to
+`SERVICE_<NAME>_RETRY_BASE_MS × attempt` when the header is missing or not a
+number. After the last retry, the call counts as one failure for the circuit
+breaker.
 
 See [Http Service → Resilience](/http-service#resilience-timeouts--retries).
 

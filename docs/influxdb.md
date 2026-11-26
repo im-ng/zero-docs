@@ -13,6 +13,8 @@ It's `null` until you set `INFLUXDB_URL` (with `INFLUXDB_BUCKET` and `INFLUXDB_T
 Spin up a local InfluxDB v3 with an admin token:
 
 ```bash
+podman pull docker.io/library/influxdb:3.0
+
 podman run -d \
   --name influxdb \
   -p 8181:8181 \

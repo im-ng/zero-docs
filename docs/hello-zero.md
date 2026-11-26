@@ -21,7 +21,7 @@ info: created src/main.zig
 info: created src/root.zig
 info: see `zig build --help` for a menu of options
 ❯
-❯ zig fetch --save https://github.com/im-ng/zero/archive/refs/heads/experimental.zip
+❯ zig fetch --save https://github.com/im-ng/zero/archive/refs/heads/main.zip
 ❯
 ```
 
@@ -55,9 +55,7 @@ pub fn build(b: *std.Build) void {
 
     const run_cmd = b.addRunArtifact(exe);
     run_cmd.step.dependOn(b.getInstallStep());
-    if (b.args) |args| {
-        run_cmd.addArgs(args);
-    }
+    run_cmd.addPassthruArgs();
 
     const run_step = b.step("hello", "Run hello server");
     run_step.dependOn(&run_cmd.step);
@@ -69,11 +67,11 @@ pub fn build(b: *std.Build) void {
     .name = .hello_zero,
     .version = "0.0.0",
     .fingerprint = 0x3567b067feb9ecb1,
-    .minimum_zig_version = "0.16.0",
+    .minimum_zig_version = "0.17.0",
     .dependencies = .{
         .zero = .{
-            .url = "https://github.com/im-ng/zero/archive/refs/heads/experimental.zip",
-            .hash = "zero-0.0.1-W787cAhaAABPJQ30gkLvzn_hlUDZtR-7qAtq8jDqmoyH", // once released the hash will change.
+            .url = "https://github.com/im-ng/zero/archive/refs/heads/main.zip",
+            .hash = "PASTE_THE_HASH_ZIG_FETCH_PRINTS",
         },
     },
     .paths = .{
@@ -209,11 +207,11 @@ DEBUG [07:22:46] redis is disabled, as redis host is not provided.
 INFO [07:49:45] 019a1f7e-a71f-7000-a0d5-1ce39e5e5b0c    200 0ms GET /json
 ^C
 
-~/hello-zero via ↯ v0.16.0 took 34m22s
+~/hello-zero via ↯ v0.17.0 took 34m22s
 ❯  INFO [07:57:06] server shutting down
 received shutdown signal
 
-~/hello-zero via ↯ v0.16.0
+~/hello-zero via ↯ v0.17.0
 ❯
 ```
 
@@ -224,7 +222,7 @@ received shutdown signal
 ::: code-group
 
 ```bash [directory structure]
-~/hello-zero via ↯ v0.16.0
+~/hello-zero via ↯ v0.17.0
 ❯ tree -a
 .
 ├── build.zig

@@ -1,0 +1,71 @@
+# MySQL
+
+`zero` speaks the native MySQL wire protocol, so you can use MySQL as a `ctx.SQL` backend without a C driver. The client is pure Zig and authenticates with `mysql_native_password`.
+
+It rides the same `ctx.SQL` handle as Postgres, SQLite, DuckDB, and ClickHouse, so every query helper you already use works here.
+
+::: tip Experimental
+This backend passes burst and benchmark loads, but has not been soak-tested at large production scale. Use it with caution. If we find leaks or other stability issues, the API or config keys may change.
+:::
+
+## Quickstart
+
+Spin up a local MySQL with the `mysql_native_password` plugin:
+
+```bash
+podman pull docker.io/library/mysql:8.4
+
+podman run -d \
+  --name mysql-db \
+  -p 3306:3306 \
+  -e MYSQL_DATABASE=demo \
+  -e MYSQL_USER=user1 \
+  -e MYSQL_ROOT_PASSWORD=password \
+  -e MYSQL_PASSWORD=password1 \
+  -v mysql-data:/var/lib/mysql:Z \
+  docker.io/library/mysql:8.4 \
+  --mysql-native-password=ON
+```
+
+## Configuration
+
+```bash [configs/.env]
+DB_DIALECT=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_USER=zero
+DB_PASSWORD=zero
+DB_NAME=demo
+MYSQL_POOL_SIZE=10            # connection pool size (default 10)
+MYSQL_SSL_MODE=disabled       # disabled | preferred | required
+MYSQL_SSL_CA=                # CA path; required when MYSQL_SSL_MODE=required
+```
+
+::: info TLS out of the box
+MySQL supports TLS. `MYSQL_SSL_MODE` is `disabled` (default), `preferred` (use TLS when the server offers it), or `required` (refuse to connect without TLS). When `required`, set `MYSQL_SSL_CA` to the CA certificate path. The handshake follows the reference Go driver: credentials are sent in the SSL-request packet, then the TLS handshake runs and all subsequent traffic is encrypted.
+
+On macOS, the TLS client links OpenSSL. `brew install openssl` if the linker can't find it.
+:::
+
+## API
+
+`ctx.SQL` is unchanged. Build structs and call the same methods:
+
+```zig [src/main.zig]
+pub fn listUsers(ctx: *Context) !void {
+    const users = try ctx.SQL.queryRows(ctx, User, "SELECT id, name, email FROM users", .{});
+    defer ctx.allocator.free(users);
+    try ctx.json(users);
+}
+```
+
+`?` is the placeholder and values are interpolated into the statement string (there are no bound parameters). `lastInsertRowID()` and `rowsAffected()` are populated.
+
+MySQL runs as a **connection pool** (size `MYSQL_POOL_SIZE`, default 10). Each request borrows a session from the pool, so concurrent requests never share a socket. And `begin` / `commit` / `rollback` pin that one connection for the transaction, giving you per-request isolation.
+
+## Caveats
+
+- **`mysql_native_password` only.** `caching_sha2_password` is not supported. Set your user to the native password plugin.
+- **No shipped example or migration yet.** The `ctx.SQL` usage is identical to Postgres; follow the [Using Postgres](/0.16/rest-handler)) guide and swap the dialect.
+
+See the implementation in [src/datasource/sql/mysql.zig](https://github.com/im-ng/zero/tree/experimental/src/datasource/sql/mysql.zig).

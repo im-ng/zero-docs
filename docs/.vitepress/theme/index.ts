@@ -14,8 +14,11 @@ export default {
   Layout: defineComponent({
     setup() {
       const route = useRoute();
-      const syncHome = () =>
-        document.documentElement.classList.toggle("is-home", route.path === "/");
+      const isHome = () => /^\/(?:0\.16|0\.15\.2)?\/?$/.test(route.path);
+      const syncHome = () => {
+        if (typeof document === "undefined") return;
+        document.documentElement.classList.toggle("is-home", isHome());
+      };
       syncHome();
       watch(() => route.path, syncHome);
       onMounted(() => {

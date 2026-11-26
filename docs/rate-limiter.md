@@ -5,9 +5,9 @@ tracing propagation, and redirects.
 
 ## Rate Limiter
 
-A fixed-window rate limiter runs as the **first** middleware in the chain. It's
-**on by default** and exempts `/.well-known/*`, so the health endpoint is never
-throttled.
+The tracing middleware runs first, then a fixed-window rate limiter. Even a
+rejected request gets a correlation id. The limiter is **on by default** and
+exempts `/.well-known/*`, so the health endpoint is never throttled.
 
 ```bash [configs/.env]
 RATE_LIMIT_ENABLE=true          # enabled by default; set false to disable (e.g. for load tests)
@@ -15,6 +15,7 @@ RATE_LIMIT_MAX=100              # max requests per window (0 → default 100)
 RATE_LIMIT_WINDOW=60            # window length in seconds (0 → default 60)
 RATE_LIMIT_KEY=ip               # default: bucket by client Address
 # RATE_LIMIT_KEY=header:X-Forwarded-For   # bucket by an inbound header instead (behind a proxy)
+RATE_LIMIT_TRUSTED_PROXIES=     # IPs/CIDRs allowed to set X-Forwarded-For; empty = never trust it
 ```
 
 When a client exceeds the limit, the server replies `429 Too Many Requests`
@@ -36,9 +37,12 @@ RATE_LIMIT_STORE=redis      # memory (default) | redis
 # plus REDIS_HOST / REDIS_PORT / REDIS_USER / REDIS_PASSWORD / REDIS_DB
 ```
 
-Future options, token bucket, sliding window, per-route limits, and
-`X-RateLimit-*` / `Retry-After` headers, are tracked in
-[Feature Parity](/parity).
+A `429` also carries `Retry-After`, in seconds. From 0.5.4 that value is the
+real time left in the window, with a minimum of one second. An older build
+always sent `1`.
+
+Token bucket, sliding window, and per-route limits are still on the
+[Feature Parity](/parity) list.
 
 ## Correlation ID
 

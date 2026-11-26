@@ -1,0 +1,247 @@
+<script setup>
+import { ImgComparisonSlider } from '@img-comparison-slider/vue';
+</script>
+
+# Hello Zero!
+
+This guide walks you through building a `hello world` app with the `zero` framework.
+
+Let's begin.
+
+0. Create an empty folder with `zig init`
+
+::: code-group
+
+```bash [Create new folder]
+❯ mkdir hello-zero && cd hello-zero
+❯ zig init
+info: created build.zig
+info: created build.zig.zon
+info: created src/main.zig
+info: created src/root.zig
+info: see `zig build --help` for a menu of options
+❯
+❯ zig fetch --save https://github.com/im-ng/zero/archive/refs/heads/experimental.zip
+❯
+```
+
+:::
+
+1. Add `zero` as a dependency so the build can load it as a module
+
+::: code-group
+
+```zig [build.zig]
+const std = @import("std");
+
+pub fn build(b: *std.Build) void {
+    const target = b.standardTargetOptions(.{});
+    const optimize = b.standardOptimizeOption(.{});
+
+    const zero = b.dependency("zero", .{});
+
+    const exe = b.addExecutable(.{
+        .name = "hello",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/main.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+
+    exe.root_module.addImport("zero", zero.module("zero"));
+
+    b.installArtifact(exe);
+
+    const run_cmd = b.addRunArtifact(exe);
+    run_cmd.step.dependOn(b.getInstallStep());
+    if (b.args) |args| {
+        run_cmd.addArgs(args);
+    }
+
+    const run_step = b.step("hello", "Run hello server");
+    run_step.dependOn(&run_cmd.step);
+}
+```
+
+```zig [build.zig.zon]
+.{
+    .name = .hello_zero,
+    .version = "0.0.0",
+    .fingerprint = 0x3567b067feb9ecb1,
+    .minimum_zig_version = "0.16.0",
+    .dependencies = .{
+        .zero = .{
+            .url = "https://github.com/im-ng/zero/archive/refs/heads/experimental.zip",
+            .hash = "zero-0.0.1-W787cAhaAABPJQ30gkLvzn_hlUDZtR-7qAtq8jDqmoyH", // once released the hash will change.
+        },
+    },
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+    },
+}
+```
+
+:::
+
+2. Update the app configuration in `configs/.env` to serve our hello world
+
+::: code-group
+
+```bash [Create env file]
+cd hello-zero
+mkdir configs
+touch configs/.env
+```
+
+```bash [Add configs]
+APP_ENV=dev
+APP_NAME=hello-zero
+APP_VERSION=1.0.0
+LOG_LEVEL=debug
+```
+
+:::
+
+3. (Optional) Copy a favicon so the first request has an icon to serve
+
+::: code-group
+
+```bash [Copy favicon.ico]
+cd hello-zero
+mkdir static
+cp <your-favorite-icon> static/
+```
+
+:::
+
+4. Now write your `zero` web app to serve its first request
+
+::: code-group
+
+```zig [src/main.zig]
+const std = @import("std");
+const zero = @import("zero");
+
+const App = zero.App;
+const Context = zero.Context;
+const utils = zero.utils;
+
+// we may need to add this `std_options`
+// on the main fn file for tidy logs.
+pub const std_options: std.Options = .{
+    .logFn = zero.logger.custom,
+};
+
+pub fn main(init: std.process.Init) !void {
+    var arena_instance = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena_instance.deinit();
+
+    const allocator = arena_instance.allocator();
+
+    // create zero App
+    // internally zero loads container with configured services attached
+    const app: *App = try App.new(allocator, init.io, init.environ_map);
+
+    // register our first route on app
+    try app.get("/json", jsonResponse);
+
+    // start the server by invoking run
+    try app.run();
+}
+
+// Context comes handy with all zero dependencies
+fn jsonResponse(ctx: *Context) !void {
+    ctx.info("inside the json handler");
+
+    try ctx.json(.{ .msg = "hello zero!" });
+}
+```
+
+:::
+
+5. Build and run your new web app
+
+<ImgComparisonSlider>
+<!-- eslint-disable -->
+<img
+    slot="first"
+    style="width: 100%"
+    src="/hello-zero.webp"
+/>
+<img
+    slot="second"
+    style="width: 100%"
+    src="/hello-response.webp"
+/>
+<!-- eslint-enable -->
+</ImgComparisonSlider>
+
+6. Start the server and shut it down gracefully
+
+::: code-group
+
+```bash [Start server]
+❯ zig build hello
+ INFO [07:22:46] Loaded config from file: ./configs/.env
+DEBUG [07:22:46] database is disabled, as dialect is not provided.
+DEBUG [07:22:46] redis is disabled, as redis host is not provided.
+ INFO [07:22:46] container is being created
+ INFO [07:22:46] no authentication mode found and disabled.
+ INFO [07:22:46] hello-zero app pid 238862
+ INFO [07:22:46] registered static files from directory ./static
+ INFO [07:22:46] Starting server on port: 8080
+ INFO [07:22:55] 019a1f66-1802-7000-9152-01d38484d1dd    200 0ms GET /json
+ INFO [07:22:55] 019a1f66-184b-7000-ab96-7a11a9c29342    200 0ms GET /favicon.ico
+ INFO [07:23:04] 019a1f66-38e5-7000-9343-9b473ee515b6    200 0ms GET /.well-known/live
+ INFO [07:23:09] 019a1f66-4e76-7000-99f2-51cab9004b6c    404 0ms GET /.well-known/status
+ INFO [07:23:17] 019a1f66-6d5a-7000-a31f-d5605f9c00c0    200 0ms GET /.well-known/health
+ INFO [07:23:34] 019a1f66-ada5-7000-ab01-e8dca4163b90    200 0ms GET /metrics
+ INFO [07:23:34] 019a1f66-add5-7000-8e14-a90452316736    200 0ms GET /favicon.ico
+ INFO [07:40:16] 019a1f75-fa36-7000-8e7b-2512ab2e9596    200 0ms GET /json
+```
+
+```bash [Shutdown server]
+# Interrupt signal (Ctrl+C) will exit the server gracefully without any leaks
+
+INFO [07:49:45] 019a1f7e-a71f-7000-a0d5-1ce39e5e5b0c    200 0ms GET /json
+^C
+
+~/hello-zero via ↯ v0.16.0 took 34m22s
+❯  INFO [07:57:06] server shutting down
+received shutdown signal
+
+~/hello-zero via ↯ v0.16.0
+❯
+```
+
+:::
+
+7. `hello-zero` directory structure for reference
+
+::: code-group
+
+```bash [directory structure]
+~/hello-zero via ↯ v0.16.0
+❯ tree -a
+.
+├── build.zig
+├── build.zig.zon
+├── configs
+│   └── .env
+├── src
+│   ├── main.zig
+│   └── root.zig
+└── static
+    └── favicon.ico
+
+4 directories, 6 files
+```
+
+:::
+
+## Recommendation
+
+We recommend using the `ctx` allocator whenever you can. It's tied to the request life-cycle, so `zero` frees the memory for you. That prevents leaks.

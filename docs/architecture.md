@@ -165,3 +165,35 @@ try app.addPubSubSubscription("subject", handler);
 ```
 
 `addPubSubSubscription()` (and the broker-specific `addKafkaSubscription()` / `addNatsSubscription()`) subscribe a handler to a pub/sub topic across Kafka, MQTT and NATS (see [Using Pubsub](/pubsub)).
+
+## Named SQL and pub/sub handles
+
+From 0.5.4 you can register more than one SQL or pub/sub backend. The name you
+pass is yours; `zero` keeps the auto-wired backend under `"default"`.
+
+```zig
+try app.addSQL("analytics", analytics_ds);
+try app.addPubSub("events", events_backend);
+
+const ds = ctx.GetSQL("analytics");
+const ps = ctx.GetPubSub("events");
+```
+
+`ctx.SQL` and `ctx.pubsub` still point at the default backend. Your existing
+handlers don't change. Named handles are only there when you ask for them, and
+each call returns `null` for an unknown name.
+
+Startup is fail-fast. If a configured SQL or pub/sub backend can't be created,
+`app.run()` returns the error instead of dropping the backend and continuing.
+`REQUIRED_CONFIG_KEYS` can also stop startup when a named key is missing or
+empty.
+
+## Transactional outbox (preview)
+
+`app.addOutbox(.{ ... })` registers a poll job that publishes rows from an
+outbox table. It needs a SQL datasource and a pub/sub backend. Call
+`zero.outbox.enqueue(ctx, table, topic, payload)` inside your transaction, and
+the poll job publishes pending rows in batches.
+
+The API is new on the `experimental-0.17` branch. Check the
+[Release Notes](/release-notes#_0-5-4-unreleased) before you use it in production.

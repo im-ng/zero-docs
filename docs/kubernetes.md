@@ -4,7 +4,7 @@ This guide shows how to run a `zero` app on Kubernetes.
 
 The framework ships a production-oriented Helm chart called **Bee**.
 
-The chart `version: 0.2.0` targets Zero `appVersion: 0.16.0`. You'll find it in the [`helm/`](https://github.com/im-ng/zero/tree/experimental/helm) directory.
+You'll find the chart in the [`helm/`](https://github.com/im-ng/zero/tree/main/helm) directory. Check `Chart.yaml` and `values.yaml` for the current chart and app versions.
 
 You containerize your app once and push the image. Then you drive the whole deployment from `values.yaml`: config, secrets, probes, ingress, autoscaling, and observability.
 
@@ -22,11 +22,12 @@ Object names come from `app.name` or `nameOverride`. There's no Helm release pre
 ## Containerize the app (Podman)
 
 The framework provides a multi-stage
-[`Dockerfile.multi-stage`](https://github.com/im-ng/zero/tree/experimental/examples/zero-basic/Dockerfile.multi-stage)
+[`Dockerfile.multi-stage`](https://github.com/im-ng/zero/tree/main/examples/zero-basic/Dockerfile.multi-stage)
 in `examples/zero-basic/`.
 
-It builds natively for **musl** on Alpine (zig 0.16.0). It bundles the Alpine-specific `librdkafka` and
-`libduckdb.so` and ships a minimal image.
+It builds natively for **musl** on Alpine. It bundles the Alpine-specific
+`librdkafka` and `libduckdb.so` and ships a minimal image. The Dockerfile pins
+its own Zig version, so check it before you build against the 0.17 line.
 
 > Build from the **framework repo root** or copy multi-stage dockerfile as necessary.
 > The Dockerfile `COPY`s `build.zig`, `src`, `examples/zero-basic`, and
@@ -98,9 +99,9 @@ image:
 | ------------------------- | ------ | --------------------- | ----------------------------------------------------- |
 | `namespace`               | string | `default`             | Namespace for all generated objects                   |
 | `app.name`                | string | `zero-app`            | App name (object names, labels, image repo fallback)  |
-| `app.version`             | string | `0.16.0`              | App version (also chart `appVersion`)                 |
+| `app.version`             | string | `1.0.0`               | App version (also chart `appVersion`)                 |
 | `app.logLevel`            | string | `INFO`                | Zero log level (DEBUG/INFO/WARN/ERROR)                |
-| `app.logFormat`           | string | `json`                | Log format: `text` or `json` (0.16 structured)        |
+| `app.logFormat`           | string | `json`                | Log format: `text` or `json` (structured)             |
 | `app.logTimezone`         | string | `UTC`                 | Log tz: `local` or IANA tz (e.g. `Asia/Kolkata`)      |
 | `app.authMode`            | string | `""`                  | Inbound auth: `""` / `Basic` / `APIKey` / `OAuth`     |
 | `app.healthPath`          | string | `/.well-known/health` | Liveness/readiness/startup probe path                 |
@@ -313,9 +314,9 @@ nodeAffinity:
   preferred: north # preferred node label worker=north
 ```
 
-## Health, metrics & probes (zero 0.16)
+## Health, metrics & probes
 
-Zero 0.16 serves its liveness endpoint at **`/.well-known/health`** instead of `/health`.
+`zero` serves its health endpoint at **`/.well-known/health`** instead of `/health`. From 0.5.4 the checks run on a background thread and the endpoint reads the last published snapshot.
 
 The chart hardcodes that default in `app.healthPath`. It wires the path into the `livenessProbe`, `readinessProbe`, and `startupProbe`.
 
@@ -341,7 +342,7 @@ resources:
 ## Zero config reference
 
 All keys exposed through the chart's `env` and `configMap` mirror the framework's
-[`config.md`](https://github.com/im-ng/zero/tree/experimental/docs/configuration.md):
+[`config.md`](https://github.com/im-ng/zero/tree/main/docs/CONFIG_REFERENCE.md):
 
 - Logging:
   - `LOG_FORMAT` (`text`/`json`)
@@ -363,9 +364,9 @@ All keys exposed through the chart's `env` and `configMap` mirror the framework'
 
 ## Full example
 
-See [`values-override.yaml`](https://github.com/im-ng/zero/tree/experimental/helm/values-override.yaml)
+See [`values-override.yaml`](https://github.com/im-ng/zero/tree/main/helm/values-override.yaml)
 for the `zero` example. See
-[`values-zero-0.16.yaml`](https://github.com/im-ng/zero/tree/experimental/helm/values-zero-0.16.yaml)
-for a full **zero 0.5.0** example that uses the new configuration surface:
+[`values-zero-0.5.yaml`](https://github.com/im-ng/zero/tree/main/helm/values-zero-0.5.yaml)
+for a full example that uses the new configuration surface:
 `RATE_LIMIT_*`, `ZERO_HTTP_LARGE_BUFFER_*`, `S3_*`, `SQLITE_*`, `SERVICE_<NAME>_*`, JSON
 logging, inbound auth, circuit breaker, and more.

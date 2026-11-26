@@ -7,6 +7,8 @@
 Spin up a local Meilisearch with a master key:
 
 ```bash
+podman pull docker.io/getmeili/meilisearch:v1.12
+
 podman run -d \
   --name meilisearch \
   -p 7700:7700 \

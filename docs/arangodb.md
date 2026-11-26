@@ -11,6 +11,8 @@ This backend passes burst and benchmark loads, but has not been soak-tested at l
 Spin up a local ArangoDB with a root password:
 
 ```bash
+podman pull docker.io/library/arangodb:latest
+
 podman run -d \
   --name arangodb \
   -p 8529:8529 \

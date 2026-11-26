@@ -59,6 +59,19 @@ Each dead-lettered message increments the `app_pubsub_dlq_total` counter (labels
 The `X-Correlation-ID` set by the inbound request is propagated into Kafka/NATS record
 headers and the outbound HTTP client, so a single id flows across services and brokers.
 
+::: warning Message slices
+From 0.5.4 the per-message arena is freed as soon as the hook returns. Copy
+`m.payload` or `m.subject` if you need them after that point. A slice kept past
+the handler now points at freed memory. Private plugins also need updating: the
+`publish` vtable method gained a `key: ?[]const u8` argument. Use
+`PublishWithKey(subject, payload, key)` to send a key.
+:::
+
+Redis shares one connection with the KV store and the rate limiter. If that
+connection drops, the health probe reconnects it once, and the three features
+recover together. The Redis pub/sub client keeps its own sockets and reconnects
+on its own.
+
 ### Support
 
 `zero` supports the following brokers for publishing and subscribing.

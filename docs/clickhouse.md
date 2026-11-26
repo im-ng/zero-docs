@@ -19,6 +19,8 @@ This backend passes burst and benchmark loads, but has not been soak-tested at l
 Spin up a local ClickHouse (configure users via a mounted `users.xml` for auth):
 
 ```bash
+podman pull docker.io/clickhouse/clickhouse-server:latest
+
 podman run -d \
   --name clickhouse \
   -p 8123:8123 -p 9000:9000 \

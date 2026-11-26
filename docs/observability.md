@@ -11,6 +11,13 @@ on the app's `HTTP_PORT`, and are kept outside of the authentication route.
 
 Scrape `http://<host>:2121/metrics` with Prometheus.
 
+::: tip Cardinality cap
+From 0.5.4, `zero` caps each metric at 4096 distinct label sets by default.
+New label sets past the cap are dropped and counted in `otel_metric_overflow`.
+Set `METRICS_CARDINALITY_LIMIT=0` to turn the cap off. Raw request paths are
+never used as labels on error metrics.
+:::
+
 The following metrics are available:
 
 | metric_name                         |  Export   |                                                Description |

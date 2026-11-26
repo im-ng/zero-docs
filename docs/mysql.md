@@ -13,6 +13,8 @@ This backend passes burst and benchmark loads, but has not been soak-tested at l
 Spin up a local MySQL with the `mysql_native_password` plugin:
 
 ```bash
+podman pull docker.io/library/mysql:8.4
+
 podman run -d \
   --name mysql-db \
   -p 3306:3306 \
@@ -58,6 +60,11 @@ pub fn listUsers(ctx: *Context) !void {
 ```
 
 `?` is the placeholder and values are interpolated into the statement string (there are no bound parameters). `lastInsertRowID()` and `rowsAffected()` are populated.
+
+From 0.5.4, each connection sets `NO_BACKSLASH_ESCAPES` before its first query.
+A backslash is then an ordinary byte, so a value like `a\'; DROP TABLE t` stays
+data. The client escapes single quotes only. If you turned this SQL mode off
+manually on the server, turn it back on.
 
 MySQL runs as a **connection pool** (size `MYSQL_POOL_SIZE`, default 10). Each request borrows a session from the pool, so concurrent requests never share a socket. And `begin` / `commit` / `rollback` pin that one connection for the transaction, giving you per-request isolation.
 

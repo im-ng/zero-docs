@@ -20,7 +20,7 @@ Use them when you contribute to or validate a build of the framework.
 
 `zig build test` builds `src/tests.zig` (the test root) and runs every inline `test` block across the source tree.
 
-On the `main` (0.16) branch the suite compiles and runs. The framework has **139** unit tests, **2** integration tests, and **3** memory-validation tests. **144** test blocks in total.
+On `main` the suite compiles and runs. The counts in the table come from the 0.5.3 baseline. The Zig 0.17 line adds more tests and runs `test-validation` in CI.
 
 ```bash
 zig build test

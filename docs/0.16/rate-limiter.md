@@ -1,0 +1,94 @@
+# Rate Limiter & Request Helpers
+
+`zero` ships a few opt-in request-level helpers. They cover traffic shaping,
+tracing propagation, and redirects.
+
+## Rate Limiter
+
+A fixed-window rate limiter runs as the **first** middleware in the chain. It's
+**on by default** and exempts `/.well-known/*`, so the health endpoint is never
+throttled.
+
+```bash [configs/.env]
+RATE_LIMIT_ENABLE=true          # enabled by default; set false to disable (e.g. for load tests)
+RATE_LIMIT_MAX=100              # max requests per window (0 → default 100)
+RATE_LIMIT_WINDOW=60            # window length in seconds (0 → default 60)
+RATE_LIMIT_KEY=ip               # default: bucket by client Address
+# RATE_LIMIT_KEY=header:X-Forwarded-For   # bucket by an inbound header instead (behind a proxy)
+```
+
+When a client exceeds the limit, the server replies `429 Too Many Requests`
+(`rate limit exceeded`).
+
+Buckets are keyed by an `XxHash3` hash of the client address (or the configured
+header). They reset at the start of each window. An internal cap bounds the
+number of tracked clients.
+
+### Distributed rate limiting
+
+By default the limiter is **in-memory** (per-process). Set `RATE_LIMIT_STORE=redis`
+to back it with Redis, so the counter is shared across all your replicas. Configure
+Redis with the usual `REDIS_*` keys. If Redis is unreachable it fails open. Requests
+are allowed rather than blocked.
+
+```bash [configs/.env]
+RATE_LIMIT_STORE=redis      # memory (default) | redis
+# plus REDIS_HOST / REDIS_PORT / REDIS_USER / REDIS_PASSWORD / REDIS_DB
+```
+
+Future options, token bucket, sliding window, per-route limits, and
+`X-RateLimit-*` / `Retry-After` headers, are tracked in
+[Feature Parity](/0.16/parity)).
+
+## Correlation ID
+
+The tracing middleware (`tracz`) reuses an inbound `X-Correlation-ID` header if
+present. Otherwise it mints a UUID and stamps it on the response.
+
+That id then propagates automatically. The outbound HTTP client attaches it to
+every upstream request. Kafka `publish` writes it as a record header. A single
+correlation id flows across services and brokers without extra code.
+
+## Remote log level
+
+A service can _pull_ its log level from a remote log-level service instead of
+exposing an endpoint. Set `REMOTE_LOG_URL` (and optionally
+`REMOTE_LOG_REFRESH_INTERVAL`) in `configs/.env`. On startup `zero` registers an
+outbound HTTP client for that URL and a cron job. The cron fetches the level
+every `REMOTE_LOG_REFRESH_INTERVAL` seconds (default 30) and applies it
+in-process.
+
+```bash [configs/.env]
+REMOTE_LOG_URL=https://log.service.local/remote.log.service
+REMOTE_LOG_REFRESH_INTERVAL=30
+```
+
+The remote endpoint must return the level as JSON (a `zero` service serves this
+at `GET /remote.log.service?id=<uuid>` and returns the `level` field):
+
+```mermaid
+json
+{
+  "id": "service-uuid",
+  "level": "debug"
+}
+```
+
+Valid levels: `debug`, `info`, `warn`, `error`, `fatal`, `none`. An unrecognized
+value in the response is ignored (the current level is left unchanged).
+
+The fetch rides the framework's outbound client, so auth and the circuit breaker
+apply automatically.
+
+## Redirect
+
+Handlers can issue a 3xx redirect via the context. This is useful for OAuth
+callbacks and canonical URLs:
+
+```zig [src/main.zig]
+// 302 Found by default
+ctx.redirect("/login");
+
+// explicit status (e.g. 301, 303, 307, 308)
+ctx.redirectWith(std.http.Status.moved_permanently, "https://example.com/new");
+```
